@@ -1,0 +1,97 @@
+.search_container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 45%;
+    margin: 0 auto;
+  }
+  .iconSearch {
+    position: absolute;
+    right: 80px;
+    top: 40px;
+    font-size: 1.5rem;
+  }
+  .iconSearch:hover {
+    cursor: pointer;
+ 
+  }
+  .search_input {
+    flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 16px;
+    margin-top: 25px;
+    padding: 20px;
+  }
+  
+
+
+  .options_icon {
+    padding: 12px;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 5px;
+    color: #555;
+    margin-top: 25px;
+    transition: background-color 0.3s;
+  }
+  
+  .options_icon:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .options_panel {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    border-radius: 5px;
+    z-index: 1;
+  }
+  
+  .options_panel label {
+    display: block;
+    margin-bottom: 15px;
+    font-size: 16px;
+  }
+  
+  .price_input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  .apply_button {
+    padding: 12px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+  .apply_button:hover {
+    background-color: #45a049;
+  }
+  @media screen and (max-width: 768px) {
+    .search_container {
+      max-width: 95%;
+
+    }
+    .iconSearch {
+       margin-top: 4px;
+        margin-right: -9PX;
+    }
+
+  }
+  
