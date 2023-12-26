@@ -16,6 +16,7 @@ const RoomCard = ({roomid, name, price, description, imageSrc }) => {
   };
 
   return (
+
     <div className={styles.card}>
       <div className={styles.imageContainer}>
         <Image
@@ -36,6 +37,9 @@ const RoomCard = ({roomid, name, price, description, imageSrc }) => {
         </button>
       </div>
     </div>
+  
+
+
   );
 };
 

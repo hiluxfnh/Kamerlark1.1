@@ -54,7 +54,7 @@ const Header = () => {
         </ul>
       </nav>
       <div className={styles.actions}>
-        
+      <button className={styles.loginButton}>Add Listing</button>
         <button className={styles.loginButton} onClick={handleLogin}>Login</button>
         <button className={styles.hamburger} onClick={handleNavToggle}>
           <span></span>
