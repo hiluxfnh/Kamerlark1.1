@@ -9,6 +9,9 @@ import React, { useState } from 'react';
 import styles from '../styles/Header.module.css';
 import Image from 'next/image';
 import kl from '../assets/Kamerlark.png';
+import Router from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
 
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -16,7 +19,10 @@ const Header = () => {
   const handleNavToggle = () => {
     setIsNavOpen(!isNavOpen);
   };
-
+  const router=useRouter();
+  const handleLogin = () => {
+    router.push('/login');
+  }
   return (
     <header className={styles.header}>
       <div className={styles.logoContainer}>
@@ -48,7 +54,8 @@ const Header = () => {
         </ul>
       </nav>
       <div className={styles.actions}>
-        <button className={styles.loginButton}>Login</button>
+        
+        <button className={styles.loginButton} onClick={handleLogin}>Login</button>
         <button className={styles.hamburger} onClick={handleNavToggle}>
           <span></span>
           <span></span>

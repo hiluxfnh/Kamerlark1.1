@@ -33,6 +33,7 @@
     flex-wrap: wrap;
     justify-content: center;
     place-items: center;
+    margin-bottom: 7%;
 
   }
   .description{
@@ -59,3 +60,10 @@
   .button:hover {
     background-color: #2980b9;
   }
+  @media screen and (max-width: 768px) {
+    .cardcon{
+ 
+      margin-bottom: 15%;
+    
+  }
+}
