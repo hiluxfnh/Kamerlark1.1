@@ -1,21 +1,18 @@
 'use client'
-// Header.js
-
-// Header.js
-// Header.js
-// Header.js
-// Header.js
 import React, { useState } from 'react';
 import styles from '../styles/Header.module.css';
 import Image from 'next/image';
 import kl from '../assets/Kamerlark.png';
-import Router from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
-
+ const listingpage=()=>{
+    router.push('/listing');
+ };
   const handleNavToggle = () => {
     setIsNavOpen(!isNavOpen);
   };
@@ -54,7 +51,7 @@ const Header = () => {
         </ul>
       </nav>
       <div className={styles.actions}>
-      <button className={styles.loginButton}>Add Listing</button>
+      <button className={styles.addlisting} onClick={listingpage}><FontAwesomeIcon icon={faPlus} />  Add Listing</button>
         <button className={styles.loginButton} onClick={handleLogin}>Login</button>
         <button className={styles.hamburger} onClick={handleNavToggle}>
           <span></span>

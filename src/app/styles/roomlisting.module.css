@@ -1,0 +1,83 @@
+/* pages/AddListing.module.css */
+.form_container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  
+  .form label {
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .form_container input,
+  .form_container select,
+  .form_container textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .form_container button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .form_container button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Image dropzone styles */
+  .dropzone {
+    border: 2px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .priceContainer {
+    display: flex;
+    gap: 10px;
+  }
+  
+  /* Image preview styles */
+  .imagePreview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .imageContainer {
+    position: relative;
+  }
+  
+  .imageContainer img {
+    width: 70px;
+    height:70px;
+    /* height: auto; */
+    border-radius: 4px;
+  }
+  
+  .imageContainer button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
+  }
+  /* Add this to your existing CSS or create a new CSS file */
+
+ .description{
+  height:200px;
+
+ }
