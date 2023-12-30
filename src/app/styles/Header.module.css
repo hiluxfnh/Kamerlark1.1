@@ -87,6 +87,7 @@
     height: 4px;
     background-color: #fff;
     transition: all 0.3s ease;
+ 
   }
   
 
@@ -106,6 +107,7 @@
     display: flex;
     align-items: center;
     z-index: 9999;
+    border: 0.5px solid #000000;
   }
   
   .navList {

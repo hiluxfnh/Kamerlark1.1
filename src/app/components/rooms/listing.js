@@ -37,8 +37,11 @@ const RoomCard = ({roomid, name, price, description, imageSrc }) => {
         </button>
       </div>
     </div>
-  
 
+
+
+ 
+  
 
   );
 };

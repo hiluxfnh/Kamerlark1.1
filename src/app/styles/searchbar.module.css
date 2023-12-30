@@ -7,7 +7,7 @@
   }
   .iconSearch {
     position: absolute;
-    right: 80px;
+    right: 100px;
     top: 40px;
     font-size: 1.5rem;
   }
@@ -27,7 +27,7 @@
 
 
   .options_icon {
-    padding: 12px;
+    padding: 12px 20px;
     background-color: #f2f2f2;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -41,17 +41,27 @@
   .options_icon:hover {
     background-color: #e0e0e0;
   }
-  
   .options_panel {
     display: none;
+    width: 100%;
     position: absolute;
-    top: 50px;
-    right: 0;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    top: 100%; /* Position the panel below the filter button */
+    left: 50%;
+    transform: translateX(-50%);
+    transform-origin: 0;
+    background-color: #efefef;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     padding: 20px;
     border-radius: 5px;
-    z-index: 1;
+    z-index: 0;
+    transition: all 0.3s;
+    border: 1px solid #ccc;
+    max-width: 90%;
+    
+  }
+  
+  .options_panel.show {
+    display: block;
   }
   
   .options_panel label {
@@ -60,29 +70,54 @@
     font-size: 16px;
   }
   
-  .price_input {
-    width: 100%;
-    padding: 12px;
+  .price_range_input {
+    width: 100%; /* Make the price range input span the full width */
     margin-bottom: 15px;
+  }
+  
+  .bedroom_input,
+  .amenities_input,
+  .date_input,
+  .dropdown,
+  .apply_button {
+    width: 90%; /* Make these elements span the full width */
+    margin-bottom: 15px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 16px;
   }
   
   .apply_button {
-    padding: 12px 20px;
-    background-color: #4CAF50;
+    background-color: #268bce;
     color: white;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
     transition: background-color 0.3s;
+    margin-top: 15px;
+    width: auto;
   }
   
   .apply_button:hover {
-    background-color: #45a049;
+    background-color: #0665a4;
   }
+  
+  @media screen and (max-width: 768px) {
+    .options_panel {
+      padding: 10px; /* Adjust padding for smaller screens */
+    }
+  
+    .price_range_input,
+    .bedroom_input,
+    .amenities_input,
+    .date_input,
+    .dropdown,
+    .apply_button {
+      margin-bottom: 10px; /* Adjust margin for smaller screens */
+    }
+  }
+  
+  
   @media screen and (max-width: 768px) {
     .search_container {
       max-width: 95%;

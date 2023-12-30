@@ -91,45 +91,89 @@ const AddListing = () => {
       <h1>Add Room Listing</h1>
       <form onSubmit={handleSubmit}>
         {/* Your existing form inputs */}
-     
+
         <label>
-          Room Name:
-          <input type="text" name="name" value={roomDetails.name} onChange={handleChange} />
+          Apartment / House / Room Name:
+          <input type="text" name="name" value={roomDetails.name} onChange={handleChange} required />
         </label>
+        <div className={styles.owner}>
+        <label>
+          Owner's First Name:
+          <input type="text" name="owner" value={roomDetails.owner} onChange={handleChange}required />
+
+        </label>
+        <label>
+          Owner's Last Name:
+          <input type="text" name="owner" value={roomDetails.owner} onChange={handleChange} required/>
+          </label>
+        </div>
         <div className={styles.priceContainer}>
-        <label>
-          Price:
-          <input type="text" name="price" value={roomDetails.price} onChange={handleChange} />
-        </label>
+          <label>
+            Price:
+            <input type="text" name="price" value={roomDetails.price} onChange={handleChange}required />
+          </label>
 
-        <label>
-          Currency:
-          <select name="currency" value={roomDetails.currency} onChange={handleChange}>
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="INR">INR</option>
+          <label>
+            Currency:
+            <select name="currency" value={roomDetails.currency} onChange={handleChange}required>
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="INR">INR</option>
 
 
-            {/* Add more currency options as needed */}
-          </select>
-        </label>
+              {/* Add more currency options as needed */}
+            </select>
+          </label>
+          <label>
+            Phone Number:
+            <input type="text" name="phno" value={roomDetails.phno} placeholder='+123 4567890' onChange={handleChange}required />
+          </label>
         </div>
         <label>
-  Description:
+          Description:
 
-    <input
-    type='text'
-      name="description"
-      value={roomDetails.description}
-      onChange={handleChange}
-      className={styles.description}
-    />
+          <input
+            type='text'
+            name="description"
+            value={roomDetails.description}
+            onChange={handleChange}
+            className={styles.description}
+            required
+          />
 
-</label>
+        </label>
+        <div className={styles.rowContainer}>
+          <label >
+            Capacity  <br/>
 
+             <input type="number" name="capacity" value={roomDetails.capacity} onChange={handleChange} required/>
+          </label>
+
+          <label className={styles.formElement}>
+            Bed Type:
+            <select name="bedType" value={roomDetails.bedType} style={{ width: '70%' }} onChange={handleChange}required>
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+
+          <label className={styles.formElement}>
+            Washrooms:
+            <select name="washrooms" value={roomDetails.washrooms} style={{ width: '70%' }} onChange={handleChange} required>
+              <option value="attached">Attached</option>
+              <option value="common">Common</option>
+              <option value="other">Other</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Nearby School / University:
+          <input type="text" name="uni" value={roomDetails.uni} onChange={handleChange} />
+        </label>
 
         {/* Image upload section */}
-        <div className={styles.dropzone} {...getRootProps()}>
+        <div className={styles.dropzone} {...getRootProps()} required>
           <input {...getInputProps()} />
           <p>Drag & drop images here, or click to select files.</p>
         </div>

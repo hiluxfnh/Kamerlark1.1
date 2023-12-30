@@ -20,6 +20,7 @@
     border-radius: 4px;
     box-sizing: border-box;
   }
+
   
   .form_container button {
     background-color: #4caf50;
@@ -78,6 +79,23 @@
   /* Add this to your existing CSS or create a new CSS file */
 
  .description{
-  height:200px;
+  height:100px;
 
  }
+ .rowContainer{
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+    align-items:center;
+ }
+ .owner{
+    display:flex;
+    flex-direction:row;
+    justify-content:space-between;
+    gap: 10px;
+    align-items:center;
+ }
+ .required::after {
+  content: ' *';
+  color: red;
+}

@@ -33,7 +33,7 @@
     flex-wrap: wrap;
     justify-content: center;
     place-items: center;
-    margin-bottom: 7%;
+    margin-bottom: 3%;
 
   }
   .description{
@@ -66,4 +66,36 @@
       margin-bottom: 15%;
     
   }
+}
+.vrdiv {
+  /* Add styling for the container div if needed */
+  /* margin-top: auto; */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center items horizontally */
+  justify-content: center;
+}
+
+.Viewmorerooms {
+  /* Add styling for the button */
+  background-color: #4caf50; /* Green background color */
+  color: white; /* White text color */
+  padding: 10px 20px; /* Add padding for better appearance */
+  font-size: 16px; /* Adjust font size */
+  border: none; /* Remove border */
+  border-radius: 5px; /* Add border radius for rounded corners */
+  cursor: pointer; /* Add cursor pointer on hover */
+  margin-bottom: 5%;
+
+}
+
+.Viewmorerooms:hover {
+  /* Change style on hover if needed */
+  background-color: #45a049; /* Darker green background color */
+}
+@media screen and (max-width: 768px) {
+  .Viewmorerooms{
+    margin-bottom: 13%;
+  }
+  
 }

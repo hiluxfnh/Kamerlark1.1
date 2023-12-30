@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import styles from '../styles/Header.module.css';
 import Image from 'next/image';
-import kl from '../assets/Kamerlark.png';
+import kl from '../assets/Kl_christmas.png';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';

@@ -22,9 +22,11 @@ const textOverlayStyles = {
 };
 
 const titleStyle = {
-  fontSize: "2rem",
+  fontSize: "3rem",
   fontWeight: "bold",
   margin: "0",
+  color: "#fff",
+ 
 };
 
 const subtitleStyle = {
