@@ -1,22 +1,28 @@
-// components/RoomCard.js
 
-// components/RoomCard.js
 'use client'
+// Removed 'use client' as it's not a standard directive
 import React from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/app/firebase/Config';
 import styles from '../../styles/roomcard.module.css';
 import Image from 'next/image';
 
-const RoomCard = ({roomid, name, price, description, imageSrc }) => {
+const RoomCard = ({ roomid, name, price, description, imageSrc }) => {
   const router = useRouter();
+  const userState = useAuthState(auth);
+  const user = userState?.[0];
+  
 
   const handleButtonClick = () => {
-    router.push(`/room/${roomid.toLowerCase()}`);
+    if (!user) {
+      router.push('/login');
+    } else {
+      router.push(`/room/${roomid.toLowerCase()}`);
+    }
   };
 
   return (
-
     <div className={styles.card}>
       <div className={styles.imageContainer}>
         <Image
@@ -32,17 +38,11 @@ const RoomCard = ({roomid, name, price, description, imageSrc }) => {
         <h3>{name}</h3>
         <p className={styles.price}>Price: {price}</p>
         <p className={styles.description}>{description}</p>
-        <button className={styles.button} onClick={handleButtonClick}>
+        <button className={styles.button} onClick={() => handleButtonClick()}>
           View Details
         </button>
       </div>
     </div>
-
-
-
- 
-  
-
   );
 };
 

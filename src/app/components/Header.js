@@ -6,12 +6,21 @@ import kl from '../assets/Kl_christmas.png';
 import { useRouter } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
-
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/app/firebase/Config';
 
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
+  const [user] = useAuthState(auth);
+  
  const listingpage=()=>{
+  if (!user) {
+    router.push('/login');
+  }
+  else{
     router.push('/listing');
+  }
+ 
  };
   const handleNavToggle = () => {
     setIsNavOpen(!isNavOpen);

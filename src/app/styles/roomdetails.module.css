@@ -1,75 +1,138 @@
-/* components/RoomDetails.css */
+/* roomdetails.module.css */
+.room_details_wrapper {
+  width: 90%; 
+  margin-top: 2rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
 
 .room_details_container {
-    max-width: 500px; /* Adjust as needed */
-    width:90%;
-    margin: 0 auto;
-    margin-top:10px;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 20px;
- 
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
-  }
-  
-  .room_details_container h1 {
-    font-size: 24px;
-    /* margin-bottom: 10px; */
-  }
-  
-  .room_details_container p {
-    font-size: 16px;
-    margin-bottom: 8px;
-  }
-  
-  .room_details_container p.description {
-    font-style: italic;
-  }
-  .room_details_container img{
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-  }
-  /* Add more specific styles as needed */
-  @media screen and (max-width: 768px) {
-    .room_details_container{
-      width:80%;
-    }
-    .bookbutton{
-      padding: 5px 10px;
-      font-size: 10px;
-    }
-  }
-
-  .bookbutton{
-    background-color: #4CAF50; /* Green */
-    border: none;
-    color: white;
-    font-weight: bold;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    border-radius: 15px;
-  }
-
-.room_details_wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+}
+/* roomdetails.module.css */
+.room_image {
+  width: 600px;
+  margin-bottom: 10px; 
+  border-radius: 14px;
+  overflow: hidden;
+  margin-right: 2rem;
+  margin-top: 3rem;
+}
+.image_grid {
+  margin-bottom: 10px; 
+  width: 600px;
+  margin-right: 2rem;
+}
+
+.grid_item {
+  display: flex; 
+  flex-direction: row;
   justify-content: center;
 }
-.viewmorebutton{
-  background-color: #0a7bd1; /* Green */
-  border: none;
+
+.image1, .image2, .image3, .image4 {
+  flex: 1; 
+  padding: 2px; 
+}
+
+/* Ensures the Image component from Next.js fits its container */
+.image1 img, .image2 img, .image3 img, .image4 img {
+  width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  height: auto;
+  display: block; 
+}
+
+.room_id{
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: -2rem;
+  margin-top: 3rem;
+}
+
+.room_name,
+.room_price,
+.room_capacity,
+.room_description,
+.room_bed_type,
+.room_washrooms,
+.room_university,
+.room_contact{
+  margin-bottom: -0.15rem;
+}
+/* Button styles */
+.bookbutton{
+  padding: 10px 20px;
+  background-color: #007bff;
   color: white;
- margin-top: 5px;
-  padding:3px 9px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  border-radius: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-top: 20px;
+}
+
+.viewmorebutton {
+  padding: 15px 20px;
+  background-color: #de0c0c;
+  color: white;
+  border: none;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 2rem;
+
+  /* Center the button horizontally */
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+
+.bookbutton:hover {
+  background-color: #0056b3;
+}
+.viewmorebutton:hover{
+  background-color: #a50505;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .room_details_wrapper {
+    margin-top: 1rem;
+    width: 85%;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  .room_details_container {
+    flex-direction: column;
+  }
+  .room_image {
+    width: 100%;
+    margin-bottom: 10px;
+    margin-right: 0;
+    margin-top: 1rem;
+  }
+  .image_grid {
+    width: 100%;
+    margin-right: 0;
+  }
+  .room_id{
+    margin-top: 0;
+  }
+  .room_name{
+    margin-top: 0;
+    font-size: 8px;
+    font-style: normal;
+  }
+
+
 }
