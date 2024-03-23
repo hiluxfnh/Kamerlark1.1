@@ -9,6 +9,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/app/firebase/Config';
 
+
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [user] = useAuthState(auth);
@@ -27,7 +28,12 @@ const Header = () => {
   };
   const router=useRouter();
   const handleLogin = () => {
-    router.push('/login');
+    if(!user){
+      router.push('/login');
+    }
+    else{
+      auth.signOut();
+    }
   }
   return (
     <header className={styles.header}>
@@ -48,8 +54,8 @@ const Header = () => {
             </a>
           </li>
           <li>
-            <a href="#" className={styles.navLink} onClick={handleNavToggle}>
-              Services
+            <a href="/community" className={styles.navLink} onClick={handleNavToggle}>
+              Community
             </a>
           </li>
           <li>
@@ -61,7 +67,9 @@ const Header = () => {
       </nav>
       <div className={styles.actions}>
       <button className={styles.addlisting} onClick={listingpage}><FontAwesomeIcon icon={faPlus} />  Add Listing</button>
-        <button className={styles.loginButton} onClick={handleLogin}>Login</button>
+        <button className={styles.loginButton} onClick={handleLogin}>
+          {user ? 'Logout' : 'Login'}
+          </button>
         <button className={styles.hamburger} onClick={handleNavToggle}>
           <span></span>
           <span></span>

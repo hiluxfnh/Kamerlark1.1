@@ -8,7 +8,6 @@ import RoomCard from './components/rooms/listing'
 import Footer from './components/Footer'
 import kam from './styles/roomcard.module.css'
 import ImageSlider from './components/Imageslider'
-import ChatBot from './components/chat'
 import Viewmorerooms from './components/Viewmorerooms'
 import Subscription from './components/Subscription'
 // import { useRouter } from 'next/navigation';
@@ -78,10 +77,6 @@ export default function Home() {
   return (
     <>
       <Header />
-       <button onClick={()=>{
-        signOut(auth)
-        sessionStorage.removeItem('user');
-       }}>Logout</button>
       <div style={containerStyles}>
         <ImageSlider slides={slides} />
       </div>
@@ -98,7 +93,6 @@ export default function Home() {
 
       </div>
 
-      <ChatBot />
       <Viewmorerooms />
       {/* <Subscription /> */}
       <Footer />
