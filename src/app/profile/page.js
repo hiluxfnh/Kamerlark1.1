@@ -422,21 +422,62 @@ function StatusIcon({ status, className }) {
 }
 
 function Notifications() {
+    const notifications = [
+        { id: 1, message: "Your rent is due in 3 days.", date: "2024-05-01" },
+        { id: 2, message: "New message from your landlord.", date: "2024-04-28" },
+        { id: 3, message: "Your contract has been updated.", date: "2024-04-25" },
+    ];
+
     return (
         <div>
             <h2 className="text-xl font-bold mb-4">Notifications</h2>
             <p>Here you can view your notifications.</p>
-            {/* Add more detailed notifications features here */}
+            <div className="mt-6">
+                {notifications.map(notification => (
+                    <div key={notification.id} className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+                        <p className="text-gray-700">{notification.message}</p>
+                        <p className="text-sm text-gray-500">{new Date(notification.date).toLocaleDateString()}</p>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
 
 function Settings() {
+    const handlePasswordChange = () => {
+        // Implement password change functionality here
+    };
+
+    const handleNotificationPreferencesChange = () => {
+        // Implement notification preferences change functionality here
+    };
+
     return (
         <div>
             <h2 className="text-xl font-bold mb-4">Settings</h2>
             <p>Here you can adjust your settings.</p>
-            {/* Add more detailed settings features here */}
+            <div className="mt-6">
+                <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold">Change Password</h3>
+                    <button
+                        onClick={handlePasswordChange}
+                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                    >
+                        Change Password
+                    </button>
+                </div>
+                <div className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+                    <h3 className="text-lg font-semibold">Notification Preferences</h3>
+                    <button
+                        onClick={handleNotificationPreferencesChange}
+                        className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg"
+                    >
+                        Change Preferences
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
+
