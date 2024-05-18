@@ -3,6 +3,8 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import styles from "../styles/roomlisting.module.css";
 import MapComponent from "../components/MapComponent";
+import Header from '../components/Header'
+
 
 // import { useNavigate } from 'react-router-dom';
 
@@ -127,6 +129,8 @@ const AddListing = () => {
   
 
   return (
+    <>
+        <Header />
     <div className={styles.form_container}>
       <h1>Add Room Listing</h1>
       <form onSubmit={handleSubmit}>
@@ -372,6 +376,7 @@ const AddListing = () => {
         <button type="submit">Submit</button>
       </form>
     </div>
+    </>
   );
 };
 

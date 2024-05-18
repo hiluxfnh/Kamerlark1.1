@@ -1,9 +1,12 @@
 
 import Link from "next/link"
+import Header from '../components/Header'
 
 
 export default function Component() {
     return (
+      <>
+          <Header />
       <div className="flex flex-col h-screen bg-gray-100">
         <header className="border-b bg-white">
           <div className="container flex items-center justify-between h-[60px] px-4 sm:px-6">
@@ -221,6 +224,7 @@ export default function Component() {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

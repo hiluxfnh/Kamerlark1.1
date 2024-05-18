@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from '../styles/roomdetails.module.css';
 import Image from 'next/image';
+import Header from '../components/Header'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faFacebook, faBed } from '@fortawesome/free-solid-svg-icons';
 
@@ -10,6 +11,7 @@ const RoomDetails = ({ room }) => {
   
   return (
     <>
+    <Header />
       <div className={styles.room_details_wrapper}>
         <div className={styles.room_details_container}>
           <div className={`${styles.gallery} ${styles.lightbox}`}>
@@ -40,7 +42,8 @@ const RoomDetails = ({ room }) => {
             <div className={styles.room_id}>
               <h6>Room id: {room.Roomid}</h6>
             </div>
-
+              <br/>
+              <br/>
             <div className={styles.room_name}>
               <h1>Room name: {room.name}</h1>
             </div>
@@ -72,9 +75,7 @@ const RoomDetails = ({ room }) => {
             <div className={styles.room_contact}>
               <p><span><FontAwesomeIcon icon={faPhone} /></span> {room.phno}</p>
             </div>
-
-            {/* You can add more divs for additional details as needed */}
-
+          
             <div className={styles.booking_button_container}>
               <button className={styles.bookbutton} onClick={() => console.log('Book Now')}>Book Now</button>
             </div>

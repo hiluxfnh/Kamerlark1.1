@@ -1,14 +1,18 @@
 // components/LoginSignup.js
 'use client';
-import { useState } from 'react';
-import { auth } from '@/app/firebase/Config';
-import { useCreateUserWithEmailAndPassword, useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 
+import { useState, useEffect, useContext, createContext } from 'react';
+import { auth } from '@/app/firebase/Config';
+import { 
+  useCreateUserWithEmailAndPassword, 
+  useSignInWithEmailAndPassword,
+  useSignInWithPopup 
+} from 'react-firebase-hooks/auth';
+import { GoogleAuthProvider } from 'firebase/auth';
 import styles from '../styles/login.module.css'; 
 import Image from 'next/image';
 import kl from '../assets/kl_christmas.png';
-import { useRouter } from 'next/navigation';
-
+import { useRouter } from 'next/navigation'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGooglePlusG, faFacebook } from '@fortawesome/free-brands-svg-icons';
 
@@ -19,9 +23,10 @@ const LoginSignup = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [isLogin, setIsLogin] = useState(true);
 
-  const [createUserWithFirebase] = useCreateUserWithEmailAndPassword(auth);
-  const [signInWithFirebase] = useSignInWithEmailAndPassword(auth);
-  const router=useRouter();
+  const [createUserWithFirebase, createUserLoading, createUserError] = useCreateUserWithEmailAndPassword(auth);
+  const [signInWithFirebase, signInLoading, signInError] = useSignInWithEmailAndPassword(auth);
+  // const [signInWithGoogle, googleUser, googleLoading, googleError] = useSignInWithPopup(auth, new GoogleAuthProvider());
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,9 +38,7 @@ const LoginSignup = () => {
         setEmail('');
         setPassword('');
         router.push('/');
-      } 
-
-      else {
+      } else {
         await createUserWithFirebase(email, password, {
           displayName: name,
           phoneNumber: phoneNumber,
@@ -46,10 +49,21 @@ const LoginSignup = () => {
         setPassword('');
         setName('');
         setPhoneNumber('');
+        router.push('/');
       }
     } catch (error) {
       console.error('Error:', error.message);
+    }
+  };
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      console.log('User logged in with Google successfully');
+      sessionStorage.setItem('user', true);
+      router.push('/');
+    } catch (error) {
+      console.error('Error:', error.message);
     }
   };
 
@@ -58,17 +72,18 @@ const LoginSignup = () => {
       <form className={styles.form} onSubmit={handleSubmit}>
         <Image src={kl} alt="Kamerlark" className={styles.logo} width={50} height={60}/>
         <h2 className={styles.title}>{isLogin ? 'Login' : 'Sign Up'}</h2>
+        <br/>
         <p className={styles.subtitle}>{isLogin ? 'Login to your account' : 'Sign up for an account'}</p>
 
         <div className={styles.google}>
-          <button className={styles.googlebutton} type="submit">
+          <button type="button" className={styles.googlebutton} onClick={handleGoogleSignIn}>
             <span className={styles.iconPadding}><FontAwesomeIcon icon={faGooglePlusG} style={{ color: 'red' }} /></span>
             Continue with Google
           </button>
         </div>
 
         <div className={styles.facebook}>
-          <button className={styles.facebookbutton} type="submit">
+          <button className={styles.facebookbutton} type="button">
             <span className={styles.iconPadding}><FontAwesomeIcon icon={faFacebook} style={{ color: '#1877f2' }} /></span>
             Continue with Facebook
           </button>
@@ -79,11 +94,23 @@ const LoginSignup = () => {
         </div>
 
         <label className={styles.label}>
-          <input className={styles.input} type="email" placeholder='Email' value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input 
+            className={styles.input} 
+            type="email" 
+            placeholder='Email' 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
         </label>
 
         <label className={styles.label}>
-          <input className={styles.input} type="password" placeholder='Password' value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input 
+            className={styles.input} 
+            type="password" 
+            placeholder='Password' 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
         </label>
 
         {!isLogin && (

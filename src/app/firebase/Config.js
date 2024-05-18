@@ -3,15 +3,18 @@ import { initializeApp ,getApp,getApps} from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBwTX1giyCj1Xtj7A6VW1Lb19tbiiAmm2A",
+  authDomain: "kamerlark1.firebaseapp.com",
+  databaseURL: "https://kamerlark1-default-rtdb.firebaseio.com",
+  projectId: "kamerlark1",
+  storageBucket: "kamerlark1.appspot.com",
+  messagingSenderId: "342771663259",
+  appId: "1:342771663259:web:6f71b1e03ea003e089213e",
+  measurementId: "G-F59CGZN0Q4"
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 const auth = getAuth(app);
 export {app, auth}
+

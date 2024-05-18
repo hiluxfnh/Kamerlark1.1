@@ -1,5 +1,6 @@
 'use client'
 import React from 'react';
+import Header from '../../components/Header'
 import { useRouter } from 'next/navigation';
 import {useState} from 'react';
 import RoomDetails from '../roomdetails';
@@ -38,6 +39,7 @@ export default function Roomid  ({params}){
     return (
       <>
         <div>
+          {/* <Header /> */}
           <RoomDetails room={room} />
         </div>
         <div className={styles.more_rooms_button_container}>
