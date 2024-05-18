@@ -30,200 +30,108 @@ export default function Component() {
                 <SearchIcon className="w-5 h-5 text-gray-500" />
                 <input className="w-32 h-8 rounded-full border-2 border-gray-300 focus:outline-none px-2" placeholder="Search" type="search" />
               </form>
-              <div className="flex items-center gap-2 md:gap-4">
+
                 <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-gray-900 dark:border-gray-50">
                   <div className="w-10 h-10 border-0">
                     <img alt="@username" src="/placeholder-user.jpg" className="w-full h-full object-cover" />
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center">
-                    <UserIcon className="w-4 h-4 mr-2 text-gray-500" />
-                    <span className="text-sm font-semibold">Profile</span>
-                  </div>
-                  <div className="flex items-center">
-                    <SettingsIcon className="w-4 h-4 mr-2 text-gray-500" />
-                    <span className="text-sm font-semibold">Settings</span>
-                  </div>
-                  <div className="flex items-center">
-                    <LogOutIcon className="w-4 h-4 mr-2 text-gray-500" />
-                    <span className="text-sm font-semibold">Logout</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </header>
        
-      <div className="flex-1 flex min-h-0">
-        <div className="hidden md:flex flex-col w-[300px] border-r">
-          <div className="flex-1 overflow-y-auto">
-            <div className="flex items-center gap-2 p-4">
-              <button className="rounded-full" size="icon" variant="outline">
-                <ArrowLeftIcon className="w-4 h-4" />
-                <span className="sr-only">Back</span>
-              </button>
-              <h1 className="text-lg font-semibold">Members</h1>
-            </div>
-            <div className="grid gap-4 p-4">
-              <form className="flex items-center gap-4">
-                <SearchIcon className="w-4 h-4 opacity-50" />
-                <input placeholder="Search members" type="search" />
-              </form>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  <divFallback>US</divFallback>
+        <div className="flex-1 flex min-h-0">
+                <div className="hidden md:flex flex-col w-[300px] border-r bg-white shadow-lg">
+                    <div className="flex-1 overflow-y-auto">
+                        <div className="flex items-center gap-2 p-4 border-b">
+                            <button className="rounded-full border p-2" size="icon" variant="outline">
+                                <ArrowLeftIcon className="w-4 h-4" />
+                                <span className="sr-only">Back</span>
+                            </button>
+                            <h1 className="text-lg font-semibold">Members</h1>
+                        </div>
+                        <div className="p-4">
+                            <form className="flex items-center gap-4 mb-4">
+                                <SearchIcon className="w-4 h-4 opacity-50" />
+                                <input className="w-full px-2 py-1 border rounded-full focus:outline-none" placeholder="Search members" type="search" />
+                            </form>
+                            {["Hilux", "Bhargav", "Catherine"].map((name, index) => (
+                                <div className="flex items-center gap-4 mb-4" key={index}>
+                                    <div className="w-10 h-10 border rounded-full overflow-hidden">
+                                        <img alt="@username" src="/placeholder-user.jpg" className="object-cover w-full h-full" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold">{name}</h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">@{name} · Joined {2010 + index}</p>
+                                    </div>
+                                    <button className="rounded-full border p-2" size="icon">
+                                        <MessageSquareIcon className="w-4 h-4" />
+                                        <span className="sr-only">Message</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="h-[60px] flex items-center px-4 border-t bg-gray-50">
+                        <button className="rounded-full border p-2" size="icon" variant="outline">
+                            <UserPlusIcon className="w-4 h-4" />
+                            <span className="sr-only">Add friend</span>
+                        </button>
+                        <button className="rounded-full border p-2" size="icon" variant="outline">
+                            <MessageSquareIcon className="w-4 h-4" />
+                            <span className="sr-only">Message</span>
+                        </button>
+                    </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Hilux</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@Hilux · Joined 2010</p>
+                <div className="flex-1 flex flex-col min-h-0 border-l border-gray-200 dark:border-gray-800 bg-white">
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="w-10 h-10 border rounded-full overflow-hidden">
+                                <img alt="@username" src="/placeholder-user.jpg" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-semibold">Catherine</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">@catherine · Joined 2010</p>
+                            </div>
+                            <button className="rounded-full border p-2">
+                                <UserIcon className="w-4 h-4" />
+                                <span className="sr-only">Add friend</span>
+                            </button>
+                        </div>
+                        <div className="prose max-w-none">
+                            <p>Welcome to our community! We're excited to connect with fellow travelers and share our experiences. Whether you're a seasoned globetrotter or new to the world of travel, this is the place to be.</p>
+                            <p>Let's start by introducing ourselves. Share your favorite travel destination, and don't forget to include a photo from your most memorable trip!</p>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                            <img alt="Cover photo" className="aspect-video overflow-hidden rounded-lg object-cover object-center" src="/placeholder.svg" />
+                            <img alt="Cover photo" className="aspect-video overflow-hidden rounded-lg object-cover object-center" src="/placeholder.svg" />
+                        </div>
+                        <hr className="my-4" />
+                        <div className="flex items-center gap-4">
+                            <button className="rounded-full border p-2">
+                                <ThumbsUpIcon className="w-4 h-4" />
+                                <span className="sr-only">Like</span>
+                            </button>
+                            <button className="rounded-full border p-2">
+                                <MessageCircleIcon className="w-4 h-4" />
+                                <span className="sr-only">Comment</span>
+                            </button>
+                            <button className="rounded-full border p-2">
+                                <ShareIcon className="w-4 h-4" />
+                                <span className="sr-only">Share</span>
+                            </button>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</div>
+                        </div>
+                    </div>
+                    <div className="h-[60px] flex items-center border-t px-4 bg-gray-50">
+                        <form action="#" className="flex-1">
+                            <textarea className="min-h-0 h-[40px] border-0 shadow-none w-full px-2 py-1 focus:outline-none" placeholder="Write a comment..." />
+                        </form>
+                        <button className="ml-2 px-4 py-1 bg-blue-500 text-white rounded-full">Post</button>
+                    </div>
                 </div>
-                <button className="rounded-full" size="icon">
-                  <MessageSquareIcon className="w-4 h-4" />
-                  <span className="sr-only">Message</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  <divFallback>US</divFallback>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Bhargav</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@Bhargav · Joined 2015</p>
-                </div>
-                <button className="rounded-full" size="icon">
-                  <UserPlusIcon className="w-4 h-4" />
-                  <span className="sr-only">Add friend</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  <divFallback>US</divFallback>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Bhargav</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@Bhargav · Joined 2018</p>
-                </div>
-                <button className="rounded-full" size="icon">
-                  <UserPlusIcon className="w-4 h-4" />
-                  <span className="sr-only">Add friend</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  <divFallback>US</divFallback>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Bhargav</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@Bhargav · Joined 2019</p>
-                </div>
-                <button className="rounded-full" size="icon">
-                  <UserPlusIcon className="w-4 h-4" />
-                  <span className="sr-only">Add friend</span>
-                </button>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  <divFallback>US</divFallback>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Bhargav</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@Bhargav · Joined 2020</p>
-                </div>
-                <button className="rounded-full" size="icon">
-                  <UserPlusIcon className="w-4 h-4" />
-                  <span className="sr-only">Add friend</span>
-                </button>
-              </div>
-            </div>
           </div>
-          <div className="h-[60px] flex items-center px-4 border-t">
-            <button className="rounded-full" size="icon" variant="outline">
-              <UserPlusIcon className="w-4 h-4" />
-              <span className="sr-only">Add friend</span>
-            </button>
-            <button className="rounded-full" size="icon" variant="outline">
-              <MessageSquareIcon className="w-4 h-4" />
-              <span className="sr-only">Message</span>
-            </button>
-          </div>
-        </div>
-        <div className="flex-1 flex flex-col min-h-0 border-l border-gray-200 dark:border-gray-800">
-          <div className="flex-1 overflow-y-auto">
-            <div className="grid gap-4 p-4">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 border">
-                  <img alt="@username" src="/placeholder-user.jpg" />
-                  
-                  <divFallback>US</divFallback>
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">Catherine</h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">@catherine · Joined 2010</p>
-                </div>
-                <button className="rounded-full">
-                  <UserIcon className="w-4 h-4" />
-                  <span className="sr-only">Add friend</span>
-                </button>
-              </div>
-              <div className="prose">
-                <p>
-                  Welcome to our community! We're excited to connect with fellow travelers and share our experiences.
-                  Whether you're a seasoned globetrotter or new to the world of travel, this is the place to be.
-                </p>
-                <p>
-                  Let's start by introducing ourselves. Share your favorite travel destination, and don't forget to
-                  include a photo from your most memorable trip!
-                </p>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <img
-                  alt="Cover photo"
-                  className="aspect-video overflow-hidden rounded-lg object-cover object-center"
-                  height={200}
-                  src="/placeholder.svg"
-                  width={400}
-                />
-                <img
-                  alt="Cover photo"
-                  className="aspect-video overflow-hidden rounded-lg object-cover object-center"
-                  height={200}
-                  src="/placeholder.svg"
-                  width={400}
-                />
-              </div>
-              <hr />
-              <div className="flex items-center gap-4">
-                <button className="rounded-full">
-                  <ThumbsUpIcon className="w-4 h-4" />
-                  <span className="sr-only">Like</span>
-                </button>
-                <button className="rounded-full">
-                  <MessageCircleIcon className="w-4 h-4" />
-                  <span className="sr-only">Comment</span>
-                </button>
-                <button className="rounded-full">
-                  <ShareIcon className="w-4 h-4" />
-                  <span className="sr-only">Share</span>
-                </button>
-                <div className="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</div>
-              </div>
-            </div>
-          </div>
-          <div className="h-[60px] flex items-center border-t px-4">
-            <form action="#" className="flex-1">
-              <textarea className="min-h-0 h-[40px] border-0 shadow-none" placeholder="Write a comment..." />
-            </form>
-            <button>Post</button>
-          </div>
-        </div>
       </div>
-    </div>
     </>
   )
 }

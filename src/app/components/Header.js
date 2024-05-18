@@ -62,6 +62,11 @@ const Header = () => {
               Contact
             </a>
           </li>
+          <li>
+            <a href="/profile" className={styles.navLink} onClick={handleNavToggle}>
+              Profile
+            </a>
+          </li>
         </ul>
       </nav>
       <div className={styles.actions}>
