@@ -58,13 +58,13 @@ const Header = () => {
             </a>
           </li>
           <li>
-            <a href="/contact" className={styles.navLink} onClick={handleNavToggle}>
-              Contact
+            <a href="/profile" className={styles.navLink} onClick={handleNavToggle}>
+              Profile
             </a>
           </li>
           <li>
-            <a href="/profile" className={styles.navLink} onClick={handleNavToggle}>
-              Profile
+            <a href="/help" className={styles.navLink} onClick={handleNavToggle}>
+              Help
             </a>
           </li>
         </ul>

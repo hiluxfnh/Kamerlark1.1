@@ -36,7 +36,7 @@ function Modal({ isOpen, onClose, contract }) {
                                                 {contract.title}
                                             </Dialog.Title>
                                             <div className="mt-2">
-                                                <img src={contract.image} alt={contract.title} className="w-full" />
+                                                <img src="https://www.dailylifedocs.com/wp-content/uploads/2022/02/room-rent-agreement-sample-3344620.png" alt={contract.title} className="w-full" />
                                                 <p className="text-sm text-gray-500 mt-2">Start Date: {new Date(contract.startDate).toLocaleDateString()}</p>
                                                 <p className="text-sm text-gray-500">End Date: {new Date(contract.endDate).toLocaleDateString()}</p>
                                             </div>
