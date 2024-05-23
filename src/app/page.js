@@ -108,7 +108,7 @@ export default function Home() {
               key={room.id} 
               roomid={room.id} 
               name={room.name} 
-              price={room.price} 
+              price={room.price} currency ={room.currency}
               description={room.description} 
               imageSrc={room.images[0]} // Ensure this points to the correct image URL
             />
