@@ -10,10 +10,10 @@ import RoomCard from '../../components/rooms/listing';
 
 export default function Roomid({ params }) {
   const [showMoreRooms, setShowMoreRooms] = useState(false);
+  const [buttonshow, setButtonshow] = useState('');
   const [room, setRoom] = useState(null);
   const [allRooms, setAllRooms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [visibleCount, setVisibleCount] = useState(4); // Start with 4 rooms visible
 
   const { roomid } = params;
 
@@ -45,12 +45,9 @@ export default function Roomid({ params }) {
     }
   }, [roomid]);
 
-  const handleViewMore = () => {
-    setVisibleCount(prevCount => prevCount + 4); // Load 4 more rooms
-  };
-
-  const handleViewLess = () => {
-    setVisibleCount(4); // Reset to show only 4 rooms
+  const handleMoreRoomsClick = () => {
+    setShowMoreRooms(true);
+    setButtonshow('none');
   };
 
   return (
@@ -67,24 +64,36 @@ export default function Roomid({ params }) {
           )
         )}
       </div>
+      <div className={kam.cardcon}>
+        {allRooms.slice(0, 4).map((room) => (
+          <RoomCard 
+            key={room.id} 
+            roomid={room.id} 
+            name={room.name} 
+            price={room.price} 
+            description={room.description} 
+            imageSrc={room.images[0]} // Ensure this points to the correct image URL
+          />
+        ))}
+      </div>
       {!loading && (
-        <>
+        <div className={styles.more_rooms_button_container}>
+          {!showMoreRooms && (
+            <button className={styles.viewmorebutton} onClick={handleMoreRoomsClick} style={{ display: buttonshow }}>More Rooms..</button>
+          )}
+        </div>
+      )}
+      {showMoreRooms && (
+        <div>
           <div className={kam.cardcon}>
-            {allRooms.slice(0, visibleCount).map((room) => (
+            {allRooms.slice(4).map((room) => (
               <RoomCard key={room.id} {...room} />
             ))}
           </div>
-          <div className={styles.more_rooms_button_container}>
-            {visibleCount < allRooms.length && (
-              <button className={styles.viewmorebutton} onClick={handleViewMore}>More Rooms..</button>
-            )}
-            {visibleCount > 4 && (
-              <button className={styles.viewmorebutton} onClick={handleViewLess} style={{ backgroundColor: '#dc3545' }}>View Less</button>
-            )}
+          <div style={{ textAlign: 'center', margin: '20px 0' }}>
+            <button className={styles.viewmorebutton} onClick={() => setShowMoreRooms(false)}>View Less</button>
           </div>
-          <br/>
-          <br/>
-        </>
+        </div>
       )}
     </>
   );
