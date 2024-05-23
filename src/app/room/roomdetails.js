@@ -34,9 +34,6 @@ const RoomDetails = ({ room }) => {
           </div>
 
           <div className={styles.info}>
-            <div className={styles.room_id}>
-              <h6><b>Name:</b> {room.name}</h6>
-            </div>
             <br />
             <br />
             <div className={styles.room_name}>
