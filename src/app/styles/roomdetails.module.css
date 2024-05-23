@@ -14,49 +14,38 @@
   display: flex;
   flex-direction: row;
 }
-/* roomdetails.module.css */
+
 .room_image {
   width: 600px;
+  /* height: 400px; */
   margin-bottom: 10px; 
   border-radius: 14px;
   overflow: hidden;
   margin-right: 2rem;
   margin-top: 3rem;
 }
+
 .image_grid {
-  margin-bottom: 10px; 
-  width: 600px;
-  margin-right: 2rem;
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
 }
 
 .grid_item {
-  display: flex; 
-  flex-direction: row;
-  justify-content: center;
-}
-
-.image1, .image2, .image3, .image4 {
-  flex: 1; 
-  padding: 2px; 
-}
-
-/* Ensures the Image component from Next.js fits its container */
-.image1 img, .image2 img, .image3 img, .image4 img {
-  width: 100%;
-  border-radius: 10px;
-  overflow: hidden;
+  width: 142px; /* Width of the small images */
+  height: 142px; /* Height of the small images */
   cursor: pointer;
-  height: auto;
-  display: block; 
 }
 
-.room_id{
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: -2rem;
-  margin-top: 3rem;
+.grid_item img {
+  border-radius: 8px;
 }
 
+.info {
+  flex: 1;
+}
+
+.room_id,
 .room_name,
 .room_price,
 .room_capacity,
@@ -64,11 +53,12 @@
 .room_bed_type,
 .room_washrooms,
 .room_university,
-.room_contact{
-  margin-bottom: -0.15rem;
+.room_contact {
+  margin-bottom: 1rem;
+  font-weight: bold;
 }
-/* Button styles */
-.bookbutton{
+
+.bookbutton {
   padding: 10px 20px;
   background-color: #007bff;
   color: white;
@@ -77,6 +67,10 @@
   cursor: pointer;
   font-size: 1em;
   margin-top: 20px;
+}
+
+.bookbutton:hover {
+  background-color: #0056b3;
 }
 
 .viewmorebutton {
@@ -94,12 +88,16 @@
   transform: translateX(-50%);
 }
 
-
-.bookbutton:hover {
-  background-color: #0056b3;
-}
-.viewmorebutton:hover{
+.viewmorebutton:hover {
   background-color: #a50505;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh; /* Full viewport height */
+  text-align: center;
 }
 
 /* Responsive adjustments */
@@ -125,14 +123,13 @@
     width: 100%;
     margin-right: 0;
   }
-  .room_id{
+  .room_id {
     margin-top: 0;
+    font-size: 2rem;
   }
-  .room_name{
+  .room_name {
     margin-top: 0;
-    font-size: 8px;
+    font-size: 1.5rem;
     font-style: normal;
   }
-
-
 }

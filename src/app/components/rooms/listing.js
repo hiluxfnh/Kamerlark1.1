@@ -1,6 +1,4 @@
-
 'use client'
-// Removed 'use client' as it's not a standard directive
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
@@ -10,15 +8,13 @@ import Image from 'next/image';
 
 const RoomCard = ({ roomid, name, price, description, imageSrc }) => {
   const router = useRouter();
-  const userState = useAuthState(auth);
-  const user = userState?.[0];
-  
+  const [user] = useAuthState(auth);
 
   const handleButtonClick = () => {
     if (!user) {
       router.push('/login');
     } else {
-      router.push(`/room/${roomid.toLowerCase()}`);
+      router.push(`/room/${roomid}`);
     }
   };
 
@@ -38,7 +34,7 @@ const RoomCard = ({ roomid, name, price, description, imageSrc }) => {
         <h3>{name}</h3>
         <p className={styles.price}>Price: {price}</p>
         <p className={styles.description}>{description}</p>
-        <button className={styles.button} onClick={() => handleButtonClick()}>
+        <button className={styles.button} onClick={handleButtonClick}>
           View Details
         </button>
       </div>

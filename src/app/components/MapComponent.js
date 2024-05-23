@@ -9,7 +9,7 @@ const MapComponent = ({ latitude, longitude }) => {
         width: "100%"
     };
 
-    // If latitude and longitude are not provided, default to Sydney
+    // Default to Sydney if latitude and longitude are not provided
     const center = latitude && longitude ? { lat: latitude, lng: longitude } : { lat: -33.8688, lng: 151.2093 };
 
     const onMarkerDragEnd = (event) => {
@@ -18,12 +18,11 @@ const MapComponent = ({ latitude, longitude }) => {
             lng: event.latLng.lng()
         };
         setMarkerPosition(newPos);
-        // onMarkerPositionChanged(newPos); // You can comment this out if it's not used
     };
 
     return (
-        <LoadScript googleMapsApiKey="YOUR_ACTUAL_API_KEY">
-           {/* AIzaSyC3c8KGz4nnBVLncJ_M9wZGNVO8n9ibZj8 */}
+        <LoadScript googleMapsApiKey="AIzaSyAX_gKSWKFxixon52OOLTkmWQs-JbrT1_A">
+            {/* AIzaSyAX_gKSWKFxixon52OOLTkmWQs-JbrT1_A */}
             <GoogleMap mapContainerStyle={mapContainerStyle} zoom={8} center={center}>
                 <Marker position={markerPosition} draggable={true} onDragEnd={onMarkerDragEnd} />
             </GoogleMap>

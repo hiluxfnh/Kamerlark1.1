@@ -19,7 +19,22 @@
   .card .price {
     font-weight: bold;
   }
-  
+  /* roomcard.module.css */
+.viewMoreButton, .viewLessButton {
+  display: block;
+  margin: 20px auto;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.viewMoreButton:hover, .viewLessButton:hover {
+  background-color: #0056b3;
+}
+
   /* Add a media query for smaller screens (max-width: 767px) */
   @media (max-width: 767px) {
     .card {

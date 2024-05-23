@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
 import styles from '../styles/roomdetails.module.css';
 import Image from 'next/image';
-import Header from '../components/Header'
+// import Header from '../components/Header';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone, faFacebook, faBed } from '@fortawesome/free-solid-svg-icons';
+import MapComponent from '../components/MapComponent'; // Ensure the path is correct
 
 const RoomDetails = ({ room }) => {
-  const images = [room.imagesrc];
+  if (!room) {
+    return <div>Loading...</div>; // Loading state if room data is not yet available
+  }
+
+  // Ensure only a maximum of four images are used
+  const images = room.images.slice(0, 4);
   const [selectedImage, setSelectedImage] = useState(images[0]);
-  
+
   return (
     <>
-    <Header />
       <div className={styles.room_details_wrapper}>
         <div className={styles.room_details_container}>
           <div className={`${styles.gallery} ${styles.lightbox}`}>
@@ -21,16 +26,7 @@ const RoomDetails = ({ room }) => {
             <div className={styles.image_grid}>
               {images.map((image, index) => (
                 <div key={index} className={styles.grid_item} onClick={() => setSelectedImage(image)}>
-                  <div className={styles.image1}>
-                    <Image src={image} alt={`Image ${index}`} width={100} height={75} layout="responsive" />
-                  </div>
-                  <div className={styles.image2}>
-                    <Image src={image} alt={`Image ${index}`} width={100} height={75} layout="responsive" />
-                  </div>
-                  <div className={styles.image3}>
-                    <Image src={image} alt={`Image ${index}`} width={100} height={75} layout="responsive" />
-                  </div>
-                  <div className={styles.image4}>
+                  <div className={styles.thumbnail}>
                     <Image src={image} alt={`Image ${index}`} width={100} height={75} layout="responsive" />
                   </div>
                 </div>
@@ -39,43 +35,40 @@ const RoomDetails = ({ room }) => {
           </div>
 
           <div className={styles.info}>
-            <div className={styles.room_id}>
-              <h6>Room id: {room.Roomid}</h6>
-            </div>
-              <br/>
-              <br/>
+            <br/>
+            <br/>
             <div className={styles.room_name}>
-              <h1>Room name: {room.name}</h1>
+              <h1><b>Room name:</b> {room.name}</h1>
             </div>
 
             <div className={styles.room_price}>
-              <h5>Price: {room.price}</h5>
+              <h5><b>Price:</b> {room.price}</h5>
             </div>
 
             <div className={styles.room_capacity}>
-              <p><span><FontAwesomeIcon icon={faBed} /></span> {room.capacity} people</p>
+              <p><b><span><FontAwesomeIcon icon={faBed} /></span> Capacity:</b> {room.capacity} people</p>
             </div>
 
             <div className={styles.room_description}>
-              <p>Description: {room.description}</p>
+              <p><b>Description:</b> {room.description}</p>
             </div>
 
             <div className={styles.room_bed_type}>
-              <p>Bed Type: {room.bedType}</p>
+              <p><b>Bed Type:</b> {room.bedType}</p>
             </div>
 
             <div className={styles.room_washrooms}>
-              <p>Washrooms: {room.Washrooms}</p>
+              <p><b>Washrooms:</b> {room.washrooms}</p>
             </div>
 
             <div className={styles.room_university}>
-              <h4>Nearby School / University: {room.uni}</h4>
+              <h4><b>Nearby School / University:</b> {room.uni}</h4> 
             </div>
 
             <div className={styles.room_contact}>
-              <p><span><FontAwesomeIcon icon={faPhone} /></span> {room.phno}</p>
+              <p><b><span><FontAwesomeIcon icon={faPhone} /></span> Contact:</b> {room.phno}</p>
             </div>
-          
+
             <div className={styles.booking_button_container}>
               <button className={styles.bookbutton} onClick={() => console.log('Book Now')}>Book Now</button>
             </div>
@@ -85,9 +78,10 @@ const RoomDetails = ({ room }) => {
             </div>
           </div>
         </div>
+        <div>
+          <MapComponent latitude={room.latitude} longitude={room.longitude} />
+        </div>
       </div>
-  
-
     </>
   );
 };
