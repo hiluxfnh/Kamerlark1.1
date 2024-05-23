@@ -125,8 +125,6 @@
   }
 
   
-
-  
   .navLink {
     color: #fff;
     text-decoration: none;
@@ -141,6 +139,7 @@
   @media (max-width: 768px) {
     .hamburger {
       display: flex;
+      margin-right: 1.5rem;
     }
   
     .nav {

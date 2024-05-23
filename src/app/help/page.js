@@ -30,7 +30,7 @@ export default function Component() {
             {faqItems.map((item, index) => (
               <div key={index}>
                 <button
-                  className="flex items-center justify-between w-full bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-md"
+                  className="flex items-center justify-between w-full bg-gray-300  px-4 py-3 rounded-md"
                   onClick={() => toggleCollapse(index)}
                 >
                   <span className="font-medium">{item.question}</span>
@@ -61,7 +61,7 @@ export default function Component() {
             {helpfulLinks.map((link, index) => (
               <Link
                 key={index}
-                className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 bg-gray-300 px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors"
                 href={link.href}
               >
                 {link.icon}

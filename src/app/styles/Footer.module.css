@@ -1,12 +1,73 @@
-/* styles/Footer.module.css */
-
 .footer {
-    background-color: #000000;
-    color: #fff;
-    padding: 0.3rem;
-    text-align: center;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-  }
-  
+  background-color: #222;
+  color: #ddd;
+  padding: 50px 20px;
+  text-align: center;
+  font-size: 15px;
+}
+
+.footerContent {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.companyInfo, .contactInfo, .quickLinks, .socialMedia {
+  margin: 20px;
+  flex: 1;
+  min-width: 220px;
+}
+
+.footer h4 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.footer p, .footer a {
+  margin: 8px 0;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.footer a {
+  text-decoration: none;
+  color: #1e90ff;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+.quickLinks ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.quickLinks li {
+  margin: 10px 0;
+}
+
+.socialMedia a {
+  margin: 0 10px;
+  color: #ddd;
+  font-size: 20px;
+  transition: color 0.3s ease;
+}
+
+.socialMedia a:hover {
+  color: #1e90ff;
+}
+
+.contactInfo p {
+  display: flex;
+  align-items: center;
+}
+
+.contactInfo p svg {
+  margin-right: 10px;
+  font-size: 18px;
+}

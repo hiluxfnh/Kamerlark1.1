@@ -68,10 +68,10 @@ const LoginSignup = () => {
   };
 
   return (
+    <>
     <div className={styles.container}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <Image src={kl} alt="Kamerlark" className={styles.logo} width={50} height={60}/>
-        <h2 className={styles.title}>{isLogin ? 'Login' : 'Sign Up'}</h2>
         <br/>
         <p className={styles.subtitle}>{isLogin ? 'Login to your account' : 'Sign up for an account'}</p>
 
@@ -132,6 +132,11 @@ const LoginSignup = () => {
         {isLogin ? "Don't have an account? Sign up here." : "Already have an account? Login here."}
       </p>
     </div>
+
+    <div className={styles.footer}>
+    <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
+    </div>
+    </>
   );
 };
 
