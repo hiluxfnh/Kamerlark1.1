@@ -302,7 +302,7 @@ const AddListing = () => {
                 name="utilitiesIncluded"
                 value={roomDetails.utilitiesIncluded}
                 onChange={handleChange}
-                required
+                
               />
             </label>
             <label>
@@ -336,7 +336,6 @@ const AddListing = () => {
               value={roomDetails.leaseTerms}
               onChange={handleChange}
               className={styles.description}
-              required
             ></textarea>
             OR
             <div className={styles.dropzone} {...getRootProps()} required>

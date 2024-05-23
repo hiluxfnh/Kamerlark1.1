@@ -1,6 +1,8 @@
 'use client';
 import { useState } from "react";
 import Link from "next/link";
+import Header from '../components/Header';
+
 
 export default function Component() {
   const [openIndex, setOpenIndex] = useState(null);
@@ -10,10 +12,13 @@ export default function Component() {
   };
 
   return (
+    <>
+    <Header />
+
     <main className="w-full max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-20">
+      
       <div className="space-y-8">
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Help & Support</h1>
           <p className="text-gray-500 dark:text-gray-400 max-w-[700px]">
             Welcome to our help and support page. Here you can find answers to frequently asked questions about our room
             booking services. If you can't find what you're looking for, please don't hesitate to contact us.
@@ -67,6 +72,7 @@ export default function Component() {
         </div>
       </div>
     </main>
+    </>
   );
 }
 
