@@ -3,17 +3,17 @@ import Link from "next/link";
 import Header from "../components/Header";
 import { useState } from "react";
 import {
-  ArrowLeftIcon,
+  // ArrowLeftIcon,
   FlagIcon,
-  LogOutIcon,
-  MessageCircleIcon,
-  MessageSquareIcon,
+  // LogOutIcon,
+  // MessageCircleIcon,
+  // MessageSquareIcon,
   SearchIcon,
-  SettingsIcon,
-  ShareIcon,
-  ThumbsUpIcon,
-  UserIcon,
-  UserPlusIcon,
+  // SettingsIcon,
+  // ShareIcon,
+  // ThumbsUpIcon,
+  // UserIcon,
+  // UserPlusIcon,
 } from "@heroicons/react/solid";
 
 const membersData = [
