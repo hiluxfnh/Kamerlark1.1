@@ -7,9 +7,8 @@ import SearchBar from './components/searchbar';
 import RoomCard from './components/rooms/listing';
 import Footer from './components/Footer';
 import kam from './styles/roomcard.module.css';
-import ImageSlider from './components/Imageslider';
-import Viewmorerooms from './components/Viewmorerooms';
-
+import ImageSlider from './components/ImageSlider'; // Correct import of ImageSlider
+import Spinner from './components/Spinner'; // Import Spinner
 
 const slides = [
   {
@@ -56,13 +55,16 @@ const containerStyles = {
 export default function Home() {
   const [rooms, setRooms] = useState([]);
   const [visibleCount, setVisibleCount] = useState(4); // Start with 4 items visible (2 rows)
+  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
     const fetchRooms = async () => {
+      setLoading(true); // Show spinner
       const roomCollection = collection(db, 'roomdetails');
       const roomSnapshot = await getDocs(roomCollection);
       const roomList = roomSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setRooms(roomList);
+      setLoading(false); // Hide spinner
     };
 
     fetchRooms();
@@ -91,6 +93,10 @@ export default function Home() {
     textAlign: 'center',
     margin: '20px 0',
   };
+
+  if (loading) {
+    return <Spinner />; // Show spinner while loading
+  }
 
   return (
     <>

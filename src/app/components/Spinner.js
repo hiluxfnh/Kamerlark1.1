@@ -4,7 +4,7 @@ import styles from '../styles/spinner.module.css';
 const Spinner = () => {
     return (
         <div className={styles.spinner}>
-            <BeatLoader color={'#123abc'} speedMultiplier={1}/>
+            <BeatLoader color={'#123abc'} speedMultiplier={2}/>
         </div>
     );
 }

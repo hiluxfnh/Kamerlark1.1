@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import { db, storage } from "@/app/firebase/Config";
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import Spinner from '../components/Spinner'; // Import Spinner
 
 const AddListing = () => {
   const [roomDetails, setRoomDetails] = useState({
@@ -33,6 +34,16 @@ const AddListing = () => {
     leaseTerms: "",
     accessibilityFeatures: "",
   });
+  const [loading, setLoading] = useState(true); // Loading state
+
+  useEffect(() => {
+    // Simulate a delay to demonstrate the loading spinner
+    const timer = setTimeout(() => {
+      setLoading(false); // Set loading false after the delay
+    }, 1000);
+
+    return () => clearTimeout(timer); // Clean up the timer
+  }, []);
 
   const roomRef = collection(db, "roomdetails");
 
@@ -80,12 +91,10 @@ const AddListing = () => {
             // Progress function (optional)
           },
           (error) => {
-            // Error function
             console.error("Error uploading image:", error);
             reject(error);
           },
           () => {
-            // Complete function
             getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
               resolve(downloadURL);
             });
@@ -98,6 +107,7 @@ const AddListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true); // Set loading true on submit
     try {
       const imageUrls = await uploadImages();
       await addDoc(roomRef, { ...roomDetails, images: imageUrls });
@@ -131,7 +141,12 @@ const AddListing = () => {
       console.error('Error adding room details: ', error);
       alert('Failed to add room details');
     }
+    setLoading(false); // Set loading false after operation is complete
   };
+
+  if (loading) {
+    return <Spinner />; // Show spinner when loading
+  }
 
   return (
     <>
@@ -302,7 +317,6 @@ const AddListing = () => {
                 name="utilitiesIncluded"
                 value={roomDetails.utilitiesIncluded}
                 onChange={handleChange}
-                
               />
             </label>
             <label>
@@ -344,12 +358,6 @@ const AddListing = () => {
             </div>
             <br />
           </label>
-
-          {/* <div>
-            <MapComponent
-              onMarkerPositionChanged={handleMarkerPositionChange}
-            />
-          </div> */}
           <br />
           <label>
             Upload some images of the room:

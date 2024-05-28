@@ -1,18 +1,22 @@
-'use client'
+'use client';
+
 import React, { useState } from 'react';
 import styles from '../styles/Header.module.css';
 import Image from 'next/image';
 import kl from '../assets/Kl_christmas.png';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/app/firebase/Config';
+import LoginPromptModal from './LoginPromptModal'; // Import the LoginPromptModal component
 
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [user] = useAuthState(auth);
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   const listingpage = () => {
     if (!user) {
@@ -30,8 +34,30 @@ const Header = () => {
     if (!user) {
       router.push('/login');
     } else {
-      auth.signOut();
+      auth.signOut().then(() => {
+        if (pathname !== '/') {
+          router.push('/login');
+        }
+      });
     }
+  };
+
+  const handleNavLinkClick = (e, path) => {
+    if (!user && path !== '/' && path !== '/help') {
+      e.preventDefault();
+      setShowModal(true);
+    } else {
+      router.push(path);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  };
+
+  const handleModalLogin = () => {
+    setShowModal(false);
+    router.push('/login');
   };
 
   return (
@@ -43,27 +69,27 @@ const Header = () => {
       <nav className={`${styles.nav} ${isNavOpen ? styles.navOpen : ''}`}>
         <ul className={styles.navList}>
           <li>
-            <a href="/" className={styles.navLink} onClick={handleNavToggle}>
+            <a href="/" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/')}>
               Home
             </a>
           </li>
           <li>
-            <a href="/listing" className={styles.navLink} onClick={handleNavToggle}>
+            <a href="/listing" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/listing')}>
               Listings
             </a>
           </li>
           <li>
-            <a href="/community" className={styles.navLink} onClick={handleNavToggle}>
+            <a href="/community" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/community')}>
               Community
             </a>
           </li>
           <li>
-            <a href="/profile" className={styles.navLink} onClick={handleNavToggle}>
+            <a href="/profile" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/profile')}>
               Profile
             </a>
           </li>
           <li>
-            <a href="/help" className={styles.navLink} onClick={handleNavToggle}>
+            <a href="/help" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/help')}>
               Help
             </a>
           </li>
@@ -71,7 +97,7 @@ const Header = () => {
       </nav>
       <div className={styles.actions}>
         <button className={styles.addlisting} onClick={listingpage}>
-          <FontAwesomeIcon icon={faPlus} />  Add Listing
+          <FontAwesomeIcon icon={faPlus} /> Add Listing
         </button>
         <button className={styles.loginButton} onClick={handleLogin}>
           {user ? 'Logout' : 'Login'}
@@ -82,6 +108,7 @@ const Header = () => {
           <span></span>
         </button>
       </div>
+      <LoginPromptModal show={showModal} handleClose={handleModalClose} handleLogin={handleModalLogin} />
     </header>
   );
 };
