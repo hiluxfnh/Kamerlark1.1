@@ -6,7 +6,7 @@ import { auth } from '@/app/firebase/Config';
 import styles from '../../styles/roomcard.module.css';
 import Image from 'next/image';
 
-const RoomCard = ({ roomid, name, price, description, imageSrc }) => {
+const RoomCard = ({ roomid, name, price, currency, description, imageSrc }) => {
   const router = useRouter();
   const [user] = useAuthState(auth);
 
@@ -32,8 +32,8 @@ const RoomCard = ({ roomid, name, price, description, imageSrc }) => {
       </div>
       <div className={styles.cardContent}>
         <h3>{name}</h3>
-        <p className={styles.price}>Price: {price}</p>
-        <p className={styles.description}>{description}</p>
+        <p className={styles.price}><b>Price:</b> {price} {currency}</p>
+        <p className={styles.description}><b>About:</b> {description}</p>
         <button className={styles.button} onClick={handleButtonClick}>
           View Details
         </button>
