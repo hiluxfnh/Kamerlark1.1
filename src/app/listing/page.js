@@ -317,7 +317,6 @@ const AddListing = () => {
                 name="utilitiesIncluded"
                 value={roomDetails.utilitiesIncluded}
                 onChange={handleChange}
-                required
               />
             </label>
             <label>
@@ -351,7 +350,6 @@ const AddListing = () => {
               value={roomDetails.leaseTerms}
               onChange={handleChange}
               className={styles.description}
-              required
             ></textarea>
             OR
             <div className={styles.dropzone} {...getRootProps()} required>
@@ -363,11 +361,11 @@ const AddListing = () => {
           <br />
           <label>
             Upload some images of the room:
-            <div className={styles.dropzone} {...getRootProps()}>
-              <input {...getInputProps()} required />
+            <div className={styles.dropzone} {...getRootProps()} required>
+              <input {...getInputProps()} />
               <p>Drag & drop images here, or click to select files.</p>
             </div>
-            <div className={styles.imagePreview} >
+            <div className={styles.imagePreview}>
               {roomDetails.images.map((image, index) => (
                 <div key={index} className={styles.imageContainer}>
                   <img
@@ -378,7 +376,7 @@ const AddListing = () => {
                     type="button"
                     onClick={() => handleRemoveImage(index)}
                   >
-                    X
+                    Remove
                   </button>
                 </div>
               ))}
