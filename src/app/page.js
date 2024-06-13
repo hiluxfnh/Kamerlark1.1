@@ -7,7 +7,7 @@ import SearchBar from './components/searchbar';
 import RoomCard from './components/rooms/listing';
 import Footer from './components/Footer';
 import kam from './styles/roomcard.module.css';
-import ImageSlider from './components/ImageSlider'; // Correct import of ImageSlider
+import ImageSlider from './components/Imageslider';
 import Spinner from './components/Spinner'; // Import Spinner
 
 const slides = [
@@ -114,7 +114,7 @@ export default function Home() {
               key={room.id} 
               roomid={room.id} 
               name={room.name} 
-              price={room.price} currency ={room.currency}
+              price={room.price} 
               description={room.description} 
               imageSrc={room.images[0]} // Ensure this points to the correct image URL
             />

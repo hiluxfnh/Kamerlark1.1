@@ -7,6 +7,7 @@ import RoomDetails from '../roomdetails';
 import styles from '../../styles/roomdetails.module.css';
 import kam from '../../styles/roomcard.module.css';
 import RoomCard from '../../components/rooms/listing';
+import Spinner from '../../components/Spinner'; // Import Spinner
 
 export default function Roomid({ params }) {
   const [showMoreRooms, setShowMoreRooms] = useState(false);
@@ -19,7 +20,7 @@ export default function Roomid({ params }) {
 
   useEffect(() => {
     const fetchRoomData = async () => {
-      setLoading(true);
+      setLoading(true); // Show spinner
       try {
         console.log('Fetching room data for roomid:', roomid); // Log the roomid
         const querySnapshot = await getDocs(collection(db, "roomdetails"));
@@ -36,7 +37,7 @@ export default function Roomid({ params }) {
       } catch (error) {
         console.error("Error fetching room data: ", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // Hide spinner
       }
     };
 
@@ -52,48 +53,48 @@ export default function Roomid({ params }) {
 
   return (
     <>
-      <Header />
-      <div>
-        {loading ? (
-          <div className={styles.loadingContainer}>Loading...</div>
-        ) : (
-          room ? (
-            <RoomDetails room={room} />
-          ) : (
-            <div>Room not found</div>
-          )
-        )}
-      </div>
-      <div className={kam.cardcon}>
-        {allRooms.slice(0, 4).map((room) => (
-          <RoomCard 
-            key={room.id} 
-            roomid={room.id} 
-            name={room.name} 
-            price={room.price} 
-            description={room.description} 
-            imageSrc={room.images[0]} // Ensure this points to the correct image URL
-          />
-        ))}
-      </div>
-      {!loading && (
-        <div className={styles.more_rooms_button_container}>
-          {!showMoreRooms && (
-            <button className={styles.viewmorebutton} onClick={handleMoreRoomsClick} style={{ display: buttonshow }}>More Rooms..</button>
-          )}
-        </div>
-      )}
-      {showMoreRooms && (
-        <div>
+      {loading ? (
+        <Spinner /> // Show spinner while loading
+      ) : (
+        <>
+          <Header />
+          <div>
+            {room ? (
+              <RoomDetails room={room} />
+            ) : (
+              <div>Room not found</div>
+            )}
+          </div>
           <div className={kam.cardcon}>
-            {allRooms.slice(4).map((room) => (
-              <RoomCard key={room.id} {...room} />
+            {allRooms.slice(0, 4).map((room) => (
+              <RoomCard 
+                key={room.id} 
+                roomid={room.id} 
+                name={room.name} 
+                price={room.price} 
+                description={room.description} 
+                imageSrc={room.images[0]} // Ensure this points to the correct image URL
+              />
             ))}
           </div>
-          <div style={{ textAlign: 'center', margin: '20px 0' }}>
-            <button className={styles.viewmorebutton} onClick={() => setShowMoreRooms(false)}>View Less</button>
+          <div className={styles.more_rooms_button_container}>
+            {!showMoreRooms && (
+              <button className={styles.viewmorebutton} onClick={handleMoreRoomsClick} style={{ display: buttonshow }}>More Rooms..</button>
+            )}
           </div>
-        </div>
+          {showMoreRooms && (
+            <div>
+              <div className={kam.cardcon}>
+                {allRooms.slice(4).map((room) => (
+                  <RoomCard key={room.id} {...room} />
+                ))}
+              </div>
+              <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <button className={styles.viewmorebutton} onClick={() => setShowMoreRooms(false)}>View Less</button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   );

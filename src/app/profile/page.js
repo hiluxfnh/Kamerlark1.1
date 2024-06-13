@@ -6,6 +6,7 @@ import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 
 import { auth, db } from '@/app/firebase/Config';
 import Header from '../components/Header';
 import { UserIcon, HomeIcon, DocumentTextIcon, BellIcon, CogIcon } from '@heroicons/react/solid';
+import { CalendarIcon, InformationCircleIcon, TrashIcon } from '@heroicons/react/outline';
 import Spinner from '../components/Spinner'; // Import Spinner
 
 export default function UserProfile() {

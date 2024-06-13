@@ -74,7 +74,7 @@ const Header = () => {
             </a>
           </li>
           <li>
-            <a href="/listing" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/listing')}>
+            <a href="/mylisting" className={styles.navLink} onClick={(e) => handleNavLinkClick(e, '/listing')}>
               Listings
             </a>
           </li>

@@ -1,4 +1,3 @@
-/* roomdetails.module.css */
 .room_details_wrapper {
   width: 90%; 
   margin-top: 2rem;
@@ -17,7 +16,6 @@
 
 .room_image {
   width: 600px;
-  /* height: 400px; */
   margin-bottom: 10px; 
   border-radius: 14px;
   overflow: hidden;
@@ -32,8 +30,8 @@
 }
 
 .grid_item {
-  width: 142px; /* Width of the small images */
-  height: 142px; /* Height of the small images */
+  width: 142px;
+  height: 142px;
   cursor: pointer;
 }
 
@@ -67,6 +65,7 @@
   cursor: pointer;
   font-size: 1em;
   margin-top: 20px;
+  margin-right: 3px;
 }
 
 .bookbutton:hover {
@@ -96,8 +95,108 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60vh; /* Full viewport height */
+  height: 60vh;
   text-align: center;
+}
+
+.feedback_reviews {
+  padding: 20px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.reviews_container {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.review_card {
+  background: white;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 45%;
+}
+
+.join_button {
+  display: inline-block;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.contact_owner {
+  padding: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  text-align: center;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.contact_owner h2 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.owner_details {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.owner_image {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.owner_image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.owner_info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+
+.owner_info p {
+  margin: 5px 0;
+  font-size: 1.1rem;
+  color: #555;
+}
+
+.owner_name {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.owner_email,
+.owner_phone {
+  color: #333;
 }
 
 /* Responsive adjustments */
@@ -110,26 +209,35 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
   }
+  
   .room_details_container {
     flex-direction: column;
   }
+  
   .room_image {
     width: 100%;
     margin-bottom: 10px;
     margin-right: 0;
     margin-top: 1rem;
   }
+  
   .image_grid {
     width: 100%;
     margin-right: 0;
   }
+  
   .room_id {
     margin-top: 0;
     font-size: 2rem;
   }
+  
   .room_name {
     margin-top: 0;
     font-size: 1.5rem;
     font-style: normal;
+  }
+  
+  .owner_details {
+    align-items: center;
   }
 }

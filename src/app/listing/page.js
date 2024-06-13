@@ -1,9 +1,9 @@
-"use client";
-import React, { useState, useCallback, useEffect } from "react";
+'use client';
+import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import styles from "../styles/roomlisting.module.css";
 import Header from '../components/Header';
-import { db, storage } from "@/app/firebase/Config";
+import { db, storage, auth } from "@/app/firebase/Config";
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Spinner from '../components/Spinner'; // Import Spinner
@@ -20,6 +20,9 @@ const AddListing = () => {
     washrooms: "",
     uni: "",
     phno: "",
+    ownerFirstName: "",
+    ownerLastName: "",
+    ownerEmail: "", // Add owner's email field
     amenities: "",
     location: { lat: null, lng: null },
     rules: "",
@@ -34,16 +37,7 @@ const AddListing = () => {
     leaseTerms: "",
     accessibilityFeatures: "",
   });
-  const [loading, setLoading] = useState(true); // Loading state
-
-  useEffect(() => {
-    // Simulate a delay to demonstrate the loading spinner
-    const timer = setTimeout(() => {
-      setLoading(false); // Set loading false after the delay
-    }, 1000);
-
-    return () => clearTimeout(timer); // Clean up the timer
-  }, []);
+  const [loading, setLoading] = useState(false); // Loading state
 
   const roomRef = collection(db, "roomdetails");
 
@@ -62,7 +56,14 @@ const AddListing = () => {
     }));
   }, []);
 
-  const { getRootProps, getInputProps } = useDropzone({
+  const { getRootProps: getPdfRootProps, getInputProps: getPdfInputProps } = useDropzone({
+    accept: "application/pdf",
+    onDrop,
+    multiple: true,
+    maxFiles: 1,
+  });
+
+  const { getRootProps: getImageRootProps, getInputProps: getImageInputProps } = useDropzone({
     accept: "image/*",
     onDrop,
     multiple: true,
@@ -109,8 +110,9 @@ const AddListing = () => {
     e.preventDefault();
     setLoading(true); // Set loading true on submit
     try {
+      const user = auth.currentUser;
       const imageUrls = await uploadImages();
-      await addDoc(roomRef, { ...roomDetails, images: imageUrls });
+      await addDoc(roomRef, { ...roomDetails, images: imageUrls, ownerId: user.uid });
       alert('Room details added successfully');
       setRoomDetails({
         roomId: "",
@@ -123,6 +125,9 @@ const AddListing = () => {
         washrooms: "",
         uni: "",
         phno: "",
+        ownerFirstName: "",
+        ownerLastName: "",
+        ownerEmail: "", // Reset owner's email field
         amenities: "",
         location: { lat: null, lng: null },
         rules: "",
@@ -182,6 +187,16 @@ const AddListing = () => {
                 type="text"
                 name="ownerLastName"
                 value={roomDetails.ownerLastName}
+                onChange={handleChange}
+                required
+              />
+            </label>
+            <label>
+              Owner's Email:
+              <input
+                type="email"
+                name="ownerEmail"
+                value={roomDetails.ownerEmail}
                 onChange={handleChange}
                 required
               />
@@ -311,18 +326,10 @@ const AddListing = () => {
           </div>
           <div className={styles.rowContainer}>
             <label>
-              Utilities Included:
-              <input
-                type="text"
-                name="utilitiesIncluded"
-                value={roomDetails.utilitiesIncluded}
-                onChange={handleChange}
-              />
-            </label>
-            <label>
               Furnished Status:
               <select
                 name="furnishedStatus"
+                aria-label="Furnished Status"
                 value={roomDetails.furnishedStatus}
                 onChange={handleChange}
                 required
@@ -331,6 +338,15 @@ const AddListing = () => {
                 <option value="partiallyFurnished">Partially Furnished</option>
                 <option value="unfurnished">Unfurnished</option>
               </select>
+            </label>
+            <label>
+              Utilities Included:
+              <input
+                type="text"
+                name="utilitiesIncluded"
+                value={roomDetails.utilitiesIncluded}
+                onChange={handleChange}
+              />
             </label>
           </div>
           <label>
@@ -351,18 +367,15 @@ const AddListing = () => {
               onChange={handleChange}
               className={styles.description}
             ></textarea>
-            OR
-            <div className={styles.dropzone} {...getRootProps()} required>
-              <input {...getInputProps()} />
+            <div className={styles.dropzone} {...getPdfRootProps()} required>
+              <input {...getPdfInputProps()} />
               <p>Drag & drop PDF here, or click to select files.</p>
             </div>
-            <br />
           </label>
-          <br />
           <label>
             Upload some images of the room:
-            <div className={styles.dropzone} {...getRootProps()} required>
-              <input {...getInputProps()} />
+            <div className={styles.dropzone} {...getImageRootProps()} required>
+              <input {...getImageInputProps()} />
               <p>Drag & drop images here, or click to select files.</p>
             </div>
             <div className={styles.imagePreview}>
@@ -382,8 +395,7 @@ const AddListing = () => {
               ))}
             </div>
           </label>
-          <br />
-          <button type="submit">Submit</button>
+          <button type="submit" className={styles.submitButton}>Submit</button>
         </form>
       </div>
     </>
