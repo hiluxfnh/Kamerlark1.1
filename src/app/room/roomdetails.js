@@ -308,7 +308,7 @@ const RoomDetails = ({ room }) => {
         )}
       </div>
 
-      <CustomModal
+<CustomModal
   isOpen={isBookNowOpen}
   onClose={() => setIsBookNowOpen(false)}
   title="Book Now"
