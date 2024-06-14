@@ -116,8 +116,8 @@ const MyListing = () => {
             {bookings.length > 0 ? (
               bookings.map((booking) => (
                 <div key={booking.id} className={styles.listing_card}>
-                  <h3>{booking.listingName}</h3>
-                  <p>{booking.listingDescription}</p>
+                  <h3>{booking.roomName}</h3>
+                  <p>{booking.notes}</p>
                   <div className={styles.actions}>
                     <button
                       className={styles.button}
@@ -210,8 +210,8 @@ const MyListing = () => {
           title="Booking Details"
         >
           <div>
-            <p>Name: {selectedListing.listingName}</p>
-            <p>Description: {selectedListing.listingDescription}</p>
+            <p>Name: {selectedListing.roomName}</p>
+            <p>Description: {selectedListing.notes}</p>
           </div>
         </CustomModal>
       )}

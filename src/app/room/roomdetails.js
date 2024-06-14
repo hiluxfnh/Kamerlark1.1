@@ -12,6 +12,7 @@ import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/app/firebase/Config";
 
 const RoomDetails = ({ room }) => {
+  console.log("Room details:", room);
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -93,9 +94,12 @@ const RoomDetails = ({ room }) => {
       return;
     }
     try {
+      alert("Booking in progress..."+auth.currentUser.uid);
+
       await addDoc(collection(db, "bookings"), {
         ...bookingDetails,
-        userId: auth.currentUser.uid, // Add user ID to the booking details
+        userId: auth.currentUser.uid, 
+        roomName:room.name// Add user ID to the booking details
       });
       alert("Booking successful!");
       setIsBookNowOpen(false);
@@ -315,7 +319,7 @@ const RoomDetails = ({ room }) => {
   title="Book Now"
 >
   <p>Fill in the details to book the room:</p>
-  <form className={stylesRoomDetails.form}>
+  <form className={stylesRoomDetails.form} onSubmit={handleBookingSubmit}>
     <div className={stylesRoomDetails.form_group}>
       <label>
         Full Name:
