@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/roomdetails.module.css";
+import stylesRoomDetails from '@/app/styles/CustomModal.module.css';
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPhone, faFacebook, faBed } from "@fortawesome/free-solid-svg-icons";
@@ -314,8 +315,8 @@ const RoomDetails = ({ room }) => {
   title="Book Now"
 >
   <p>Fill in the details to book the room:</p>
-  <form className={styles.form}>
-    <div className={styles.form_group}>
+  <form className={stylesRoomDetails.form}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         Full Name:
         <input
@@ -327,9 +328,9 @@ const RoomDetails = ({ room }) => {
         />
       </label>
     </div>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
-        Email: <span className={styles.email_note}>(Must be changed via profile)</span>
+        Email: <span className={stylesRoomDetails.email_note}>(Must be changed via profile)</span>
         <input
           type="email"
           name="email"
@@ -339,7 +340,7 @@ const RoomDetails = ({ room }) => {
         />
       </label>
     </div>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         Phone:
         <input
@@ -351,7 +352,7 @@ const RoomDetails = ({ room }) => {
         />
       </label>
     </div>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         Address:
         <input
@@ -363,7 +364,7 @@ const RoomDetails = ({ room }) => {
         />
       </label>
     </div>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         Move-In Date:
         <input
@@ -375,7 +376,7 @@ const RoomDetails = ({ room }) => {
         />
       </label>
     </div>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         Additional Notes:
         <textarea
@@ -386,7 +387,7 @@ const RoomDetails = ({ room }) => {
       </label>
     </div>
     <p>You have to pay a total amount of: {room.price}</p>
-    <div className={styles.form_group}>
+    <div className={stylesRoomDetails.form_group}>
       <label>
         <input
           type="checkbox"
