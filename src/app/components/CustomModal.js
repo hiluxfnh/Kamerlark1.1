@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/CustomModal.module.css';
+import styles from '@/app/styles/CustomModal.module.css';
 
 const CustomModal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
