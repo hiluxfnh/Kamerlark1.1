@@ -2,7 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/app/firebase/Config';
+import { auth } from '../../firebase/Config';
 import styles from '../../styles/roomcard.module.css';
 import Image from 'next/image';
 

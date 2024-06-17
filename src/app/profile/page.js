@@ -1,16 +1,67 @@
-'use client';
-import React, { useState, useEffect } from 'react';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { getDoc, doc, setDoc } from 'firebase/firestore';
-import { reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
-import { auth, db } from '@/app/firebase/Config';
-import Header from '../components/Header';
-import { UserIcon, HomeIcon, DocumentTextIcon, BellIcon, CogIcon } from '@heroicons/react/solid';
-import { CalendarIcon, InformationCircleIcon, TrashIcon } from '@heroicons/react/outline';
-import Spinner from '../components/Spinner'; // Import Spinner
+"use client";
+import React, { useState, useEffect } from "react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { getDoc, doc, setDoc, collection, where, query, getDocs } from "firebase/firestore";
+import {
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  updatePassword,
+} from "firebase/auth";
+import { auth, db } from "../firebase/Config";
+import Header from "../components/Header";
+import {
+  UserIcon,
+  HomeIcon,
+  DocumentTextIcon,
+  BellIcon,
+  CogIcon,
+} from "@heroicons/react/solid";
+import {
+  CalendarIcon,
+  InformationCircleIcon,
+  TrashIcon,
+} from "@heroicons/react/outline";
+import Spinner from "../components/Spinner"; // Import Spinner
+import TextField from "@mui/material/TextField";
+import PropTypes from 'prop-types';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import { Button } from "@mui/material";
+
+
+function CustomTabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+      className="w-96"
+    >
+      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+    </div>
+  );
+}
+
+CustomTabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    'aria-controls': `simple-tabpanel-${index}`,
+  };
+}
 
 export default function UserProfile() {
-  const [tab, setTab] = useState('account');
+  const [tab, setTab] = useState("account");
   const [user] = useAuthState(auth);
   const [personalInfo, setPersonalInfo] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state
@@ -31,15 +82,15 @@ export default function UserProfile() {
 
   const renderTabContent = () => {
     switch (tab) {
-      case 'account':
+      case "account":
         return <AccountManagement personalInfo={personalInfo} user={user} />;
-      case 'properties':
-        return <RentedProperties />;
-      case 'contracts':
+      case "properties":
+        return <RentedProperties personalInfo={personalInfo} user={user} />;
+      case "contracts":
         return <Contracts />;
-      case 'notifications':
+      case "notifications":
         return <Notifications />;
-      case 'settings':
+      case "settings":
         return <Settings />;
       default:
         return <AccountManagement personalInfo={personalInfo} user={user} />;
@@ -61,38 +112,69 @@ export default function UserProfile() {
       <div className="flex flex-1">
         <nav className="w-[250px] bg-white border-r">
           <ul className="flex flex-col">
-            <li className={`p-4 cursor-pointer ${tab === 'account' ? 'bg-gray-200' : ''}`} onClick={() => setTab('account')}>
-              <UserIcon className="w-6 h-6 inline-block mr-2" /> Account Management
+            <li
+              className={`p-4 cursor-pointer ${
+                tab === "account" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => setTab("account")}
+            >
+              <UserIcon className="w-6 h-6 inline-block mr-2" /> Account
+              Management
             </li>
-            <li className={`p-4 cursor-pointer ${tab === 'properties' ? 'bg-gray-200' : ''}`} onClick={() => setTab('properties')}>
-              <HomeIcon className="w-6 h-6 inline-block mr-2" /> Rented Properties
+            <li
+              className={`p-4 cursor-pointer ${
+                tab === "properties" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => setTab("properties")}
+            >
+              <HomeIcon className="w-6 h-6 inline-block mr-2" /> Rented
+              Properties
             </li>
-            <li className={`p-4 cursor-pointer ${tab === 'contracts' ? 'bg-gray-200' : ''}`} onClick={() => setTab('contracts')}>
-              <DocumentTextIcon className="w-6 h-6 inline-block mr-2" /> Contracts
+            <li
+              className={`p-4 cursor-pointer ${
+                tab === "contracts" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => setTab("contracts")}
+            >
+              <DocumentTextIcon className="w-6 h-6 inline-block mr-2" />{" "}
+              Contracts
             </li>
-            <li className={`p-4 cursor-pointer ${tab === 'notifications' ? 'bg-gray-200' : ''}`} onClick={() => setTab('notifications')}>
+            <li
+              className={`p-4 cursor-pointer ${
+                tab === "notifications" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => setTab("notifications")}
+            >
               <BellIcon className="w-6 h-6 inline-block mr-2" /> Notifications
             </li>
-            <li className={`p-4 cursor-pointer ${tab === 'settings' ? 'bg-gray-200' : ''}`} onClick={() => setTab('settings')}>
+            <li
+              className={`p-4 cursor-pointer ${
+                tab === "settings" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => setTab("settings")}
+            >
               <CogIcon className="w-6 h-6 inline-block mr-2" /> Settings
             </li>
           </ul>
         </nav>
-        <main className="flex-1 p-6 bg-white">
-          {renderTabContent()}
-        </main>
+        <main className="flex-1 p-6 bg-white">{renderTabContent()}</main>
       </div>
     </div>
   );
 }
 
 function AccountManagement({ personalInfo, user }) {
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
   const [personalInfoState, setPersonalInfoState] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    address: ''
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
   });
 
   useEffect(() => {
@@ -102,9 +184,9 @@ function AccountManagement({ personalInfo, user }) {
   }, [personalInfo]);
 
   const [password, setPassword] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const handlePersonalInfoChange = (e) => {
@@ -143,18 +225,23 @@ function AccountManagement({ personalInfo, user }) {
     }
 
     try {
-      const credential = EmailAuthProvider.credential(user.email, password.currentPassword);
+      const credential = EmailAuthProvider.credential(
+        user.email,
+        password.currentPassword
+      );
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, password.newPassword);
       alert("Password updated successfully");
       setPassword({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      alert("Error updating password. Please make sure the current password is correct.");
+      alert(
+        "Error updating password. Please make sure the current password is correct."
+      );
     }
   };
 
@@ -167,135 +254,160 @@ function AccountManagement({ personalInfo, user }) {
       <h2 className="text-xl font-bold mb-4">Account Management</h2>
       <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">Personal Information</h3>
-          <p className="mt-1 max-w-2xl text-sm text-gray-500">Details about your account.</p>
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Personal Information
+          </h3>
+          <p className="mt-1 max-w-2xl text-sm text-gray-500">
+            Details about your account.
+          </p>
         </div>
         <div className="border-t border-gray-200">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Full name</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{personalInfoState.firstName} {personalInfoState.lastName}</dd>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {personalInfoState.firstName} {personalInfoState.lastName}
+              </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Email address</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{personalInfoState.email}</dd>
+              <dt className="text-sm font-medium text-gray-500">
+                Email address
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {personalInfoState.email}
+              </dd>
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Phone number</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{personalInfoState.phoneNumber}</dd>
+              <dt className="text-sm font-medium text-gray-500">
+                Phone number
+              </dt>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {personalInfoState.phoneNumber}
+              </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">Address</dt>
-              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{personalInfoState.address}</dd>
+              <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                {personalInfoState.address}
+              </dd>
             </div>
           </dl>
         </div>
       </div>
-      <h3 className="text-lg font-semibold mb-2">Update Personal Information</h3>
-      <form onSubmit={handlePersonalInfoSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">First Name</label>
-          <input
-            type="text"
-            name="firstName"
-            value={personalInfoState.firstName}
-            onChange={handlePersonalInfoChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+      <Box sx={{ width: '100%' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+          <Tab label="Personal Information" {...a11yProps(0)} />
+          <Tab label="Change Password" {...a11yProps(1)} />
+          <Tab label="Delete Account" {...a11yProps(2)} />
+        </Tabs>
+      </Box>
+      <CustomTabPanel value={value} index={0}>
+      <div className="w-96">
+      <h3 className="text-lg font-semibold mb-2">
+        Update Personal Information
+      </h3>
+        <div className="grid grid-cols-12 gap-4">
+        <TextField
+          id="outlined-required"
+          label="First Name"
+          className="col-start-1 col-end-7 w-full"
+          value={personalInfoState.firstName}
+          name="firstName"
+          onChange={handlePersonalInfoChange}
+        />
+        <TextField
+          id="outlined-required"
+          label="Last Name"          
+          className="col-start-7 col-end-13 w-full"
+          value={personalInfoState.lastName}
+          name="lastName"
+          onChange={handlePersonalInfoChange}
+        />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Last Name</label>
-          <input
-            type="text"
-            name="lastName"
-            value={personalInfoState.lastName}
-            onChange={handlePersonalInfoChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
+        
+        <div className="grid grid-cols-12 gap-4 mt-5">
+        <TextField
+          id="outlined-required"
+          label="Email"
+          className="col-start-1 col-end-5 w-full"
+          value={personalInfoState.email}
+          name="email"
+          onChange={handlePersonalInfoChange}
+        />
+        <TextField
+          id="outlined-required"
+          label="Phone Number"
+          className="col-start-5 col-end-8 w-full"
+          value={personalInfoState.phoneNumber}
+          name="phoneNumber"
+          onChange={handlePersonalInfoChange}
+        />
+        <TextField
+          id="outlined-required"
+          label="Address"
+          className="col-start-8 col-end-13 w-full"
+          value={personalInfoState.address}
+          name="address"
+          onChange={handlePersonalInfoChange}
+        />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Email</label>
-          <input
-            type="email"
-            name="email"
-            value={personalInfoState.email}
-            onChange={handlePersonalInfoChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input
-            type="text"
-            name="phoneNumber"
-            value={personalInfoState.phoneNumber}
-            onChange={handlePersonalInfoChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Address</label>
-          <input
-            type="text"
-            name="address"
-            value={personalInfoState.address}
-            onChange={handlePersonalInfoChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          />
-        </div>
-        <button
-          type="submit"
-          className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Save Changes
-        </button>
-      </form>
-
+        <div className="mt-4 w-full">
+       <Button onClick={handlePersonalInfoSubmit} style={{
+          backgroundColor: 'black',
+          color: 'white',
+          padding: '10px 20px',
+       }} variant="contained" color="primary" fullWidth>Save Changes</Button>
+       </div>
+      </div>
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={1}>
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2">Change Password</h3>
         <form onSubmit={handlePasswordSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Current Password</label>
-            <input
-              type="password"
-              name="currentPassword"
-              value={password.currentPassword}
-              onChange={handlePasswordChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
+          <div className="grid grid-cols-12 gap-4">
+          <TextField  
+            type="password"
+            name="currentPassword"
+            value={password.currentPassword}
+            onChange={handlePasswordChange}
+            label="Current Password"
+            className="col-start-1 col-end-5 w-full"
+            fullWidth
+          />
+          <TextField
+            type="password"
+            name="newPassword"
+            value={password.newPassword}
+            className="col-start-5 col-end-9 w-full"
+            onChange={handlePasswordChange}
+            label="New Password"
+            fullWidth
+          />
+          <TextField
+            type="password"
+            name="confirmPassword"
+            className="col-start-9 col-end-13 w-full"
+            value={password.confirmPassword}
+            onChange={handlePasswordChange}
+            label="Confirm New Password"
+            fullWidth
+          />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">New Password</label>
-            <input
-              type="password"
-              name="newPassword"
-              value={password.newPassword}
-              onChange={handlePasswordChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              value={password.confirmPassword}
-              onChange={handlePasswordChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <button
-            type="submit"
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Change Password
-          </button>
+          <Button type="submit" style={{
+            backgroundColor: 'black',
+            color: 'white',
+            padding: '10px 20px',
+          }} variant="contained" color="primary" fullWidth>Change Password</Button>
         </form>
       </div>
-
+      </CustomTabPanel>
+      <CustomTabPanel value={value} index={2}>
       <div className="mt-6">
         <h3 className="text-lg font-semibold mb-2">Delete Account</h3>
-        <p className="text-sm text-gray-600">Warning: This action cannot be undone.</p>
+        <p className="text-sm text-gray-600">
+          Warning: This action cannot be undone.
+        </p>
         <button
           onClick={handleAccountDeletion}
           className="mt-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -303,32 +415,81 @@ function AccountManagement({ personalInfo, user }) {
           Delete Account
         </button>
       </div>
+      </CustomTabPanel>
+    </Box>
+      
     </div>
   );
 }
 
-function RentedProperties() {
+function RentedProperties({ personalInfo, user}) {
+  const [listings, setListings] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchListingsAndBookings = async () => {
+      setLoading(true);
+      if (user) {
+        try {
+          const listingsQuery = query(
+            collection(db, "roomdetails"),
+            where("ownerId", "==", user.uid)
+          );
+
+          const bookingsQuery = query(
+            collection(db, "bookings"),
+            where("userId", "==", user.uid)
+          );
+
+          const [listingsSnapshot, bookingsSnapshot] = await Promise.all([
+            getDocs(listingsQuery),
+            getDocs(bookingsQuery),
+          ]);
+
+          const fetchedListings = listingsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          const fetchedBookings = bookingsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          setListings(fetchedListings);
+          setBookings(fetchedBookings);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchListingsAndBookings();
+  }, [user]);
+  useEffect(() => {
+    console.log(listings, bookings);
+  }, [listings, bookings]);
   const [properties, setProperties] = useState([
     {
       id: 1,
-      name: 'Sunny Apartment',
-      address: '123 Sunshine Blvd, Apt 4B, Sunnyville',
-      rentDue: '2024-06-01',
-      status: 'Active',
+      name: "Sunny Apartment",
+      address: "123 Sunshine Blvd, Apt 4B, Sunnyville",
+      rentDue: "2024-06-01",
+      status: "Active",
     },
     {
       id: 2,
-      name: 'Cozy Cottage',
-      address: '456 Cozy Ln, Cottage Town',
-      rentDue: '2024-06-05',
-      status: 'Active',
+      name: "Cozy Cottage",
+      address: "456 Cozy Ln, Cottage Town",
+      rentDue: "2024-06-05",
+      status: "Active",
     },
     {
       id: 3,
-      name: 'Modern Loft',
-      address: '789 Modern St, Loft City',
-      rentDue: '2024-06-10',
-      status: 'Active',
+      name: "Modern Loft",
+      address: "789 Modern St, Loft City",
+      rentDue: "2024-06-10",
+      status: "Active",
     },
   ]);
 
@@ -342,7 +503,10 @@ function RentedProperties() {
       <p>Here you can view and manage your rented properties.</p>
       <div className="grid gap-4 mt-6">
         {properties.map((property) => (
-          <div key={property.id} className="bg-white shadow rounded-lg p-4 border border-gray-200">
+          <div
+            key={property.id}
+            className="bg-white shadow rounded-lg p-4 border border-gray-200"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold">{property.name}</h3>
@@ -375,27 +539,27 @@ function Contracts() {
   const [contracts, setContracts] = useState([
     {
       id: 1,
-      title: 'Rental Agreement - Sunny Apartment',
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 'Active',
-      image: '/path/to/contract1.jpg', // Add the path to the image or PDF
+      title: "Rental Agreement - Sunny Apartment",
+      startDate: "2024-01-01",
+      endDate: "2024-12-31",
+      status: "Active",
+      image: "/path/to/contract1.jpg", // Add the path to the image or PDF
     },
     {
       id: 2,
-      title: 'Lease Agreement - Cozy Cottage',
-      startDate: '2023-06-01',
-      endDate: '2024-05-31',
-      status: 'Expired',
-      image: '/path/to/contract2.jpg', // Add the path to the image or PDF
+      title: "Lease Agreement - Cozy Cottage",
+      startDate: "2023-06-01",
+      endDate: "2024-05-31",
+      status: "Expired",
+      image: "/path/to/contract2.jpg", // Add the path to the image or PDF
     },
     {
       id: 3,
-      title: 'Rental Agreement - Modern Loft',
-      startDate: '2024-02-01',
-      endDate: '2025-01-31',
-      status: 'Pending',
-      image: '/path/to/contract3.jpg', // Add the path to the image or PDF
+      title: "Rental Agreement - Modern Loft",
+      startDate: "2024-02-01",
+      endDate: "2025-01-31",
+      status: "Pending",
+      image: "/path/to/contract3.jpg", // Add the path to the image or PDF
     },
   ]);
 
@@ -413,20 +577,27 @@ function Contracts() {
       <p>Here you can view your contracts.</p>
       <div className="grid gap-4 mt-6">
         {contracts.map((contract) => (
-          <div key={contract.id} className="bg-white shadow rounded-lg p-4 border border-gray-200">
+          <div
+            key={contract.id}
+            className="bg-white shadow rounded-lg p-4 border border-gray-200"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-semibold">{contract.title}</h3>
                 <div className="flex items-center text-sm text-gray-500 mt-2">
                   <DocumentTextIcon className="w-4 h-4 mr-1" />
-                  Start Date: {new Date(contract.startDate).toLocaleDateString()}
+                  Start Date:{" "}
+                  {new Date(contract.startDate).toLocaleDateString()}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
                   <DocumentTextIcon className="w-4 h-4 mr-1" />
                   End Date: {new Date(contract.endDate).toLocaleDateString()}
                 </div>
                 <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <StatusIcon status={contract.status} className="w-4 h-4 mr-1" />
+                  <StatusIcon
+                    status={contract.status}
+                    className="w-4 h-4 mr-1"
+                  />
                   Status: {contract.status}
                 </div>
               </div>
@@ -454,12 +625,14 @@ function Contracts() {
 
 function StatusIcon({ status, className }) {
   switch (status) {
-    case 'Active':
+    case "Active":
       return <CheckCircleIcon className={`text-green-500 ${className}`} />;
-    case 'Expired':
+    case "Expired":
       return <ExclamationCircleIcon className={`text-red-500 ${className}`} />;
-    case 'Pending':
-      return <ExclamationCircleIcon className={`text-yellow-500 ${className}`} />;
+    case "Pending":
+      return (
+        <ExclamationCircleIcon className={`text-yellow-500 ${className}`} />
+      );
     default:
       return null;
   }
@@ -477,10 +650,15 @@ function Notifications() {
       <h2 className="text-xl font-bold mb-4">Notifications</h2>
       <p>Here you can view your notifications.</p>
       <div className="mt-6">
-        {notifications.map(notification => (
-          <div key={notification.id} className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200"
+          >
             <p className="text-gray-700">{notification.message}</p>
-            <p className="text-sm text-gray-500">{new Date(notification.date).toLocaleDateString()}</p>
+            <p className="text-sm text-gray-500">
+              {new Date(notification.date).toLocaleDateString()}
+            </p>
           </div>
         ))}
       </div>
@@ -490,9 +668,9 @@ function Notifications() {
 
 function Settings() {
   const [password, setPassword] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   const handlePasswordChange = (e) => {
@@ -511,18 +689,23 @@ function Settings() {
     }
 
     try {
-      const credential = EmailAuthProvider.credential(auth.currentUser.email, password.currentPassword);
+      const credential = EmailAuthProvider.credential(
+        auth.currentUser.email,
+        password.currentPassword
+      );
       await reauthenticateWithCredential(auth.currentUser, credential);
       await updatePassword(auth.currentUser, password.newPassword);
       alert("Password updated successfully");
       setPassword({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      alert("Error updating password. Please make sure the current password is correct.");
+      alert(
+        "Error updating password. Please make sure the current password is correct."
+      );
     }
   };
 
@@ -539,7 +722,9 @@ function Settings() {
           <h3 className="text-lg font-semibold">Change Password</h3>
           <form onSubmit={handlePasswordSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Current Password</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Current Password
+              </label>
               <input
                 type="password"
                 name="currentPassword"
@@ -549,7 +734,9 @@ function Settings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">New Password</label>
+              <label className="block text-sm font-medium text-gray-700">
+                New Password
+              </label>
               <input
                 type="password"
                 name="newPassword"
@@ -559,7 +746,9 @@ function Settings() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Confirm New Password
+              </label>
               <input
                 type="password"
                 name="confirmPassword"

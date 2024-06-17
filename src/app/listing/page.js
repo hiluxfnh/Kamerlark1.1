@@ -1,13 +1,32 @@
-'use client';
+"use client";
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import styles from "../styles/roomlisting.module.css";
-import Header from '../components/Header';
+import Header from "../components/Header";
 import { db, storage, auth } from "@/app/firebase/Config";
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import Spinner from '../components/Spinner'; // Import Spinner
+import Spinner from "../components/Spinner"; // Import Spinner
+import TextField from "@mui/material/TextField";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import Autocomplete from "@mui/material/Autocomplete";
+import { styled } from "@mui/material/styles";
+import Button from "@mui/material/Button";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
+const VisuallyHiddenInput = styled("input")({
+  clip: "rect(0 0 0 0)",
+  clipPath: "inset(50%)",
+  height: 1,
+  overflow: "hidden",
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  whiteSpace: "nowrap",
+  width: 1,
+});
 const AddListing = () => {
   const [roomDetails, setRoomDetails] = useState({
     roomId: "",
@@ -56,19 +75,21 @@ const AddListing = () => {
     }));
   }, []);
 
-  const { getRootProps: getPdfRootProps, getInputProps: getPdfInputProps } = useDropzone({
-    accept: "application/pdf",
-    onDrop,
-    multiple: true,
-    maxFiles: 1,
-  });
+  const { getRootProps: getPdfRootProps, getInputProps: getPdfInputProps } =
+    useDropzone({
+      accept: "application/pdf",
+      onDrop,
+      multiple: true,
+      maxFiles: 1,
+    });
 
-  const { getRootProps: getImageRootProps, getInputProps: getImageInputProps } = useDropzone({
-    accept: "image/*",
-    onDrop,
-    multiple: true,
-    maxFiles: 5,
-  });
+  const { getRootProps: getImageRootProps, getInputProps: getImageInputProps } =
+    useDropzone({
+      accept: "image/*",
+      onDrop,
+      multiple: true,
+      maxFiles: 5,
+    });
 
   const handleRemoveImage = (index) => {
     setRoomDetails((prevDetails) => {
@@ -108,295 +129,295 @@ const AddListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Set loading true on submit
-    try {
-      const user = auth.currentUser;
-      const imageUrls = await uploadImages();
-      await addDoc(roomRef, { ...roomDetails, images: imageUrls, ownerId: user.uid });
-      alert('Room details added successfully');
-      setRoomDetails({
-        roomId: "",
-        name: "",
-        price: "",
-        currency: "XAF",
-        capacity: "",
-        description: "",
-        bedType: "",
-        washrooms: "",
-        uni: "",
-        phno: "",
-        ownerFirstName: "",
-        ownerLastName: "",
-        ownerEmail: "", // Reset owner's email field
-        amenities: "",
-        location: { lat: null, lng: null },
-        rules: "",
-        images: [],
-        roomSize: "",
-        utilitiesIncluded: "",
-        furnishedStatus: "",
-        safetyFeatures: "",
-        publicTransportAccess: "",
-        neighborhoodInfo: "",
-        energyEfficiencyRating: "",
-        leaseTerms: "",
-        accessibilityFeatures: "",
-      });
-    } catch (error) {
-      console.error('Error adding room details: ', error);
-      alert('Failed to add room details');
-    }
-    setLoading(false); // Set loading false after operation is complete
+    // setLoading(true); // Set loading true on submit
+    // try {
+    //   const user = auth.currentUser;
+    //   const imageUrls = await uploadImages();
+    //   await addDoc(roomRef, {
+    //     ...roomDetails,
+    //     images: imageUrls,
+    //     ownerId: user.uid,
+    //   });
+    //   alert("Room details added successfully");
+    //   setRoomDetails({
+    //     roomId: "",
+    //     name: "",
+    //     price: "",
+    //     currency: "XAF",
+    //     capacity: "",
+    //     description: "",
+    //     bedType: "",
+    //     washrooms: "",
+    //     uni: "",
+    //     phno: "",
+    //     ownerFirstName: "",
+    //     ownerLastName: "",
+    //     ownerEmail: "", // Reset owner's email field
+    //     amenities: "",
+    //     location: { lat: null, lng: null },
+    //     rules: "",
+    //     images: [],
+    //     roomSize: "",
+    //     utilitiesIncluded: "",
+    //     furnishedStatus: "",
+    //     safetyFeatures: "",
+    //     publicTransportAccess: "",
+    //     neighborhoodInfo: "",
+    //     energyEfficiencyRating: "",
+    //     leaseTerms: "",
+    //     accessibilityFeatures: "",
+    //   });
+    // } catch (error) {
+    //   console.error("Error adding room details: ", error);
+    //   alert("Failed to add room details");
+    // }
+    // setLoading(false); // Set loading false after operation is complete
+    console.log(roomDetails);
   };
 
   if (loading) {
     return <Spinner />; // Show spinner when loading
   }
-
+  const universities = [
+    { label: "University of Dschang", value: "University of Dschang" },
+    { label: "University of Douala", value: "University of Douala" },
+    { label: "University of Buea", value: "University of Buea" },
+    { label: "University of Yaounde I", value: "University of Yaounde I" },
+    { label: "University of Yaounde II", value: "University of Yaounde II" },
+    { label: "University of Bamenda", value: "University of Bamenda" },
+    { label: "University of Maroua", value: "University of Maroua" },
+    { label: "University of Ngaoundere", value: "University of Ngaoundere" },
+    { label: "University of Bertoua", value: "University of Bertoua" },
+    { label: "other", value: "other" },
+  ];
   return (
     <>
       <Header />
-      <div className={styles.form_container}>
-        <h1><b>Add Room Listing</b></h1>
-        <form onSubmit={handleSubmit}>
-          <label>
-            Apartment / House / Room Name:
-            <input
-              type="text"
-              name="name"
-              value={roomDetails.name}
-              onChange={handleChange}
+      <div className="w-screen bg-white">
+        <div className="w-256 mx-auto pt-10">
+          <h1 className="text-2xl font-medium text-left mb-2">Add Listing</h1>
+          <div className="bg-black mb-3" style={{
+            height: "3px",
+            width: "80px",
+          }}></div>
+          <TextField
+            required
+            id="outlined-required"
+            label="Apartment / House / Room Name"
+            fullWidth
+            className="w-full"
+            value={roomDetails.name}
+            name="name"
+            onChange={handleChange}
+          />
+          <div className="grid grid-cols-3 gap-2 my-4">
+            <TextField
               required
+              id="outlined-required"
+              label="Owner's First Name"
+              className="w-1/3"
+              value={roomDetails.ownerFirstName}
+              name="ownerFirstName"
+              onChange={handleChange}
             />
-          </label>
-
-          <div className={styles.owner}>
-            <label>
-              Owner's First Name:
-              <input
-                type="text"
-                name="ownerFirstName"
-                value={roomDetails.ownerFirstName}
-                onChange={handleChange}
-                required
-              />
-            </label>
-            <label>
-              Owner's Last Name:
-              <input
-                type="text"
-                name="ownerLastName"
-                value={roomDetails.ownerLastName}
-                onChange={handleChange}
-                required
-              />
-            </label>
-            <label>
-              Owner's Email:
-              <input
-                type="email"
-                name="ownerEmail"
-                value={roomDetails.ownerEmail}
-                onChange={handleChange}
-                required
-              />
-            </label>
-            <label>
-              Phone Number:
-              <input
-                type="text"
-                name="phno"
-                value={roomDetails.phno}
-                placeholder="+123 4567890"
-                onChange={handleChange}
-                required
-              />
-            </label>
-          </div>
-          <div className={styles.priceContainer}>
-            <label>
-              Price:
-              <input
-                type="text"
-                name="price"
-                value={roomDetails.price}
-                onChange={handleChange}
-                required
-              />
-            </label>
-            <label>
-              Currency:
-              <select
-                name="currency"
-                value={roomDetails.currency}
-                onChange={handleChange}
-                required
-              >
-                <option value="USD">USD</option>
-                <option value="XAF">XAF</option>
-                <option value="EUR">EUR</option>
-              </select>
-            </label>
-          </div>
-          <div className={styles.rowContainer}>
-            <label>
-              Capacity:
-              <input
-                type="number"
-                name="capacity"
-                value={roomDetails.capacity}
-                onChange={handleChange}
-                required
-              />
-            </label>
-            <label className={styles.formElement}>
-              Bed Type:
-              <select
-                name="bedType"
-                value={roomDetails.bedType}
-                onChange={handleChange}
-                required
-              >
-                <option value="single">Single</option>
-                <option value="double">Double</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <label className={styles.formElement}>
-              Washrooms:
-              <select
-                name="washrooms"
-                value={roomDetails.washrooms}
-                onChange={handleChange}
-                required
-              >
-                <option value="attached">Attached</option>
-                <option value="common">Common</option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-          </div>
-          <div className={styles.rowContainer}>
-            <label>
-              Nearby University:
-              <select
-                name="uni"
-                value={roomDetails.uni}
-                onChange={handleChange}
-                required
-              >
-                <option value="University of Dschang">
-                  University of Dschang
-                </option>
-                <option value="University of Douala">
-                  University of Douala
-                </option>
-                <option value="University of Buea">University of Buea</option>
-                <option value="University of Yaounde I">
-                  University of Yaounde I
-                </option>
-                <option value="University of Yaounde II">
-                  University of Yaounde II
-                </option>
-                <option value="University of Bamenda">
-                  University of Bamenda
-                </option>
-                <option value="University of Maroua">
-                  University of Maroua
-                </option>
-                <option value="University of Ngaoundere">
-                  University of Ngaoundere
-                </option>
-                <option value="University of Bertoua">
-                  University of Bertoua
-                </option>
-                <option value="other">Other</option>
-              </select>
-            </label>
-            <label>
-              Room Size (in sq meters):
-              <input
-                type="text"
-                name="roomSize"
-                value={roomDetails.roomSize}
-                onChange={handleChange}
-                required
-              />
-            </label>
-          </div>
-          <div className={styles.rowContainer}>
-            <label>
-              Furnished Status:
-              <select
-                name="furnishedStatus"
-                aria-label="Furnished Status"
-                value={roomDetails.furnishedStatus}
-                onChange={handleChange}
-                required
-              >
-                <option value="furnished">Furnished</option>
-                <option value="partiallyFurnished">Partially Furnished</option>
-                <option value="unfurnished">Unfurnished</option>
-              </select>
-            </label>
-            <label>
-              Utilities Included:
-              <input
-                type="text"
-                name="utilitiesIncluded"
-                value={roomDetails.utilitiesIncluded}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
-          <label>
-            Additional Description:
-            <textarea
-              name="description"
-              value={roomDetails.description}
-              onChange={handleChange}
-              className={styles.description}
+            <TextField
               required
-            ></textarea>
-          </label>
-          <label>
-            Lease Terms (Type the Terms here or upload a PDF):
-            <textarea
-              name="leaseTerms"
-              value={roomDetails.leaseTerms}
+              id="outlined-required"
+              label="Owner's Last Name"
+              className="w-1/3"
+              value={roomDetails.ownerLastName}
+              name="ownerLastName"
               onChange={handleChange}
-              className={styles.description}
-            ></textarea>
-            <div className={styles.dropzone} {...getPdfRootProps()} required>
-              <input {...getPdfInputProps()} />
-              <p>Drag & drop PDF here, or click to select files.</p>
-            </div>
-          </label>
-          <label>
-            Upload some images of the room:
-            <div className={styles.dropzone} {...getImageRootProps()} required>
-              <input {...getImageInputProps()} />
-              <p>Drag & drop images here, or click to select files.</p>
-            </div>
-            <div className={styles.imagePreview}>
-              {roomDetails.images.map((image, index) => (
-                <div key={index} className={styles.imageContainer}>
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`Image ${index}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          </label>
-          <button type="submit" className={styles.submitButton}>Submit</button>
-        </form>
+            />
+            <TextField
+              required
+              id="outlined-required"
+              label="Owner's Email"
+              className="w-1/3"
+              value={roomDetails.ownerEmail}
+              name="ownerEmail"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-2 my-4">
+            <TextField
+              required
+              id="outlined-required"
+              label="Phone Number"
+              className="w-1/3"
+              value={roomDetails.phno}
+              name="phno"
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="outlined-required"
+              label="Price"
+              className="w-1/3"
+              value={roomDetails.price}
+              name="price"
+              onChange={handleChange}
+            />
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Currency</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={roomDetails.currency}
+                label="Age"
+                onChange={handleChange}
+              >
+                <MenuItem defaultValue={"XAF"}>XAF</MenuItem>
+                <MenuItem value={"USD"}>USD</MenuItem>
+                <MenuItem value={"EUR"}>EUR</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <TextField
+              required
+              id="outlined-required"
+              label="Capacity"
+              className="col-start-1 col-end-3"
+              value={roomDetails.capacity}
+              name="capacity"
+              onChange={handleChange}
+            />
+            <FormControl fullWidth className="col-start-3 col-end-8">
+              <InputLabel id="demo-simple-select-label">Bed Type</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={roomDetails.bedType}
+                label="Age"
+                onChange={handleChange}
+              >
+                <MenuItem value={"single"}>Single</MenuItem>
+                <MenuItem value={"double"}>Double</MenuItem>
+                <MenuItem value={"other"}>Other</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth className=" col-start-8 col-end-13">
+              <InputLabel id="demo-simple-select-label">Washrooms</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={roomDetails.washrooms}
+                label="Age"
+                onChange={handleChange}
+              >
+                <MenuItem value={"attached"}>Attached</MenuItem>
+                <MenuItem value={"common"}>Common</MenuItem>
+                <MenuItem value={"other"}>Other</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <Autocomplete
+              disablePortal
+              id="combo-box-demo"
+              options={universities}
+              className="col-start-1 col-end-6"
+              renderInput={(params) => (
+                <TextField {...params} label="University" />
+              )}
+              fillWidth
+            />
+            <TextField
+              required
+              id="outlined-required"
+              label="Room Size"
+              className="col-start-6 col-end-9"
+              value={roomDetails.roomSize}
+              name="roomSize"
+              onChange={handleChange}
+            />
+            <FormControl fullWidth className="col-start-9 col-end-13">
+              <InputLabel id="demo-simple-select-label">
+                Furnished Status
+              </InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={roomDetails.furnishedStatus}
+                label="Age"
+                onChange={handleChange}
+              >
+                <MenuItem value={"furnished"}>Furnished</MenuItem>
+                <MenuItem value={"partiallyFurnished"}>
+                  Partially Furnished
+                </MenuItem>
+                <MenuItem value={"unfurnished"}>Unfurnished</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <TextField
+              required
+              id="outlined-required"
+              label="Utilities Included"
+              className="col-start-1 col-end-6"
+              value={roomDetails.utilitiesIncluded}
+              name="utilitiesIncluded"
+              onChange={handleChange}
+            />
+            <TextField
+              required
+              id="outlined-required"
+              label="Amenities"
+              className="col-start-6 col-end-13"
+              value={roomDetails.amenities}
+              name="amenities"
+              onChange={handleChange}
+            />
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <TextField
+              required
+              id="outlined-required"
+              label="Additional Description"
+              className="col-start-1 col-end-13"
+              value={roomDetails.description}
+              name="description"
+              onChange={handleChange}
+              multiline
+              rows={4}
+            />
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <TextField
+              required
+              id="outlined-required"
+              label="Rules"
+              className="col-start-1 col-end-13"
+              value={roomDetails.rules}
+              name="rules"
+              onChange={handleChange}
+              multiline
+              rows={4}
+            />
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <Button
+              component="label"
+              role={undefined}
+              variant="outlined"
+              tabIndex={-1}
+              startIcon={<CloudUploadIcon />}
+              className="col-start-1 col-end-13 h-32 border-black text-black">
+              Upload files
+              <VisuallyHiddenInput type="file" />
+            </Button>
+          </div>
+          <div className="grid grid-cols-12 gap-2 my-4">
+            <Button
+              type="submit"
+              className="col-start-1 col-end-13 bg-black p-3 text-white"
+              onClick={handleSubmit}>
+              Submit
+            </Button>
+          </div>
+        </div>
       </div>
     </>
   );

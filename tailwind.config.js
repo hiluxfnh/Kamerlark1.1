@@ -10,6 +10,10 @@ module.exports = {
   ],
   theme: {
     extend: {},
+    width:{
+      256: '68.75rem',
+      148:'37.5rem',
+    }
   },
   plugins: [],
 }

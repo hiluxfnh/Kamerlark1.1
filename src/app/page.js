@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Header from './components/Header';
-import { db } from '@/app/firebase/Config';
+import { db } from  './firebase/Config';
 import { collection, getDocs } from 'firebase/firestore';
 import SearchBar from './components/searchbar';
 import RoomCard from './components/rooms/listing';

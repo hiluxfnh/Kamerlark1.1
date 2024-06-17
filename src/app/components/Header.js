@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/app/firebase/Config';
+import { auth } from '../firebase/Config';
 import LoginPromptModal from './LoginPromptModal'; // Import the LoginPromptModal component
 
 const Header = () => {

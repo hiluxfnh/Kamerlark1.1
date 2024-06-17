@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
-import { db } from '@/app/firebase/Config'; // Adjust the import as necessary
+import { db } from '../../firebase/Config'; // Adjust the import as necessary
 import { collection, getDocs } from "firebase/firestore";
 import RoomDetails from '../roomdetails';
 import styles from '../../styles/roomdetails.module.css';

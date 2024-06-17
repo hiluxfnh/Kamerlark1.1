@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/roomdetails.module.css";
-import stylesRoomDetails from '@/app/styles/CustomModal.module.css';
+import stylesRoomDetails from "../../app/styles/CustomModal.module.css";
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPhone, faFacebook, faBed } from "@fortawesome/free-solid-svg-icons";
@@ -9,7 +9,8 @@ import Spinner from "../components/Spinner"; // Import Spinner
 import Link from "next/link";
 import CustomModal from "../components/CustomModal"; // Import CustomModal component
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/app/firebase/Config";
+import { auth, db } from "../firebase/Config";
+import { Button } from "@mui/material";
 
 const RoomDetails = ({ room }) => {
   console.log("Room details:", room);
@@ -90,16 +91,18 @@ const RoomDetails = ({ room }) => {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     if (!bookingDetails.agreeTerms) {
-      alert("You must agree to the terms of the leasing contract and policies of KamerLark.");
+      alert(
+        "You must agree to the terms of the leasing contract and policies of KamerLark."
+      );
       return;
     }
     try {
-      alert("Booking in progress..."+auth.currentUser.uid);
+      alert("Booking in progress..." + auth.currentUser.uid);
 
       await addDoc(collection(db, "bookings"), {
         ...bookingDetails,
-        userId: auth.currentUser.uid, 
-        roomName:room.name// Add user ID to the booking details
+        userId: auth.currentUser.uid,
+        roomName: room.name, // Add user ID to the booking details
       });
       alert("Booking successful!");
       setIsBookNowOpen(false);
@@ -108,13 +111,22 @@ const RoomDetails = ({ room }) => {
       alert("Failed to book the room");
     }
   };
-
+  const amenties = [
+    "Wifi",
+    "Electricity",
+    "Water",
+    "Furnished",
+    "Parking",
+    "Security",
+    "Cleaning",
+  ];
   return (
     <>
-      <div className={styles.room_details_wrapper}>
-        <div className={styles.room_details_container}>
+      <div className="w-256 mx-auto">
+        <h1 className="text-2xl font-bold my-5">{room.name}</h1>
+        <div className="flex flex-row">
           <div className={`${styles.gallery} ${styles.lightbox}`}>
-            <div className={styles.room_image}>
+            <div className="w-148 h-96 overflow-hidden mb-4 rounded-xl mr-5">
               <Image
                 src={selectedImage}
                 alt={room.name}
@@ -123,11 +135,11 @@ const RoomDetails = ({ room }) => {
                 layout="responsive"
               />
             </div>
-            <div className={styles.image_grid}>
+            <div className="grid grid-cols-4 gap-4 w-148">
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className={styles.grid_item}
+                  className="w-1/4 rounded-md overflow-hidden cursor-pointer"
                   onClick={() => setSelectedImage(image)}
                 >
                   <div className={styles.image1}>
@@ -145,99 +157,72 @@ const RoomDetails = ({ room }) => {
           </div>
 
           <div className={styles.info}>
-            <br />
-            <br />
-            <div className={styles.room_name}>
-              <h1>
-                <b>Room name:</b> {room.name}
-              </h1>
+            <h1 className="text-xl font-medium my-2">Amenties</h1>
+            <div className="flex flex-row flex-wrap gap-2">
+              {amenties.map((amenity, index) => (
+                <div className="p-1 px-2 bg-gray-500 text-white rounded-md">
+                  <span className="text-base">{amenity}</span>
+                </div>
+              ))}
             </div>
-
-            <div className={styles.room_price}>
-              <h5>
-                <b>Price:</b> {room.price}
-              </h5>
+            <div className="mt-5">
+              <h2 className="text-lg font-medium">Description</h2>
+              <p className="text-base mt-3 mb-5">{room.description}</p>
             </div>
-
-            <div className={styles.room_capacity}>
-              <p>
-                <b>
-                  <span>
-                    <FontAwesomeIcon icon={faBed} />
-                  </span>{" "}
-                  Capacity:
-                </b>{" "}
-                {room.capacity} people
+            <div>
+              <h2 className="text-lg font-medium">Price</h2>
+              <p className="text-2xl font-bold mt-3 mb-5">
+                $ {room.price}{" "}
+                <span className="text-lg font-medium">(Inclusive taxes)</span>
               </p>
             </div>
-
-            <div className={styles.room_description}>
-              <p>
-                <b>Description:</b> {room.description}
-              </p>
-            </div>
-
-            <div className={styles.room_bed_type}>
-              <p>
-                <b>Bed Type:</b> {room.bedType}
-              </p>
-            </div>
-
-            <div className={styles.room_washrooms}>
-              <p>
-                <b>Washrooms:</b> {room.washrooms}
-              </p>
-            </div>
-
-            <div className={styles.room_university}>
-              <h4>
-                <b>Nearby School / University:</b> {room.uni}
-              </h4>
-            </div>
-
-            <div className={styles.room_contact}>
-              <p>
-                <b>
-                  <span>
-                    <FontAwesomeIcon icon={faPhone} />
-                  </span>{" "}
-                  Contact:
-                </b>{" "}
-                {room.phno}
-              </p>
-            </div>
-
-            <div className={styles.booking_button_container}>
-              <button
-                className={styles.bookbutton}
+            <div className="grid grid-cols-12 w-96  gap-2 my-2">
+              <Button
                 onClick={() => setIsBookNowOpen(true)}
+                variant="contained"
+                className="col-start-1 col-end-5 bg-black"
+                fullWidth
+                style={{
+                  backgroundColor: "black",
+                }}
               >
                 Book Now
-              </button>
-              <button
-                className={styles.bookbutton}
+              </Button>
+              <Button
                 onClick={() => setIsAppointmentOpen(true)}
+                variant="contained"
+                className="col-start-5 col-end-13 bg-black"
+                fullWidth
+                style={{
+                  backgroundColor: "black",
+                }}
               >
-                Book an appointment
-              </button>
-              <button
-                className={styles.bookbutton}
+                Book Appointment
+              </Button>
+            </div>
+            <div className="grid grid-cols-12 w-96 gap-2 my-2">
+              <Button
                 onClick={() => setIsChatOpen(true)}
+                variant="contained"
+                className="col-start-1 col-end-7 bg-black"
+                fullWidth
+                style={{
+                  backgroundColor: "black",
+                }}
               >
-                Chat with owner
-              </button>
-              <button
-                className={styles.bookbutton}
-                onClick={() => setIsVideoConfOpen(true)}
-              >
-                Video Conferencing
-              </button>
-              <button
-                className={styles.bookbutton}
+                Chat
+              </Button>
+              <Button
                 onClick={() => setIsContractTermsOpen(true)}
+                variant="contained"
+                className="col-start-7 col-end-13 bg-black"
+                fullWidth
+                style={{
+                  backgroundColor: "black",
+                }}
               >
                 View Contract Terms
-              </button>
+              </Button>
             </div>
 
             <div className={styles.social_media_icon}>
@@ -245,48 +230,177 @@ const RoomDetails = ({ room }) => {
             </div>
           </div>
         </div>
+        <div className="flex flex-row w-256 justify-between rounded-xl py-2 mt-8">
+          <div className="">
+            <p className="font-medium text-center">
+              <FontAwesomeIcon icon={faBed} /> Capacity
+            </p>
+            <p className="text-lg font-bold text-center">
+              {room.capacity} people
+            </p>
+          </div>
+          <div className="">
+            <p className="font-medium text-center">
+              <FontAwesomeIcon icon={faBed} /> Bed Type
+            </p>
+            <p className="text-lg font-bold text-center">{room.bedType}</p>
+          </div>
+          <div className="">
+            <p className="font-medium text-center">
+              <FontAwesomeIcon icon={faBed} /> Washrooms
+            </p>
+            <p className="text-lg font-bold text-center">{room.washrooms}</p>
+          </div>
+          <div className="">
+            <p className="font-medium text-center">
+              <FontAwesomeIcon icon={faBed} /> Nearby School / University
+            </p>
+            <p className="text-lg font-bold text-center">{room.uni}</p>
+          </div>
+          <div className="">
+            <p className="font-medium text-center">
+              <FontAwesomeIcon icon={faBed} /> Contact
+            </p>
+            <p className="text-lg font-bold text-center">{room.phno}</p>
+          </div>
+        </div>
 
         <div className={styles.location}>
-          <h2>Location</h2>
-          <MapComponent latitude={room.latitude} longitude={room.longitude} />
+          <h2 className="text-xl font-medium my-3">Location</h2>
+          {/* <MapComponent latitude={room.latitude} longitude={room.longitude} /> */}
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15531.517911782868!2d77.5963265!3d13.2954684!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3df04c9efe91%3A0x74ef0f7e2f81d564!2sGitam%20University%20Bengaluru!5e0!3m2!1sen!2sin!4v1718653227233!5m2!1sen!2sin"
+            className="w-256 h-60"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
         </div>
       </div>
 
       {/* Feedback/Reviews Section */}
-      <div className={styles.feedback_reviews}>
-        <h2>Feedback/Reviews</h2>
-        <div className={styles.reviews_container}>
-          <div className={styles.review_card}>
-            <h3>John Doe</h3>
-            <p>
-              "The apartment was great, it had everything I needed and the
-              location was perfect."
-            </p>
-            <p>-Jane Doe</p>
+      <div className="w-256 mx-auto">
+        <h2 className="text-xl font-medium mt-6 mb-4">Feedback & Reviews</h2>
+        <div className="grid grid-rows-2 grid-cols-2 gap-5">
+          <div
+            className=" p-2 flex flex-row rounded-xl"
+            style={{
+              boxShadow: "0px 0px 5px lightgrey",
+            }}
+          >
+            <div className="" style={{
+              width:"80px"
+            }}>
+              <Image
+                src={"https://picsum.photos/200/300"}
+                width={100}
+                height={100}
+                alt="image"
+                className="rounded-full"
+                style={{
+                  width:"40px",
+                  height:"40px"
+                }}
+              />
+            </div>
+            <div>
+              <h3>John Doe</h3>
+              <p>
+                "The apartment was great, it had everything I needed and the
+                location was perfect."
+              </p>
+              <p>-Jane Doe</p>
+            </div>
           </div>
-          <div className={styles.review_card}>
-            <h3>John Doe</h3>
-            <p>
-              "The apartment was great, it had everything I needed and the
-              location was perfect."
-            </p>
-            <p>-Jane Doe</p>
+          <div
+            className=" p-2 flex flex-row rounded-xl"
+            style={{
+              boxShadow: "0px 0px 5px lightgrey",
+            }}
+          >
+            <div className="" style={{
+              width:"80px"
+            }}>
+              <Image
+                src={"https://picsum.photos/200/300"}
+                width={100}
+                height={100}
+                alt="image"
+                className="rounded-full"
+                style={{
+                  width:"40px",
+                  height:"40px"
+                }}
+              />
+            </div>
+            <div>
+              <h3>John Doe</h3>
+              <p>
+                "The apartment was great, it had everything I needed and the
+                location was perfect."
+              </p>
+              <p>-Jane Doe</p>
+            </div>
           </div>
-          <div className={styles.review_card}>
-            <h3>John Doe</h3>
-            <p>
-              "The apartment was great, it had everything I needed and the
-              location was perfect."
-            </p>
-            <p>-Jane Doe</p>
+          <div
+            className=" p-2 flex flex-row rounded-xl"
+            style={{
+              boxShadow: "0px 0px 5px lightgrey",
+            }}
+          >
+            <div className="" style={{
+              width:"80px"
+            }}>
+              <Image
+                src={"https://picsum.photos/200/300"}
+                width={100}
+                height={100}
+                alt="image"
+                className="rounded-full"
+                style={{
+                  width:"40px",
+                  height:"40px"
+                }}
+              />
+            </div>
+            <div>
+              <h3>John Doe</h3>
+              <p>
+                "The apartment was great, it had everything I needed and the
+                location was perfect."
+              </p>
+              <p>-Jane Doe</p>
+            </div>
           </div>
-          <div className={styles.review_card}>
-            <h3>John Doe</h3>
-            <p>
-              "I really liked my stay at the apartment, the owner was very
-              helpful and accommodating."
-            </p>
-            <p>-Jane Doe</p>
+          <div
+            className=" p-2 flex flex-row rounded-xl"
+            style={{
+              boxShadow: "0px 0px 5px lightgrey",
+            }}
+          >
+            <div className="" style={{
+              width:"80px"
+            }}>
+              <Image
+                src={"https://picsum.photos/200/300"}
+                width={100}
+                height={100}
+                alt="image"
+                className="rounded-full"
+                style={{
+                  width:"40px",
+                  height:"40px"
+                }}
+              />
+            </div>
+            <div>
+              <h3>John Doe</h3>
+              <p>
+                "I really liked my stay at the apartment, the owner was very
+                helpful and accommodating."
+              </p>
+              <p>-Jane Doe</p>
+            </div>
           </div>
         </div>
         <Link href="/community" passHref legacyBehavior>
@@ -300,12 +414,19 @@ const RoomDetails = ({ room }) => {
         {ownerDetails ? (
           <div className={styles.owner_details}>
             <div className={styles.owner_image}>
-              <img src={ownerDetails.photoURL || "/path/to/default_image.png"} alt="Owner" />
+              <img
+                src={ownerDetails.photoURL || "/path/to/default_image.png"}
+                alt="Owner"
+              />
             </div>
             <div className={styles.owner_info}>
-              <p className={styles.owner_name}>Name: {ownerDetails.firstName} {ownerDetails.lastName}</p>
+              <p className={styles.owner_name}>
+                Name: {ownerDetails.firstName} {ownerDetails.lastName}
+              </p>
               <p className={styles.owner_email}>Email: {ownerDetails.email}</p>
-              <p className={styles.owner_phone}>Phone: {ownerDetails.phoneNumber}</p>
+              <p className={styles.owner_phone}>
+                Phone: {ownerDetails.phoneNumber}
+              </p>
             </div>
           </div>
         ) : (
@@ -313,100 +434,103 @@ const RoomDetails = ({ room }) => {
         )}
       </div>
 
-<CustomModal
-  isOpen={isBookNowOpen}
-  onClose={() => setIsBookNowOpen(false)}
-  title="Book Now"
->
-  <p>Fill in the details to book the room:</p>
-  <form className={stylesRoomDetails.form} onSubmit={handleBookingSubmit}>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Full Name:
-        <input
-          type="text"
-          name="name"
-          value={bookingDetails.name}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-    </div>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Email: <span className={stylesRoomDetails.email_note}>(Must be changed via profile)</span>
-        <input
-          type="email"
-          name="email"
-          value={bookingDetails.email}
-          readOnly
-          required
-        />
-      </label>
-    </div>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Phone:
-        <input
-          type="tel"
-          name="phone"
-          value={bookingDetails.phone}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-    </div>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Address:
-        <input
-          type="text"
-          name="address"
-          value={bookingDetails.address}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-    </div>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Move-In Date:
-        <input
-          type="date"
-          name="moveInDate"
-          value={bookingDetails.moveInDate}
-          onChange={handleInputChange}
-          required
-        />
-      </label>
-    </div>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        Additional Notes:
-        <textarea
-          name="notes"
-          value={bookingDetails.notes}
-          onChange={handleInputChange}
-        ></textarea>
-      </label>
-    </div>
-    <p>You have to pay a total amount of: {room.price}</p>
-    <div className={stylesRoomDetails.form_group}>
-      <label>
-        <input
-          type="checkbox"
-          name="agreeTerms"
-          checked={bookingDetails.agreeTerms}
-          onChange={handleCheckboxChange}
-          required
-        />
-        I agree to the terms of the leasing contract and policies of KamerLark
-      </label>
-    </div>
-    <button type="submit">Submit</button>
-  </form>
-</CustomModal>
-
+      <CustomModal
+        isOpen={isBookNowOpen}
+        onClose={() => setIsBookNowOpen(false)}
+        title="Book Now"
+      >
+        <p>Fill in the details to book the room:</p>
+        <form className={stylesRoomDetails.form} onSubmit={handleBookingSubmit}>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Full Name:
+              <input
+                type="text"
+                name="name"
+                value={bookingDetails.name}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+          </div>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Email:{" "}
+              <span className={stylesRoomDetails.email_note}>
+                (Must be changed via profile)
+              </span>
+              <input
+                type="email"
+                name="email"
+                value={bookingDetails.email}
+                readOnly
+                required
+              />
+            </label>
+          </div>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Phone:
+              <input
+                type="tel"
+                name="phone"
+                value={bookingDetails.phone}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+          </div>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Address:
+              <input
+                type="text"
+                name="address"
+                value={bookingDetails.address}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+          </div>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Move-In Date:
+              <input
+                type="date"
+                name="moveInDate"
+                value={bookingDetails.moveInDate}
+                onChange={handleInputChange}
+                required
+              />
+            </label>
+          </div>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              Additional Notes:
+              <textarea
+                name="notes"
+                value={bookingDetails.notes}
+                onChange={handleInputChange}
+              ></textarea>
+            </label>
+          </div>
+          <p>You have to pay a total amount of: {room.price}</p>
+          <div className={stylesRoomDetails.form_group}>
+            <label>
+              <input
+                type="checkbox"
+                name="agreeTerms"
+                checked={bookingDetails.agreeTerms}
+                onChange={handleCheckboxChange}
+                required
+              />
+              I agree to the terms of the leasing contract and policies of
+              KamerLark
+            </label>
+          </div>
+          <button type="submit">Submit</button>
+        </form>
+      </CustomModal>
 
       <CustomModal
         isOpen={isAppointmentOpen}
@@ -426,7 +550,10 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Email: <span className={styles.email_note}>(Must be changed via profile)</span>
+            Email:{" "}
+            <span className={styles.email_note}>
+              (Must be changed via profile)
+            </span>
             <input
               type="email"
               name="email"
@@ -479,7 +606,10 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Email: <span className={styles.email_note}>(Must be changed via profile)</span>
+            Email:{" "}
+            <span className={styles.email_note}>
+              (Must be changed via profile)
+            </span>
             <input
               type="email"
               name="email"
@@ -524,7 +654,10 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Email: <span className={styles.email_note}>(Must be changed via profile)</span>
+            Email:{" "}
+            <span className={styles.email_note}>
+              (Must be changed via profile)
+            </span>
             <input
               type="email"
               name="email"
