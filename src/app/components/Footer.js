@@ -4,43 +4,53 @@ import styles from '../styles/Footer.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope, faPhone, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
+import kl from "../assets/Kl_christmas.png";
+import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <footer className={styles.footer}>
-      <div className={styles.footerContent}>
-        <div className={styles.companyInfo}>
-          <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
-          <p>Your trusted accommodation platform.</p>
+    <footer className="text-white text-sm" style={{
+      backgroundColor:"#222",
+    }}>
+      <div className="w-256 mx-auto flex flex-row justify-between py-10">
+        
+        <div className="w-1/4">
+        <div className="flex flex-row items-center">
+        <Image src={kl} alt="Logo" width={50} height={50} />
+        <span className="text-xl font-bold text-white ml-4">KamerLark</span>
+      </div>
+          <h4 className='text-base py-3'>Contact Us</h4>
+          <p className='py-1'><FontAwesomeIcon icon={faEnvelope} /> info@kamerlark.com</p>
+          <p className='py-1'><FontAwesomeIcon icon={faPhone} /> +123 456 7890</p>
+          <p className='py-1'><FontAwesomeIcon icon={faMapMarkerAlt} /> 123 Main Street, City, Country</p>
         </div>
-        <div className={styles.contactInfo}>
-          <h4>Contact Us</h4>
-          <p><FontAwesomeIcon icon={faEnvelope} /> info@kamerlark.com</p>
-          <p><FontAwesomeIcon icon={faPhone} /> +123 456 7890</p>
-          <p><FontAwesomeIcon icon={faMapMarkerAlt} /> 123 Main Street, City, Country</p>
-        </div>
-        <div className={styles.quickLinks}>
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="/about">About Us</a></li>
-            <li><a href="/listings">Listings</a></li>
-            <li><a href="/contact">Contact Us</a></li>
-            <li><a href="/faq">FAQ</a></li>
-            <li><a href="/terms">Terms of Service</a></li>
-            <li><a href="/privacy">Privacy Policy</a></li>
+        <div className="mt-12 w-1/4">
+          <h4 className='text-base py-3'>Quick Links</h4>
+          <ul className='grid grid-cols-2 gap-x-16 gap-y-2'>
+            <Link href="/about" className="text-white">About Us</Link>
+            <Link href="/listings" className="text-white">Listings</Link>
+            <Link href="/contact" className="text-white">Contact Us</Link>
+            <Link href="/faq" className="text-white">FAQ</Link>
+            <Link href="/terms" className="text-white">Terms of Service</Link>
+            <Link href="/privacy" className="text-white">Privacy Policy</Link>
           </ul>
         </div>
-        <div className={styles.socialMedia}>
-          <h4>Follow Us</h4>
-          <a href="https://www.facebook.com/kamerlark" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faFacebook} size="2x" />
-          </a>
-          <a href="https://www.twitter.com/kamerlark" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faTwitter} size="2x" />
-          </a>
-          <a href="https://www.instagram.com/kamerlark" target="_blank" rel="noopener noreferrer">
-            <FontAwesomeIcon icon={faInstagram} size="2x" />
-          </a>
+        <div className="mt-12 w-2/4">
+          <h4 className='text-base py-3'>Follow Us</h4>
+          <div className='grid grid-cols-1 gap-2'>
+          <Link  href={""}><FontAwesomeIcon icon={faFacebook}  /> Facebook</Link>
+          <Link  href={""}><FontAwesomeIcon icon={faTwitter}  /> Twitter</Link>
+          <Link  href={""}><FontAwesomeIcon icon={faInstagram}  /> Instagram</Link>
+          </div>
+        </div>
+      </div>
+      <div className='w-256 mx-auto py-2 pt-4' style={{
+        borderTop: '1px solid #333',
+      }}>
+        <div className="flex flex-row justify-between">
+          <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
+          <p>Your trusted accommodation platform.</p>
         </div>
       </div>
     </footer>

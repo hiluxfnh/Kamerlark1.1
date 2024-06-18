@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import Header from "../components/Header";
-import { db, storage, auth } from "@/app/firebase/Config";
+import { db, storage, auth } from "../firebase/Config";
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Spinner from "../components/Spinner"; // Import Spinner

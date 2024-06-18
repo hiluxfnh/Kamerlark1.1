@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "../styles/mylisting.module.css";
 import Header from "../components/Header";
-import { db, auth } from "@/app/firebase/Config";
+import { db, auth } from "../firebase/Config";
 import {
   collection,
   query,

@@ -139,7 +139,7 @@ const RoomDetails = ({ room }) => {
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="w-1/4 rounded-md overflow-hidden cursor-pointer"
+                  className="w-1/4 h-20 rounded-md overflow-hidden cursor-pointer"
                   onClick={() => setSelectedImage(image)}
                 >
                   <div className={styles.image1}>
@@ -409,7 +409,7 @@ const RoomDetails = ({ room }) => {
       </div>
 
       {/* Contact The Owner Section */}
-      <div className={styles.contact_owner}>
+      {/* <div className={styles.contact_owner}>
         <h2>Contact The Owner</h2>
         {ownerDetails ? (
           <div className={styles.owner_details}>
@@ -432,7 +432,7 @@ const RoomDetails = ({ room }) => {
         ) : (
           <div>Loading owner details...</div>
         )}
-      </div>
+      </div> */}
 
       <CustomModal
         isOpen={isBookNowOpen}

@@ -1,15 +1,17 @@
-'use client';
-import React, { useEffect, useState } from 'react';
-import Header from './components/Header';
-import { db } from  './firebase/Config';
-import { collection, getDocs } from 'firebase/firestore';
-import SearchBar from './components/searchbar';
-import RoomCard from './components/rooms/listing';
-import Footer from './components/Footer';
-import kam from './styles/roomcard.module.css';
-import ImageSlider from './components/Imageslider';
-import Spinner from './components/Spinner'; // Import Spinner
-
+"use client";
+import React, { useEffect, useState } from "react";
+import Header from "./components/Header";
+import { db } from "./firebase/Config";
+import { collection, getDocs } from "firebase/firestore";
+import SearchBar from "./components/searchbar";
+import RoomCard from "./components/rooms/listing";
+import Footer from "./components/Footer";
+import kam from "./styles/roomcard.module.css";
+import ImageSlider from "./components/Imageslider";
+import Spinner from "./components/Spinner"; // Import Spinner
+import RoomCardNew from "./components/roomCard"; // Import RoomCardNew
+import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 const slides = [
   {
     url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-16.png?alt=media&token=269515d4-2e7d-4380-8b6d-6de5029168a9",
@@ -21,25 +23,29 @@ const slides = [
     url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-13.png?alt=media&token=0ae4283d-b5b2-41f7-bfce-32944f26acb3",
     alt: "Adventurous Boat Ride",
     title: "Sail into Adventure",
-    description: "Embark on an exhilarating boat ride and explore the wonders of the open sea. Uncover hidden treasures and create lasting memories.",
+    description:
+      "Embark on an exhilarating boat ride and explore the wonders of the open sea. Uncover hidden treasures and create lasting memories.",
   },
   {
-    url: 'https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/a1.png?alt=media&token=47cb700a-ec0f-4df0-b80b-3755b10d0854',
+    url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/a1.png?alt=media&token=47cb700a-ec0f-4df0-b80b-3755b10d0854",
     alt: "Majestic Forest Retreat",
     title: "Embrace Nature's Majesty",
-    description: "Immerse yourself in the enchanting beauty of a majestic forest. Connect with nature and experience the serenity of the great outdoors.",
+    description:
+      "Immerse yourself in the enchanting beauty of a majestic forest. Connect with nature and experience the serenity of the great outdoors.",
   },
   {
     url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-11.png?alt=media&token=fe5ba00b-fd8e-4328-a971-26c2d9fc1d2a",
     alt: "Cityscape Marvels",
     title: "Explore Urban Wonders",
-    description: "Dive into the hustle and bustle of a vibrant city. Marvel at modern architecture, cultural landmarks, and the pulsating energy of urban life.",
+    description:
+      "Dive into the hustle and bustle of a vibrant city. Marvel at modern architecture, cultural landmarks, and the pulsating energy of urban life.",
   },
   {
     url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-12.png?alt=media&token=e5163b88-de44-47fe-956e-01ac18dbbc53",
     alt: "Charming Streets of Italy",
     title: "Romantic Italian Escapade",
-    description: "Stroll through charming streets, savor exquisite cuisine, and bask in the romantic ambiance of Italy. Experience a dreamy getaway like never before.",
+    description:
+      "Stroll through charming streets, savor exquisite cuisine, and bask in the romantic ambiance of Italy. Experience a dreamy getaway like never before.",
   },
 ];
 
@@ -47,7 +53,7 @@ const containerStyles = {
   width: "90%",
   height: "50vh",
   margin: "0 auto",
-  marginTop: '2%',
+  marginTop: "2%",
   marginBottom: "2%",
   fontFamily: "'Poppins', sans-serif",
 };
@@ -60,9 +66,12 @@ export default function Home() {
   useEffect(() => {
     const fetchRooms = async () => {
       setLoading(true); // Show spinner
-      const roomCollection = collection(db, 'roomdetails');
+      const roomCollection = collection(db, "roomdetails");
       const roomSnapshot = await getDocs(roomCollection);
-      const roomList = roomSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const roomList = roomSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
       setRooms(roomList);
       setLoading(false); // Hide spinner
     };
@@ -71,7 +80,7 @@ export default function Home() {
   }, []);
 
   const handleViewMore = () => {
-    setVisibleCount(prevCount => prevCount + 4); // Increase by 4 items (2 more rows)
+    setVisibleCount((prevCount) => prevCount + 4); // Increase by 4 items (2 more rows)
   };
 
   const handleViewLess = () => {
@@ -79,57 +88,54 @@ export default function Home() {
   };
 
   const buttonStyles = {
-    margin: '10px',
-    padding: '10px 20px',
-    backgroundColor: '#28a745',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '5px',
-    cursor: 'pointer',
-    fontSize: '16px',
+    margin: "10px",
+    padding: "10px 20px",
+    backgroundColor: "#28a745",
+    color: "#fff",
+    border: "none",
+    borderRadius: "5px",
+    cursor: "pointer",
+    fontSize: "16px",
   };
 
   const buttonContainerStyles = {
-    textAlign: 'center',
-    margin: '20px 0',
+    textAlign: "center",
+    margin: "20px 0",
   };
 
-  if (loading) {
-    return <Spinner />; // Show spinner while loading
-  }
+  // if (loading) {
+  //   return <Spinner />; // Show spinner while loading
+  // }
 
   return (
     <>
       <Header />
-      <div style={containerStyles}>
+      <div className="w-256 h-96 mx-auto my-5">
         <ImageSlider slides={slides} />
       </div>
-
-      <SearchBar />
-
-      <div>
-        <div className={kam.cardcon}>
+      <div className="w-256 mx-auto">
+        <input type="text" placeholder="Search for accommodation..." className="w-256 p-3 border border-gray-300 rounded-lg outline-none" />
+        <div className="grid grid-cols-4 w-full mx-auto gap-4 mt-5">
           {rooms.slice(0, visibleCount).map((room) => (
-            <RoomCard 
-              key={room.id} 
-              roomid={room.id} 
-              name={room.name} 
-              price={room.price} 
-              description={room.description} 
-              imageSrc={room.images[0]} // Ensure this points to the correct image URL
-            />
+            <RoomCardNew room={room} key={room.id} />
           ))}
         </div>
         <div style={buttonContainerStyles}>
           {visibleCount < rooms.length && (
-            <button onClick={handleViewMore} style={buttonStyles}>View More</button>
+            <button onClick={handleViewMore} style={buttonStyles}>
+              View More
+            </button>
           )}
           {visibleCount > 4 && (
-            <button onClick={handleViewLess} style={{ ...buttonStyles, backgroundColor: '#dc3545' }}>View Less</button>
+            <button
+              onClick={handleViewLess}
+              style={{ ...buttonStyles, backgroundColor: "#dc3545" }}
+            >
+              View Less
+            </button>
           )}
         </div>
       </div>
-      <br/>
       <Footer />
     </>
   );

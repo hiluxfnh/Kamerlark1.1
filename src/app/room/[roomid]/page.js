@@ -6,8 +6,8 @@ import { collection, getDocs } from "firebase/firestore";
 import RoomDetails from '../roomdetails';
 import styles from '../../styles/roomdetails.module.css';
 import kam from '../../styles/roomcard.module.css';
-import RoomCard from '../../components/rooms/listing';
 import Spinner from '../../components/Spinner'; // Import Spinner
+import RoomCardNew from '../../components/roomCard';
 
 export default function Roomid({ params }) {
   const [showMoreRooms, setShowMoreRooms] = useState(false);
@@ -65,16 +65,9 @@ export default function Roomid({ params }) {
               <div>Room not found</div>
             )}
           </div>
-          <div className={kam.cardcon}>
+          <div className="grid grid-cols-4 w-256 mx-auto justify-between gap-4 mt-4">
             {allRooms.slice(0, 4).map((room) => (
-              <RoomCard 
-                key={room.id} 
-                roomid={room.id} 
-                name={room.name} 
-                price={room.price} 
-                description={room.description} 
-                imageSrc={room.images[0]} // Ensure this points to the correct image URL
-              />
+              <RoomCardNew key={room.id} room={room} />
             ))}
           </div>
           <div className={styles.more_rooms_button_container}>
@@ -86,7 +79,7 @@ export default function Roomid({ params }) {
             <div>
               <div className={kam.cardcon}>
                 {allRooms.slice(4).map((room) => (
-                  <RoomCard key={room.id} {...room} />
+                  <RoomCardNew key={room.id} room={room} />
                 ))}
               </div>
               <div style={{ textAlign: 'center', margin: '20px 0' }}>
