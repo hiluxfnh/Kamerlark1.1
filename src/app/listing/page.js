@@ -15,7 +15,20 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-
+import CustomButton from "../components/CustomButton";
+import InputFieldCustom from "../components/InputField";
+import Image from "next/image";
+import { Checkbox, InputAdornment, ListItemText, OutlinedInput } from "@mui/material";
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
   clipPath: "inset(50%)",
@@ -28,6 +41,9 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 const AddListing = () => {
+  const [safetyFeature,setSafetyFeature] = useState('');
+  const [rule,setRule] = useState('');
+  const [accessibilityFeature,setAccessibilityFeature] = useState('');
   const [roomDetails, setRoomDetails] = useState({
     roomId: "",
     name: "",
@@ -42,20 +58,26 @@ const AddListing = () => {
     ownerFirstName: "",
     ownerLastName: "",
     ownerEmail: "", // Add owner's email field
-    amenities: "",
-    location: { lat: null, lng: null },
-    rules: "",
+    amenities: [],
+    location: "",
+    rules: [],
     images: [],
     roomSize: "",
-    utilitiesIncluded: "",
+    utilitiesIncluded: [],
     furnishedStatus: "",
-    safetyFeatures: "",
+    safetyFeatures: [],
     publicTransportAccess: "",
     neighborhoodInfo: "",
     energyEfficiencyRating: "",
     leaseTerms: "",
-    accessibilityFeatures: "",
+    accessibilityFeatures: [],
   });
+  const [files, setFiles] = useState([]);
+
+  const handleFileChange = (event) => {
+    console.log(event.target.files[0].lastModified);
+    setFiles([...files, ...event.target.files]);
+  };
   const [loading, setLoading] = useState(false); // Loading state
 
   const roomRef = collection(db, "roomdetails");
@@ -68,43 +90,9 @@ const AddListing = () => {
     }));
   };
 
-  const onDrop = useCallback((acceptedFiles) => {
-    setRoomDetails((prevDetails) => ({
-      ...prevDetails,
-      images: [...prevDetails.images, ...acceptedFiles],
-    }));
-  }, []);
-
-  const { getRootProps: getPdfRootProps, getInputProps: getPdfInputProps } =
-    useDropzone({
-      accept: "application/pdf",
-      onDrop,
-      multiple: true,
-      maxFiles: 1,
-    });
-
-  const { getRootProps: getImageRootProps, getInputProps: getImageInputProps } =
-    useDropzone({
-      accept: "image/*",
-      onDrop,
-      multiple: true,
-      maxFiles: 5,
-    });
-
-  const handleRemoveImage = (index) => {
-    setRoomDetails((prevDetails) => {
-      const updatedImages = [...prevDetails.images];
-      updatedImages.splice(index, 1);
-      return {
-        ...prevDetails,
-        images: updatedImages,
-      };
-    });
-  };
-
   const uploadImages = async () => {
-    const uploadPromises = roomDetails.images.map((image) => {
-      const storageRef = ref(storage, `images/${image.name}`);
+    const uploadPromises = files.map((image) => {
+      const storageRef = ref(storage, `images/${image.lastModified}-${image.name}`);
       const uploadTask = uploadBytesResumable(storageRef, image);
       return new Promise((resolve, reject) => {
         uploadTask.on(
@@ -129,50 +117,74 @@ const AddListing = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // setLoading(true); // Set loading true on submit
-    // try {
-    //   const user = auth.currentUser;
-    //   const imageUrls = await uploadImages();
-    //   await addDoc(roomRef, {
-    //     ...roomDetails,
-    //     images: imageUrls,
-    //     ownerId: user.uid,
-    //   });
-    //   alert("Room details added successfully");
-    //   setRoomDetails({
-    //     roomId: "",
-    //     name: "",
-    //     price: "",
-    //     currency: "XAF",
-    //     capacity: "",
-    //     description: "",
-    //     bedType: "",
-    //     washrooms: "",
-    //     uni: "",
-    //     phno: "",
-    //     ownerFirstName: "",
-    //     ownerLastName: "",
-    //     ownerEmail: "", // Reset owner's email field
-    //     amenities: "",
-    //     location: { lat: null, lng: null },
-    //     rules: "",
-    //     images: [],
-    //     roomSize: "",
-    //     utilitiesIncluded: "",
-    //     furnishedStatus: "",
-    //     safetyFeatures: "",
-    //     publicTransportAccess: "",
-    //     neighborhoodInfo: "",
-    //     energyEfficiencyRating: "",
-    //     leaseTerms: "",
-    //     accessibilityFeatures: "",
-    //   });
-    // } catch (error) {
-    //   console.error("Error adding room details: ", error);
-    //   alert("Failed to add room details");
-    // }
-    // setLoading(false); // Set loading false after operation is complete
-    console.log(roomDetails);
+    const imageUrls = await uploadImages();
+    console.log(imageUrls);
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      const imageUrls = await uploadImages();
+      await addDoc(roomRef, {
+        name: roomDetails.name,
+        price: roomDetails.price,
+        currency: roomDetails.currency,
+        capacity: roomDetails.capacity,
+        description: roomDetails.description,
+        bedType: roomDetails.bedType,
+        washrooms: roomDetails.washrooms,
+        uni: roomDetails.uni,
+        phno: roomDetails.phno,
+        ownerFirstName: roomDetails.ownerFirstName,
+        ownerLastName: roomDetails.ownerLastName,
+        ownerEmail: roomDetails.ownerEmail,
+        amenities: roomDetails.amenities,
+        location: roomDetails.location,
+        rules: roomDetails.rules, 
+        images: imageUrls,
+        roomSize: roomDetails.roomSize,
+        utilitiesIncluded: roomDetails.utilitiesIncluded,
+        furnishedStatus: roomDetails.furnishedStatus,
+        safetyFeatures: roomDetails.safetyFeatures, 
+        publicTransportAccess: roomDetails.publicTransportAccess, 
+        neighborhoodInfo: roomDetails.neighborhoodInfo, 
+        energyEfficiencyRating: roomDetails.energyEfficiencyRating, 
+        leaseTerms: roomDetails.leaseTerms,
+        accessibilityFeatures: roomDetails.accessibilityFeatures,
+        ownerId: user.uid,
+      });
+      alert("Room details added successfully");
+      setRoomDetails({
+        roomId: "",
+        name: "",
+        price: "",
+        currency: "XAF",
+        capacity: "",
+        description: "",
+        bedType: "",
+        washrooms: "",
+        uni: "",
+        phno: "",
+        ownerFirstName: "",
+        ownerLastName: "",
+        ownerEmail: "",
+        amenities: [],
+        location: "",
+        rules: [],
+        images: [],
+        roomSize: "",
+        utilitiesIncluded: [],
+        furnishedStatus: "",
+        safetyFeatures: [],
+        publicTransportAccess: "",
+        neighborhoodInfo: "",
+        energyEfficiencyRating: "",
+        leaseTerms: "",
+        accessibilityFeatures: [],
+      });
+    } catch (error) {
+      console.error("Error adding room details: ", error);
+      alert("Failed to add room details");
+    }
+    setLoading(false); 
   };
 
   if (loading) {
@@ -190,81 +202,58 @@ const AddListing = () => {
     { label: "University of Bertoua", value: "University of Bertoua" },
     { label: "other", value: "other" },
   ];
+
+  const amenitiesNames = [
+    "Air conditioning",
+    "Balcony",
+    "Bedding",
+    "Cable TV",
+    "Coffee pot",
+    "Dishwasher",
+    "Fridge",
+    "Heating",
+    "Internet",
+    "Microwave",
+    "Oven",
+    "Parking",
+    "Pool",
+    "Terrace",
+    "Washing machine",
+  ];
+  
+  const utilitiesIncludedNames = [
+    "Electricity",
+    "Gas",
+    "Heating",
+    "Internet",
+    "Water",
+  ];
   return (
     <>
       <Header />
       <div className="w-screen bg-white">
-        <div className="w-256 mx-auto pt-10">
+        <div className="w-256 mx-auto pt-10 mb-5">
           <h1 className="text-2xl font-medium text-left mb-2">Add Listing</h1>
           <div className="bg-black mb-3" style={{
             height: "3px",
             width: "80px",
           }}></div>
-          <TextField
-            required
-            id="outlined-required"
-            label="Apartment / House / Room Name"
-            fullWidth
-            className="w-full"
-            value={roomDetails.name}
-            name="name"
-            onChange={handleChange}
-          />
-          <div className="grid grid-cols-3 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Owner's First Name"
-              className="w-1/3"
-              value={roomDetails.ownerFirstName}
-              name="ownerFirstName"
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id="outlined-required"
-              label="Owner's Last Name"
-              className="w-1/3"
-              value={roomDetails.ownerLastName}
-              name="ownerLastName"
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id="outlined-required"
-              label="Owner's Email"
-              className="w-1/3"
-              value={roomDetails.ownerEmail}
-              name="ownerEmail"
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-3 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Phone Number"
-              className="w-1/3"
-              value={roomDetails.phno}
-              name="phno"
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id="outlined-required"
-              label="Price"
-              className="w-1/3"
-              value={roomDetails.price}
-              name="price"
-              onChange={handleChange}
-            />
-            <FormControl fullWidth>
+          <div className="grid grid-cols-12 gap-2 my-4">
+          <InputFieldCustom name={"name"} label={"Room Name"} value={roomDetails.name} onChange={handleChange} colStart={1} colEnd={13}/>
+          <InputFieldCustom name={"location"} label={"Location"} value={roomDetails.location} onChange={handleChange} colStart={1} colEnd={13}/>
+          <InputFieldCustom name={"ownerFirstName"} label={"Owner's First Name"} value={roomDetails.ownerFirstName} onChange={handleChange} colStart={1} colEnd={5}/>
+          <InputFieldCustom name={"ownerLastName"} label={"Owner's Last Name"} value={roomDetails.ownerLastName} onChange={handleChange} colStart={5} colEnd={9}/>
+          <InputFieldCustom name={"ownerEmail"} label={"Owner's Email"} value={roomDetails.ownerEmail} onChange={handleChange} colStart={9} colEnd={13}/>
+          <InputFieldCustom name={"phno"} label={"Phone Number"} value={roomDetails.phno} onChange={handleChange} colStart={1} colEnd={5}/>
+          <InputFieldCustom name={"price"} label={"Price"} value={roomDetails.price} onChange={handleChange} colStart={5} colEnd={9}/>
+          <FormControl fullWidth className="col-start-9 col-end-13">
               <InputLabel id="demo-simple-select-label">Currency</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={roomDetails.currency}
-                label="Age"
+                label="currency"
+                name="currency"
                 onChange={handleChange}
               >
                 <MenuItem defaultValue={"XAF"}>XAF</MenuItem>
@@ -272,24 +261,15 @@ const AddListing = () => {
                 <MenuItem value={"EUR"}>EUR</MenuItem>
               </Select>
             </FormControl>
-          </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Capacity"
-              className="col-start-1 col-end-3"
-              value={roomDetails.capacity}
-              name="capacity"
-              onChange={handleChange}
-            />
+            <InputFieldCustom name="capacity" label="Capacity" value={roomDetails.capacity} onChange={handleChange} colStart={1} colEnd={3}/>
             <FormControl fullWidth className="col-start-3 col-end-8">
               <InputLabel id="demo-simple-select-label">Bed Type</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={roomDetails.bedType}
-                label="Age"
+                label="bedType"
+                name="bedType"
                 onChange={handleChange}
               >
                 <MenuItem value={"single"}>Single</MenuItem>
@@ -303,7 +283,8 @@ const AddListing = () => {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={roomDetails.washrooms}
-                label="Age"
+                label="washrooms"
+                name="washrooms"
                 onChange={handleChange}
               >
                 <MenuItem value={"attached"}>Attached</MenuItem>
@@ -311,8 +292,6 @@ const AddListing = () => {
                 <MenuItem value={"other"}>Other</MenuItem>
               </Select>
             </FormControl>
-          </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
             <Autocomplete
               disablePortal
               id="combo-box-demo"
@@ -323,15 +302,7 @@ const AddListing = () => {
               )}
               fillWidth
             />
-            <TextField
-              required
-              id="outlined-required"
-              label="Room Size"
-              className="col-start-6 col-end-9"
-              value={roomDetails.roomSize}
-              name="roomSize"
-              onChange={handleChange}
-            />
+            <InputFieldCustom name="roomSize" label="Room Size" value={roomDetails.roomSize} onChange={handleChange} colStart={6} colEnd={9}/>
             <FormControl fullWidth className="col-start-9 col-end-13">
               <InputLabel id="demo-simple-select-label">
                 Furnished Status
@@ -340,7 +311,8 @@ const AddListing = () => {
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={roomDetails.furnishedStatus}
-                label="Age"
+                label="furnishedStatus"
+                name="furnishedStatus"
                 onChange={handleChange}
               >
                 <MenuItem value={"furnished"}>Furnished</MenuItem>
@@ -350,52 +322,154 @@ const AddListing = () => {
                 <MenuItem value={"unfurnished"}>Unfurnished</MenuItem>
               </Select>
             </FormControl>
-          </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Utilities Included"
-              className="col-start-1 col-end-6"
-              value={roomDetails.utilitiesIncluded}
-              name="utilitiesIncluded"
-              onChange={handleChange}
-            />
-            <TextField
-              required
-              id="outlined-required"
-              label="Amenities"
-              className="col-start-6 col-end-13"
-              value={roomDetails.amenities}
-              name="amenities"
-              onChange={handleChange}
-            />
-          </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Additional Description"
+            <div className="col-start-1 col-end-6"><FormControl fullWidth>
+              <InputLabel id="demo-multiple-checkbox-label">Utilities</InputLabel>
+              <Select
+                labelId="demo-multiple-checkbox-label"
+                id="demo-multiple-checkbox"
+                multiple
+                name="utilitiesIncluded"
+                value={roomDetails.utilitiesIncluded}
+                onChange={(event) => {
+                const {
+                  target: { value },
+                } = event;
+                setRoomDetails({
+                  ...roomDetails,
+                  utilitiesIncluded:  typeof value === 'string' ? value.split(',') : value
+                });
+              }}
+                input={<OutlinedInput label="Amenities" />}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={MenuProps}
+              >
+                {utilitiesIncludedNames.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    <Checkbox checked={roomDetails.utilitiesIncluded.indexOf(name) > -1} />
+                    <ListItemText primary={name} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            </div>
+            <div className="col-start-6 col-end-13"><FormControl fullWidth>
+              <InputLabel id="demo-multiple-checkbox-label">Amenities</InputLabel>
+              <Select
+                labelId="demo-multiple-checkbox-label"
+                id="demo-multiple-checkbox"
+                multiple
+                value={roomDetails.amenities}
+                onChange={(event) => {
+                const {
+                  target: { value },
+                } = event;
+                setRoomDetails({
+                  ...roomDetails,
+                  amenities:  typeof value === 'string' ? value.split(',') : value
+                });
+              }}
+                input={<OutlinedInput label="Amenities" />}
+                renderValue={(selected) => selected.join(', ')}
+                MenuProps={MenuProps}
+              >
+                {amenitiesNames.map((name) => (
+                  <MenuItem key={name} value={name}>
+                    <Checkbox checked={roomDetails.amenities.indexOf(name) > -1} />
+                    <ListItemText primary={name} />
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            </div>
+            <InputFieldCustom name="publicTransportAccess" label="Public Transport Access" value={roomDetails.publicTransportAccess} onChange={handleChange} colStart={1} colEnd={8}/>
+            <InputFieldCustom name="energyEfficiencyRating" label="Energy Efficiency Rating" value={roomDetails.energyEfficiencyRating} onChange={handleChange} colStart={8} colEnd={13}/>
+            <InputFieldCustom name="description" label="Description" value={roomDetails.description} onChange={handleChange} colStart={1} colEnd={13} multiline={true} rows={5}/>
+            <InputFieldCustom name="neighborhoodInfo" label="Neighborhood Info" value={roomDetails.neighborhoodInfo} onChange={handleChange} colStart={1} colEnd={13} multiline={true} rows={5}/>
+            <OutlinedInput
+              id="outlined-adornment-weight"
+              endAdornment={<InputAdornment className="cursor-pointer" onClick={()=>{
+                setRoomDetails((prevDetails)=>({
+                  ...prevDetails,
+                  rules: [...prevDetails.rules,rule]
+                }));
+                setRule('');
+              }} position="end">ADD</InputAdornment>}
+              aria-describedby="outlined-weight-helper-text"
+              inputProps={{
+                'aria-label': 'weight',
+              }}
+              placeholder="Rules"
               className="col-start-1 col-end-13"
-              value={roomDetails.description}
-              name="description"
-              onChange={handleChange}
-              multiline
-              rows={4}
+              value={rule}
+              onChange={(e)=>{
+                setRule(e.target.value);
+              }}
             />
-          </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <TextField
-              required
-              id="outlined-required"
-              label="Rules"
+            <div className="col-start-1 col-end-12">
+              {roomDetails.rules.length>0 ? <h3 className="text-lg font-medium my-3">Rules</h3>:null}
+              {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
+                {roomDetails.rules.map((rule)=>(
+                  <li className="w-full list-disc">{rule}</li>
+                ))}
+              </ul>:null}
+            </div>
+            <OutlinedInput
+              id="outlined-adornment-weight"
+              endAdornment={<InputAdornment className="cursor-pointer" onClick={()=>{
+                setRoomDetails((prevDetails)=>({
+                  ...prevDetails,
+                  safetyFeatures: [...prevDetails.safetyFeatures,safetyFeature]
+                }));
+                setSafetyFeature('');
+              }} position="end">ADD</InputAdornment>}
+              aria-describedby="outlined-weight-helper-text"
+              inputProps={{
+                'aria-label': 'weight',
+              }}
+              placeholder="Safety Features"
               className="col-start-1 col-end-13"
-              value={roomDetails.rules}
-              name="rules"
-              onChange={handleChange}
-              multiline
-              rows={4}
+              value={safetyFeature}
+              onChange={(e)=>{
+                setSafetyFeature(e.target.value);
+              }}
             />
+            <div className="col-start-1 col-end-12">
+              {roomDetails.safetyFeatures.length>0 ? <h3 className="text-lg font-medium my-3">Safety Features</h3>:null}
+              {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
+                {roomDetails.safetyFeatures.map((feature)=>(
+                  <li className="w-full list-disc">{feature}</li>
+                ))}
+              </ul>:null}
+            </div>
+            <OutlinedInput
+              id="outlined-adornment-weight"
+              endAdornment={<InputAdornment className="cursor-pointer" onClick={()=>{
+                setRoomDetails((prevDetails)=>({
+                  ...prevDetails,
+                  accessibilityFeatures: [...prevDetails.accessibilityFeatures,accessibilityFeature]
+                }));
+                setAccessibilityFeature('');
+              }} position="end">ADD</InputAdornment>}
+              aria-describedby="outlined-weight-helper-text"
+              inputProps={{
+                'aria-label': 'weight',
+              }}
+              placeholder="Accessibility Features"
+              className="col-start-1 col-end-13"
+              value={accessibilityFeature}
+              onChange={(e)=>{
+                setAccessibilityFeature(e.target.value);
+              }}
+            />
+            <div className="col-start-1 col-end-12">
+              {roomDetails.accessibilityFeatures.length>0 ? <h3 className="text-lg font-medium my-3">Accessibility Features</h3>:null}
+              {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
+                {roomDetails.accessibilityFeatures.map((feature)=>(
+                  <li className="w-full list-disc">{feature}</li>
+                ))}
+              </ul>:null}
+            </div>
+            <InputFieldCustom name="leaseTerms" label="Lease Terms" value={roomDetails.leaseTerms} onChange={handleChange} colStart={1} colEnd={13} multiline={true} rows={5}/>
           </div>
           <div className="grid grid-cols-12 gap-2 my-4">
             <Button
@@ -406,17 +480,18 @@ const AddListing = () => {
               startIcon={<CloudUploadIcon />}
               className="col-start-1 col-end-13 h-32 border-black text-black">
               Upload files
-              <VisuallyHiddenInput type="file" />
+              <VisuallyHiddenInput type="file"  onChange={handleFileChange}/>
             </Button>
           </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <Button
-              type="submit"
-              className="col-start-1 col-end-13 bg-black p-3 text-white"
-              onClick={handleSubmit}>
-              Submit
-            </Button>
+          <div className="flex flex-row flex-wrap">{files.length>0 ?files.map((file)=>(
+            <div className="w-40 h-40 my-2 mx-2 overflow-hidden">
+              <Image src={URL.createObjectURL(file)} alt="Uploaded file" width={200} height={200} 
+              className="w-40 object-contain"
+              />
+            </div>
+          )):null}
           </div>
+         <CustomButton label="Submit" onClick={handleSubmit} colStart={1} colEnd={13} />
         </div>
       </div>
     </>

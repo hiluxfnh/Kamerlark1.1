@@ -47,7 +47,7 @@ const RoomCardNew = (props) => {
               width: "max-content",
             }}
           >
-            {ameneties.map((amenity) => (
+            {props.room.amenities.map((amenity) => (
               <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm">
                 {amenity}
               </p>
@@ -56,19 +56,21 @@ const RoomCardNew = (props) => {
         </div>
         <div className="flex flex-row flex-wrap mt-2 gap-2 justify-between">
           <p className="text-sm pr-1">
-            <HotelIcon fontSize="16" /> Furnished
+            <HotelIcon fontSize="16" /> {
+              props.room.furnishedStatus
+            }
           </p>
           <p className="text-sm pr-1">
-            <PersonIcon fontSize="16" /> 2
+            <PersonIcon fontSize="16" /> {props.room.capacity}
           </p>
           <p className="text-sm pr-1">
-            <HouseIcon fontSize="16" /> 170m2
+            <HouseIcon fontSize="16" /> {props.room.roomSize}m2
           </p>
         </div>
         <div className="my-2">
           <p className="text-sm pr-1">
-            <LocationOnIcon fontSize="16" /> 7-4-10, Gopuram street,
-            Ranganayakulapeta
+            <LocationOnIcon fontSize="16" /> 
+            {props.room.location}
           </p>
         </div>
         {/* <div>{props.room.description.slice(0,50)+"..."}</div> */}

@@ -10,10 +10,13 @@ import Link from "next/link";
 import CustomModal from "../components/CustomModal"; // Import CustomModal component
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
-import { Button } from "@mui/material";
-
+import { Button, Checkbox } from "@mui/material";
+import InputFieldCustom from '../components/InputField'
+import { DatePicker, LocalizationProvider, StaticTimePicker } from "@mui/x-date-pickers";
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import CustomButton from "../components/CustomButton";
+import dayjs from "dayjs";
 const RoomDetails = ({ room }) => {
-  console.log("Room details:", room);
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -24,7 +27,7 @@ const RoomDetails = ({ room }) => {
     email: "",
     phone: "",
     address: "",
-    moveInDate: "",
+    moveInDate: dayjs('2022-04-17'),
     notes: "",
     agreeTerms: false,
   });
@@ -96,20 +99,21 @@ const RoomDetails = ({ room }) => {
       );
       return;
     }
-    try {
-      alert("Booking in progress..." + auth.currentUser.uid);
+    // try {
+    //   alert("Booking in progress..." + auth.currentUser.uid);
 
-      await addDoc(collection(db, "bookings"), {
-        ...bookingDetails,
-        userId: auth.currentUser.uid,
-        roomName: room.name, // Add user ID to the booking details
-      });
-      alert("Booking successful!");
-      setIsBookNowOpen(false);
-    } catch (error) {
-      console.error("Error adding booking: ", error);
-      alert("Failed to book the room");
-    }
+    //   await addDoc(collection(db, "bookings"), {
+    //     ...bookingDetails,
+    //     userId: auth.currentUser.uid,
+    //     roomName: room.name, // Add user ID to the booking details
+    //   });
+    //   alert("Booking successful!");
+    //   setIsBookNowOpen(false);
+    // } catch (error) {
+    //   console.error("Error adding booking: ", error);
+    //   alert("Failed to book the room");
+    // }
+    console.log(bookingDetails);
   };
   const amenties = [
     "Wifi",
@@ -159,7 +163,7 @@ const RoomDetails = ({ room }) => {
           <div className={styles.info}>
             <h1 className="text-xl font-medium my-2">Amenties</h1>
             <div className="flex flex-row flex-wrap gap-2">
-              {amenties.map((amenity, index) => (
+              {room.amenities.map((amenity, index) => (
                 <div className="p-1 px-2 bg-gray-500 text-white rounded-md">
                   <span className="text-base">{amenity}</span>
                 </div>
@@ -439,97 +443,34 @@ const RoomDetails = ({ room }) => {
         onClose={() => setIsBookNowOpen(false)}
         title="Book Now"
       >
-        <p>Fill in the details to book the room:</p>
-        <form className={stylesRoomDetails.form} onSubmit={handleBookingSubmit}>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Full Name:
-              <input
-                type="text"
-                name="name"
-                value={bookingDetails.name}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
+        <p className="text-base font-sans mb-3">Fill in the details to book the room</p>
+        <div className="grid grid-cols-12 gap-4">
+          <InputFieldCustom label={"Name"} name="name" value={bookingDetails.name} onChange={handleInputChange} colStart={1} colEnd={6}/>
+          <InputFieldCustom label={"Email"} name="email" value={bookingDetails.email} onChange={handleInputChange} colStart={6} colEnd={13}/>
+          <InputFieldCustom label={"Phone"} name="phone" value={bookingDetails.phone} onChange={handleInputChange} colStart={1} colEnd={8}/>
+          <div className="col-start-8 col-end-13"><LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <DatePicker label="Move in date" value={bookingDetails.moveInDate}
+              onChange={(newValue) => setBookingDetails((prevDetails) => ({
+                ...prevDetails,
+                moveInDate: newValue
+              }))}
+            />
+          </LocalizationProvider></div>
+          <InputFieldCustom label={"Address"} name="address" value={bookingDetails.address} onChange={handleInputChange} colStart={1} colEnd={13}/>
+          <InputFieldCustom label={"Notes"} name="notes" value={bookingDetails.notes} onChange={handleInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
+          <div className="col-start-1 col-end-13 flex flex-row items-center">
+            <Checkbox
+              name="agreeTerms"
+              checked={bookingDetails.agreeTerms}
+              onChange={handleCheckboxChange}
+              inputProps={{ 'aria-label': 'controlled' }}
+            />
+            <p className="text-base font-sans">
+              I agree to the terms of the leasing contract and policies of KamerLark.
+            </p>
           </div>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Email:{" "}
-              <span className={stylesRoomDetails.email_note}>
-                (Must be changed via profile)
-              </span>
-              <input
-                type="email"
-                name="email"
-                value={bookingDetails.email}
-                readOnly
-                required
-              />
-            </label>
-          </div>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Phone:
-              <input
-                type="tel"
-                name="phone"
-                value={bookingDetails.phone}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-          </div>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Address:
-              <input
-                type="text"
-                name="address"
-                value={bookingDetails.address}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-          </div>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Move-In Date:
-              <input
-                type="date"
-                name="moveInDate"
-                value={bookingDetails.moveInDate}
-                onChange={handleInputChange}
-                required
-              />
-            </label>
-          </div>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              Additional Notes:
-              <textarea
-                name="notes"
-                value={bookingDetails.notes}
-                onChange={handleInputChange}
-              ></textarea>
-            </label>
-          </div>
-          <p>You have to pay a total amount of: {room.price}</p>
-          <div className={stylesRoomDetails.form_group}>
-            <label>
-              <input
-                type="checkbox"
-                name="agreeTerms"
-                checked={bookingDetails.agreeTerms}
-                onChange={handleCheckboxChange}
-                required
-              />
-              I agree to the terms of the leasing contract and policies of
-              KamerLark
-            </label>
-          </div>
-          <button type="submit">Submit</button>
-        </form>
+          <CustomButton label={"Submit"} onClick={handleBookingSubmit} colStart={1} colEnd={13}/>
+        </div>
       </CustomModal>
 
       <CustomModal
@@ -537,55 +478,30 @@ const RoomDetails = ({ room }) => {
         onClose={() => setIsAppointmentOpen(false)}
         title="Book an Appointment"
       >
-        <p>Fill in the details to book an appointment:</p>
-        <form>
-          <label>
-            Full Name:
-            <input
-              type="text"
-              name="name"
-              value={bookingDetails.name}
-              onChange={handleInputChange}
-              required
+        <p className="text-base font-sans mb-3">Fill in the details to book an appointment</p>
+        <div className="grid grid-cols-12 gap-4">
+        <InputFieldCustom label={"Name"} name="name" value={bookingDetails.name} onChange={handleInputChange} colStart={1} colEnd={13}/>
+        <InputFieldCustom label={"Email"} name="email" value={bookingDetails.email} onChange={handleInputChange} colStart={1} colEnd={7}/>
+        <InputFieldCustom label={"Phone"} name="phone" value={bookingDetails.phone} onChange={handleInputChange} colStart={7} colEnd={13}/>
+        <div className="col-start-1 col-end-13">
+        <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <DatePicker label="Preferred Date" 
+              fullWidth
+            // value={bookingDetails.moveInDate}
+              // onChange={(newValue) => setBookingDetails((prevDetails) => ({
+              //   ...prevDetails,
+              //   moveInDate: newValue
+              // }))}
             />
-          </label>
-          <label>
-            Email:{" "}
-            <span className={styles.email_note}>
-              (Must be changed via profile)
-            </span>
-            <input
-              type="email"
-              name="email"
-              value={bookingDetails.email}
-              readOnly
-              required
-            />
-          </label>
-          <label>
-            Phone:
-            <input
-              type="tel"
-              name="phone"
-              value={bookingDetails.phone}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            Preferred Date:
-            <input type="date" name="date" required />
-          </label>
-          <label>
-            Preferred Time:
-            <input type="time" name="time" required />
-          </label>
-          <label>
-            Your Message:
-            <textarea name="message" required></textarea>
-          </label>
-          <button type="submit">Submit</button>
-        </form>
+          </LocalizationProvider>
+        </div>
+        <div className="col-start-1 col-end-13"><LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <StaticTimePicker defaultValue={dayjs('2022-04-17T15:30')} />
+          </LocalizationProvider>
+        </div>
+        <InputFieldCustom label={"Message"} name="message" value={bookingDetails.message} onChange={handleInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
+        <CustomButton label={"Submit"} onClick={handleBookingSubmit} colStart={1} colEnd={13}/>
+        </div>
       </CustomModal>
 
       <CustomModal

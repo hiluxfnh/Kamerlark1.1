@@ -6,7 +6,7 @@ const CustomModal = ({ isOpen, onClose, title, children }) => {
 
   return (
     <>
-      <div className={styles.modal_overlay} onClick={onClose} />
+      <div className={`${styles.modal_overlay} no-scrollbar`} onClick={onClose} />
       <div className={styles.modal}>
         <div className={styles.modal_header}>
           <h2>{title}</h2>

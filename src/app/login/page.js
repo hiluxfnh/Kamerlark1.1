@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { auth, db, storage } from '@/app/firebase/Config';
+import { auth, db, storage } from '../firebase/Config';
 import { 
   useCreateUserWithEmailAndPassword, 
   useSignInWithEmailAndPassword
@@ -15,7 +15,7 @@ import kl from '../assets/kl_christmas.png';
 import { useRouter } from 'next/navigation'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGooglePlusG, faFacebook } from '@fortawesome/free-brands-svg-icons';
-import Message from '@/app/components/Message';
+import Message from '../components/Message';
 
 const LoginSignup = () => {
   const [email, setEmail] = useState('');
