@@ -90,7 +90,24 @@ const RentedPropertiesCard = ({ listing }) => {
             <div
               className="my-1 ml-auto"
               style={{
-                width: "100px",
+                width: "120px",
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                style={{
+                  backgroundColor: "black",
+                }}
+                fullWidth
+              >
+                {listing.status==="completed"?"Accepted":"Pending"}
+              </Button>
+            </div>
+            <div
+              className="my-1 ml-auto"
+              style={{
+                width: "120px",
               }}
             >
               <Button
@@ -107,7 +124,7 @@ const RentedPropertiesCard = ({ listing }) => {
             <div
               className="my-1 ml-auto"
               style={{
-                width: "100px",
+                width: "120px",
               }}
             >
               <Button
