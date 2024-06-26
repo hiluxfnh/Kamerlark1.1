@@ -1,7 +1,12 @@
 import { Box, Tab, Tabs } from "@mui/material";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import React from "react";
+import IncomingAppointmentCard from "./IncomingAppointmentCard";
+import OutgoingAppointmentCard from "./OutgoingAppointmentCard";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth, db } from "../../firebase/Config";
+import { collection, getDocs, query, where } from "firebase/firestore";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -37,6 +42,45 @@ const Appointments = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  const [user]=useAuthState(auth);
+  const [incomingAppointments, setIncomingAppointments] = useState([]);
+  const [outgoingAppointments, setOutgoingAppointments] = useState([]);
+  const fetchAppointments = async () => {
+    if (user) {
+        try {
+          const incoming = query(
+            collection(db, "appointments"),
+            where("ownerId", "==", user.uid)
+          );
+          const outgoing = query(
+                collection(db, "appointments"),
+                where("userId", "==", user.uid)
+            );
+  
+          
+          const [incomingSnapShot ,outgoingSnapShot] = await Promise.all([
+            getDocs(incoming),
+            getDocs(outgoing)
+          ]);
+  
+          const incomingListing = incomingSnapShot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+            const outgoingListing = outgoingSnapShot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setIncomingAppointments(incomingListing);
+            setOutgoingAppointments(outgoingListing);
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      }
+  }
+    useEffect(() => {
+        fetchAppointments();
+    }, [user]);
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -50,10 +94,18 @@ const Appointments = () => {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        Incoming
+        <div className="flex flex-row flex-wrap gap-4">
+        {incomingAppointments.map((appointment) =>(
+            <IncomingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} />
+        ))}
+        </div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-        Outgoing
+        <div className="flex flex-row flex-wrap gap-4">
+          {outgoingAppointments.map((appointment) => (
+            <OutgoingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} />
+          ))}
+        </div>
       </CustomTabPanel>
     </Box>
   );
