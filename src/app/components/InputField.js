@@ -8,12 +8,16 @@ const InputFieldCustom = ({
   multiline = false,
   rows = 1,
   colStart,
-  colEnd
+  colEnd,
+  disabled=false,
+  size="medium",
+  my=2
 }) => {
   return (
-    <div className={`col-start-${colStart} col-end-${colEnd}`}>
+    <div className={`col-start-${colStart} col-end-${colEnd} my-${my}`}>
       <TextField
         required
+        disabled={disabled}
         name={name}
         label={label}
         value={value}
@@ -22,6 +26,7 @@ const InputFieldCustom = ({
         multiline={multiline}
         rows={rows}
         fullWidth
+        size={size}
       />
     </div>
   );

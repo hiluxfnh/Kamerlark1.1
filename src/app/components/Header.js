@@ -74,7 +74,7 @@ const Header = () => {
           <Link href="/" className="text-white">
             Home
           </Link>
-          <Link href="/mylisting" className="text-white">
+          <Link href="/profile?redirect=properties" className="text-white">
             Listing
           </Link>
           <Link href="/community" className="text-white">

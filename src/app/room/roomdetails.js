@@ -16,7 +16,10 @@ import { DatePicker, LocalizationProvider, StaticTimePicker } from "@mui/x-date-
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
+import { useAuthState } from "react-firebase-hooks/auth";
 const RoomDetails = ({ room }) => {
+  
+  const [user] = useAuthState(auth);
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -74,7 +77,7 @@ const RoomDetails = ({ room }) => {
 
   const images = room.images.slice(0, 4); // Only take the first 4 images
   const [selectedImage, setSelectedImage] = useState(images[0]);
-
+  const [addBookingSuccess, setAddBookingSuccess] = useState(false); 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingDetails((prevDetails) => ({
@@ -99,31 +102,30 @@ const RoomDetails = ({ room }) => {
       );
       return;
     }
-    // try {
-    //   alert("Booking in progress..." + auth.currentUser.uid);
-
-    //   await addDoc(collection(db, "bookings"), {
-    //     ...bookingDetails,
-    //     userId: auth.currentUser.uid,
-    //     roomName: room.name, // Add user ID to the booking details
-    //   });
-    //   alert("Booking successful!");
-    //   setIsBookNowOpen(false);
-    // } catch (error) {
-    //   console.error("Error adding booking: ", error);
-    //   alert("Failed to book the room");
-    // }
-    console.log(bookingDetails);
+     try {
+      const bookingDetailsModified = {
+        userName: bookingDetails.name,
+        userEmail: bookingDetails.email,
+        userPhone: bookingDetails.phone,
+        userAddress: bookingDetails.address,
+        moveInDate: `${bookingDetails.moveInDate.$D}-${bookingDetails.moveInDate.$M}-${bookingDetails.moveInDate.$y}`,
+        notes: bookingDetails.notes,
+        roomId: room.id,
+        ownerId: room.ownerId,
+        userId: auth.currentUser.uid, // Add user ID to the booking details
+        chatId: "",
+        status:"pending",
+      }
+       alert("Booking in progress..." + auth.currentUser.uid);
+       await addDoc(collection(db, "bookings"), bookingDetailsModified);
+       alert("Booking successful!");
+       setIsBookNowOpen(false);
+       setAddBookingSuccess(true);
+     } catch (error) {
+      console.error("Error adding booking: ", error);
+      alert("Failed to book the room");
+     }
   };
-  const amenties = [
-    "Wifi",
-    "Electricity",
-    "Water",
-    "Furnished",
-    "Parking",
-    "Security",
-    "Cleaning",
-  ];
   return (
     <>
       <div className="w-256 mx-auto">
@@ -180,7 +182,7 @@ const RoomDetails = ({ room }) => {
                 <span className="text-lg font-medium">(Inclusive taxes)</span>
               </p>
             </div>
-            <div className="grid grid-cols-12 w-96  gap-2 my-2">
+            {room.ownerId!==user.uid?<><div className="grid grid-cols-12 w-96  gap-2 my-2">
               <Button
                 onClick={() => setIsBookNowOpen(true)}
                 variant="contained"
@@ -227,7 +229,7 @@ const RoomDetails = ({ room }) => {
               >
                 View Contract Terms
               </Button>
-            </div>
+            </div></>:null}
 
             <div className={styles.social_media_icon}>
               <FontAwesomeIcon icon={faFacebook} />
@@ -437,6 +439,14 @@ const RoomDetails = ({ room }) => {
           <div>Loading owner details...</div>
         )}
       </div> */}
+
+      <CustomModal
+        isOpen={addBookingSuccess}
+        onClose={() => setAddBookingSuccess(false)}
+        title="Booking Successful"
+      >
+        <p>Your booking has submitted for approval. Wait for the owners response.</p>
+      </CustomModal>
 
       <CustomModal
         isOpen={isBookNowOpen}

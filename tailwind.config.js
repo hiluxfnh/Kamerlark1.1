@@ -16,6 +16,7 @@ module.exports = {
       200:'50rem',
       80:'20rem',
       64:'16rem',
+      170:'42.5rem',
     }
   },
   plugins: [],

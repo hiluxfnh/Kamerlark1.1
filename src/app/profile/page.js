@@ -38,7 +38,10 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { Button } from "@mui/material";
 import Image from "next/image";
-
+import { useRouter } from 'next/navigation';
+import Link from "next/link";
+import RentedPropertiesCard from "./Components/RentedPropertiesCard";
+import CustomerBookings from "./Components/CustomerBookings";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -71,6 +74,12 @@ function a11yProps(index) {
 
 export default function UserProfile() {
   const [tab, setTab] = useState("account");
+  useEffect(() => {
+    if(window){
+      const queryParameters = new URLSearchParams(window.location.search)
+      setTab(queryParameters.get('redirect') || 'account')
+    }
+  },[])
   const [user] = useAuthState(auth);
   const [personalInfo, setPersonalInfo] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state
@@ -175,6 +184,7 @@ export default function UserProfile() {
 function RentedProperties({ personalInfo, user }) {
   const [listings, setListings] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [adminBookings, setAdminBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [value, setValue] = React.useState(0);
 
@@ -195,23 +205,42 @@ function RentedProperties({ personalInfo, user }) {
             collection(db, "bookings"),
             where("userId", "==", user.uid)
           );
-
-          const [listingsSnapshot, bookingsSnapshot] = await Promise.all([
+          const adminBookingsQuery = query(
+            collection(db, "bookings"),
+            where("ownerId", "==", user.uid)
+          );
+          const [listingsSnapshot, bookingsSnapshot, adminBookingsSnapshot] = await Promise.all([
             getDocs(listingsQuery),
             getDocs(bookingsQuery),
+            getDocs(adminBookingsQuery),
           ]);
 
           const fetchedListings = listingsSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
+          setListings(fetchedListings);
           const fetchedBookings = bookingsSnapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
           }));
-
-          setListings(fetchedListings);
-          setBookings(fetchedBookings);
+          const roomDetailsPromises = fetchedBookings.map(async (booking) => {
+            const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
+            return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
+          });
+  
+          const bookingsWithRoomDetails = await Promise.all(roomDetailsPromises);
+          setBookings(bookingsWithRoomDetails);
+          const fetchedAdminBookings = adminBookingsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          const adminRoomDetailsPromises = fetchedAdminBookings.map(async (booking) => {
+            const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
+            return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
+          });
+          const adminBookingsWithRoomDetails = await Promise.all(adminRoomDetailsPromises);
+          setAdminBookings(adminBookingsWithRoomDetails);
         } catch (error) {
           console.error("Error fetching data: ", error);
         }
@@ -221,6 +250,9 @@ function RentedProperties({ personalInfo, user }) {
 
     fetchListingsAndBookings();
   }, [user]);
+  useEffect(() => {
+    console.log("vook",bookings);
+  }, [bookings]);
   useEffect(() => {
     console.log(listings, bookings);
   }, [listings, bookings]);
@@ -272,14 +304,20 @@ function RentedProperties({ personalInfo, user }) {
             aria-label="basic tabs example"
           >
             <Tab label="Rented Properties" {...a11yProps(0)} />
-            <Tab label="My Listings" {...a11yProps(1)} />
+            <Tab label="Bookings" {...a11yProps(1)} />
+            <Tab label="My Listings" {...a11yProps(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          Rented Properties
+          <h1>Rented Properties</h1>
+          {bookings.length>0 ? bookings.map((listing) => <RentedPropertiesCard listing={listing}/>):null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-        <h1>Listed Properties</h1>
+          <h1>Customer Bookings</h1>
+          {adminBookings.length>0 ? adminBookings.map((listing) => <CustomerBookings listing={listing}/>):null}
+        </CustomTabPanel>
+        <CustomTabPanel value={value} index={2}>
+          <h1>Listed Properties</h1>
           {listings.map((listing) => (
             <div
               className="grid grid-cols-12 w-200 rounded-xl my-3 p-4"
@@ -312,7 +350,7 @@ function RentedProperties({ personalInfo, user }) {
                   width:'max-content'
                 }}>
                   {
-                    ameneties.map((amenity) => (
+                    listing.amenities.map((amenity) => (
                       <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm">
                         {amenity}
                       </p>
@@ -327,6 +365,7 @@ function RentedProperties({ personalInfo, user }) {
                   <p className="text-sm pr-2 border-r-2 border-r-slate-400">{listing.publicTransportAccess.length!==0?listing.publicTransportAccess:"Not mentioned"}</p>
                   <p className="text-sm">{listing.uni.length!==0?"Near "+listing.uni:"Not mentioned"}</p>
                 </div>
+                <Link href={`/room/${listing.id}`} className="text-base text-gray-600">View Details</Link>
               </div>
               <div className="col-start-10 col-end-13">
                 <div className="flex flex-col mx-4">
@@ -335,7 +374,7 @@ function RentedProperties({ personalInfo, user }) {
                   }}><Button variant="contained" color="primary" style={{
                     backgroundColor: "black",
                   }} fullWidth>
-                    Edit
+                    <Link href={`/listing/edit/${listing.id}`}>Edit</Link>
                   </Button></div>
                   <div className="my-1 ml-auto" style={{
                     width: "100px",
