@@ -10,7 +10,7 @@ import Link from "next/link";
 import CustomModal from "../components/CustomModal"; // Import CustomModal component
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
-import { Button, Checkbox } from "@mui/material";
+import { Button, Checkbox, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import InputFieldCustom from '../components/InputField'
 import { DatePicker, LocalizationProvider, StaticTimePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -34,6 +34,15 @@ const RoomDetails = ({ room }) => {
     notes: "",
     agreeTerms: false,
   });
+  const [appointmentDetails, setAppointmentDetails] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    date: dayjs('2022-04-17'),
+    time: dayjs('2022-04-17T15:30'),
+    appointmenttype: "",
+    message: "",
+  });
   const [ownerDetails, setOwnerDetails] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
@@ -50,6 +59,12 @@ const RoomDetails = ({ room }) => {
             email: userDoc.data().email,
             phone: userDoc.data().phoneNumber,
             address: userDoc.data().address || "",
+          }));
+          setAppointmentDetails((prevDetails) => ({
+            ...prevDetails,
+            name: userDoc.data().firstName + " " + userDoc.data().lastName,
+            email: userDoc.data().email,
+            phone: userDoc.data().phoneNumber,
           }));
         }
       }
@@ -85,7 +100,13 @@ const RoomDetails = ({ room }) => {
       [name]: value,
     }));
   };
-
+  const handleAppointmentInputChange = (e) => {
+    const { name, value } = e.target;
+    setAppointmentDetails((prevDetails) => ({
+      ...prevDetails,
+      [name]: value,
+    }));
+  };
   const handleCheckboxChange = (e) => {
     const { name, checked } = e.target;
     setBookingDetails((prevDetails) => ({
@@ -121,6 +142,31 @@ const RoomDetails = ({ room }) => {
        alert("Booking successful!");
        setIsBookNowOpen(false);
        setAddBookingSuccess(true);
+     } catch (error) {
+      console.error("Error adding booking: ", error);
+      alert("Failed to book the room");
+     }
+  };
+
+  const handleAppointmentSubmit = async (e) => {
+    e.preventDefault();
+     try {
+      const appointmentDetailsModified = {
+        userName: appointmentDetails.name,
+        userEmail: appointmentDetails.email,
+        userPhone: appointmentDetails.phone,
+        appointmentDate: `${appointmentDetails.date.$D}-${appointmentDetails.date.$M}-${appointmentDetails.date.$y}`,
+        appointmentTime: `${appointmentDetails.time.$H}:${appointmentDetails.time.$m}`,
+        message: appointmentDetails.message,
+        roomId: room.id,
+        ownerId: room.ownerId,
+        userId: auth.currentUser.uid, // Add user ID to the booking details
+        chatId: "",
+        status:"pending",
+      }
+       await addDoc(collection(db, "appointments"), appointmentDetailsModified);
+       alert("Appointment successful!");
+       setIsAppointmentOpen(false);
      } catch (error) {
       console.error("Error adding booking: ", error);
       alert("Failed to book the room");
@@ -490,27 +536,47 @@ const RoomDetails = ({ room }) => {
       >
         <p className="text-base font-sans mb-3">Fill in the details to book an appointment</p>
         <div className="grid grid-cols-12 gap-4">
-        <InputFieldCustom label={"Name"} name="name" value={bookingDetails.name} onChange={handleInputChange} colStart={1} colEnd={13}/>
-        <InputFieldCustom label={"Email"} name="email" value={bookingDetails.email} onChange={handleInputChange} colStart={1} colEnd={7}/>
-        <InputFieldCustom label={"Phone"} name="phone" value={bookingDetails.phone} onChange={handleInputChange} colStart={7} colEnd={13}/>
+        <InputFieldCustom label={"Name"} name="name" value={appointmentDetails.name} onChange={handleAppointmentInputChange} colStart={1} colEnd={13}/>
+        <InputFieldCustom label={"Email"} name="email" value={appointmentDetails.email} onChange={handleAppointmentInputChange} colStart={1} colEnd={7}/>
+        <InputFieldCustom label={"Phone"} name="phone" value={appointmentDetails.phone} onChange={handleAppointmentInputChange} colStart={7} colEnd={13}/>
         <div className="col-start-1 col-end-13">
         <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
             <DatePicker label="Preferred Date" 
               fullWidth
-            // value={bookingDetails.moveInDate}
-              // onChange={(newValue) => setBookingDetails((prevDetails) => ({
-              //   ...prevDetails,
-              //   moveInDate: newValue
-              // }))}
+              value={appointmentDetails.date}
+              onChange={(newValue) => setAppointmentDetails((prevDetails) => ({
+                ...prevDetails,
+                date: newValue
+              }))}
             />
           </LocalizationProvider>
         </div>
         <div className="col-start-1 col-end-13"><LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
-            <StaticTimePicker defaultValue={dayjs('2022-04-17T15:30')} />
+            <StaticTimePicker defaultValue={dayjs('2022-04-17T15:30')} value={appointmentDetails.time} onChange={(newValue)=>{
+              setAppointmentDetails((prevDetails) => ({
+                ...prevDetails,
+                time: newValue
+              }))
+              console.log({newValue})
+            }}/>
           </LocalizationProvider>
         </div>
-        <InputFieldCustom label={"Message"} name="message" value={bookingDetails.message} onChange={handleInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
-        <CustomButton label={"Submit"} onClick={handleBookingSubmit} colStart={1} colEnd={13}/>
+        <FormControl fullWidth className="col-start-1 col-end-13 mt-2">
+              <InputLabel id="demo-simple-select-label">Appointment Type</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={appointmentDetails.appointmenttype}
+                label="Appoinment Type"
+                name="appointmenttype"
+                onChange={handleAppointmentInputChange}
+              >
+                <MenuItem value={"inperson"}>In Person</MenuItem>
+                <MenuItem value={"virtual"}>Virtual</MenuItem>
+              </Select>
+            </FormControl>
+        <InputFieldCustom label={"Message"} name="message" value={appointmentDetails.message} onChange={handleAppointmentInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
+        <CustomButton label={"Submit"} onClick={handleAppointmentSubmit} colStart={1} colEnd={13}/>
         </div>
       </CustomModal>
 

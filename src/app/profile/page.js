@@ -42,6 +42,7 @@ import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import RentedPropertiesCard from "./Components/RentedPropertiesCard";
 import CustomerBookings from "./Components/CustomerBookings";
+import Appointments from "./Components/Appointments";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -104,8 +105,6 @@ export default function UserProfile() {
         return <AccountManagement personalInfo={personalInfo} user={user} />;
       case "properties":
         return <RentedProperties personalInfo={personalInfo} user={user} />;
-      case "contracts":
-        return <Contracts />;
       case "notifications":
         return <Notifications />;
       case "settings":
@@ -145,17 +144,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("properties")}
             >
-              <HomeIcon className="w-6 h-6 inline-block mr-2" /> Rented
-              Properties
-            </li>
-            <li
-              className={`p-4 cursor-pointer ${
-                tab === "contracts" ? "bg-gray-200" : ""
-              }`}
-              onClick={() => setTab("contracts")}
-            >
-              <DocumentTextIcon className="w-6 h-6 inline-block mr-2" />{" "}
-              Contracts
+              <HomeIcon className="w-6 h-6 inline-block mr-2" /> Dashboard
             </li>
             <li
               className={`p-4 cursor-pointer ${
@@ -191,63 +180,62 @@ function RentedProperties({ personalInfo, user }) {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  useEffect(() => {
-    const fetchListingsAndBookings = async () => {
-      setLoading(true);
-      if (user) {
-        try {
-          const listingsQuery = query(
-            collection(db, "roomdetails"),
-            where("ownerId", "==", user.uid)
-          );
+  const fetchListingsAndBookings = async () => {
+    setLoading(true);
+    if (user) {
+      try {
+        const listingsQuery = query(
+          collection(db, "roomdetails"),
+          where("ownerId", "==", user.uid)
+        );
 
-          const bookingsQuery = query(
-            collection(db, "bookings"),
-            where("userId", "==", user.uid)
-          );
-          const adminBookingsQuery = query(
-            collection(db, "bookings"),
-            where("ownerId", "==", user.uid)
-          );
-          const [listingsSnapshot, bookingsSnapshot, adminBookingsSnapshot] = await Promise.all([
-            getDocs(listingsQuery),
-            getDocs(bookingsQuery),
-            getDocs(adminBookingsQuery),
-          ]);
+        const bookingsQuery = query(
+          collection(db, "bookings"),
+          where("userId", "==", user.uid)
+        );
+        const adminBookingsQuery = query(
+          collection(db, "bookings"),
+          where("ownerId", "==", user.uid)
+        );
+        const [listingsSnapshot, bookingsSnapshot, adminBookingsSnapshot] = await Promise.all([
+          getDocs(listingsQuery),
+          getDocs(bookingsQuery),
+          getDocs(adminBookingsQuery),
+        ]);
 
-          const fetchedListings = listingsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setListings(fetchedListings);
-          const fetchedBookings = bookingsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          const roomDetailsPromises = fetchedBookings.map(async (booking) => {
-            const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
-            return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
-          });
-  
-          const bookingsWithRoomDetails = await Promise.all(roomDetailsPromises);
-          setBookings(bookingsWithRoomDetails);
-          const fetchedAdminBookings = adminBookingsSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          const adminRoomDetailsPromises = fetchedAdminBookings.map(async (booking) => {
-            const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
-            return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
-          });
-          const adminBookingsWithRoomDetails = await Promise.all(adminRoomDetailsPromises);
-          setAdminBookings(adminBookingsWithRoomDetails);
-        } catch (error) {
-          console.error("Error fetching data: ", error);
-        }
+        const fetchedListings = listingsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setListings(fetchedListings);
+        const fetchedBookings = bookingsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        const roomDetailsPromises = fetchedBookings.map(async (booking) => {
+          const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
+          return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
+        });
+
+        const bookingsWithRoomDetails = await Promise.all(roomDetailsPromises);
+        setBookings(bookingsWithRoomDetails);
+        const fetchedAdminBookings = adminBookingsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        const adminRoomDetailsPromises = fetchedAdminBookings.map(async (booking) => {
+          const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
+          return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
+        });
+        const adminBookingsWithRoomDetails = await Promise.all(adminRoomDetailsPromises);
+        setAdminBookings(adminBookingsWithRoomDetails);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
       }
-      setLoading(false);
-    };
-
+    }
+    setLoading(false);
+  };
+  useEffect(() => {
     fetchListingsAndBookings();
   }, [user]);
   useEffect(() => {
@@ -303,18 +291,19 @@ function RentedProperties({ personalInfo, user }) {
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab label="Rented Properties" {...a11yProps(0)} />
-            <Tab label="Bookings" {...a11yProps(1)} />
+            <Tab label="MY BOOKINGS" {...a11yProps(0)} />
+            <Tab label="CUSTOMER BOOKINGS" {...a11yProps(1)} />
             <Tab label="My Listings" {...a11yProps(2)} />
+            <Tab label="APPOINTMENTS" {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
           <h1>Rented Properties</h1>
-          {bookings.length>0 ? bookings.map((listing) => <RentedPropertiesCard listing={listing}/>):null}
+          {bookings.length>0 ? bookings.map((listing) => <RentedPropertiesCard listing={listing} refresher={fetchListingsAndBookings}/>):null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <h1>Customer Bookings</h1>
-          {adminBookings.length>0 ? adminBookings.map((listing) => <CustomerBookings listing={listing}/>):null}
+          {adminBookings.length>0 ? adminBookings.map((listing) => <CustomerBookings listing={listing} refresher={fetchListingsAndBookings}/>):null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <h1>Listed Properties</h1>
@@ -394,98 +383,14 @@ function RentedProperties({ personalInfo, user }) {
             </div>
           ))}
         </CustomTabPanel>
+        <CustomTabPanel value={value} index={3}>
+        <Appointments/>
+        </CustomTabPanel>
       </Box>
     </div>
   );
 }
 
-function Contracts() {
-  const [contracts, setContracts] = useState([
-    {
-      id: 1,
-      title: "Rental Agreement - Sunny Apartment",
-      startDate: "2024-01-01",
-      endDate: "2024-12-31",
-      status: "Active",
-      image: "/path/to/contract1.jpg", // Add the path to the image or PDF
-    },
-    {
-      id: 2,
-      title: "Lease Agreement - Cozy Cottage",
-      startDate: "2023-06-01",
-      endDate: "2024-05-31",
-      status: "Expired",
-      image: "/path/to/contract2.jpg", // Add the path to the image or PDF
-    },
-    {
-      id: 3,
-      title: "Rental Agreement - Modern Loft",
-      startDate: "2024-02-01",
-      endDate: "2025-01-31",
-      status: "Pending",
-      image: "/path/to/contract3.jpg", // Add the path to the image or PDF
-    },
-  ]);
-
-  const [selectedContract, setSelectedContract] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleViewDetails = (contract) => {
-    setSelectedContract(contract);
-    setIsModalOpen(true);
-  };
-
-  return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Contracts</h2>
-      <p>Here you can view your contracts.</p>
-      <div className="grid gap-4 mt-6">
-        {contracts.map((contract) => (
-          <div
-            key={contract.id}
-            className="bg-white shadow rounded-lg p-4 border border-gray-200"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">{contract.title}</h3>
-                <div className="flex items-center text-sm text-gray-500 mt-2">
-                  <DocumentTextIcon className="w-4 h-4 mr-1" />
-                  Start Date:{" "}
-                  {new Date(contract.startDate).toLocaleDateString()}
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <DocumentTextIcon className="w-4 h-4 mr-1" />
-                  End Date: {new Date(contract.endDate).toLocaleDateString()}
-                </div>
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                  <StatusIcon
-                    status={contract.status}
-                    className="w-4 h-4 mr-1"
-                  />
-                  Status: {contract.status}
-                </div>
-              </div>
-              <button
-                onClick={() => handleViewDetails(contract)}
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full flex items-center"
-              >
-                <EyeIcon className="w-5 h-5 mr-2" />
-                View Details
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-      {selectedContract && (
-        <ViewModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          contract={selectedContract}
-        />
-      )}
-    </div>
-  );
-}
 
 function StatusIcon({ status, className }) {
   switch (status) {

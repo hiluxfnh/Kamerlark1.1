@@ -5,8 +5,30 @@ import { useState } from "react";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import InputFieldCustom from "../../components/InputField";
-const CustomerBookings = ({ listing }) => {
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase/Config";
+import { useRouter } from "next/navigation";
+const CustomerBookings = ({ listing,refresher }) => {
   const [show, setShow] = useState(false);
+  const bookingDocRef = doc(db, "bookings", listing.id);
+  const router = useRouter();
+  const onAccept = async () => {
+    try {
+      await setDoc(bookingDocRef, { status: "completed" }, { merge: true });
+      refresher();
+    } catch (e) {
+      console.error("Error updating document: ", e);
+    }
+  };
+  const onDecline = async () => {
+    try {
+      await setDoc(bookingDocRef, { status: "declined" }, { merge: true });
+      refresher();
+    } catch (e) {
+      console.error("Error updating document: ", e);
+    }
+  }
+
   return (
     <div
       className="rounded-xl my-3 p-4  w-200"
@@ -14,7 +36,10 @@ const CustomerBookings = ({ listing }) => {
     >
       <div className="grid grid-cols-12">
         <div className="col-start-1 col-end-9">
+          <div className="flex flex-row justify-between">
           <h3 className="text-lg font-medium">{listing.roomDetails.name}</h3>
+          <p>Status : {listing.status}</p>
+          </div>
           <div className="pt-3 border-t-2 mt-3">
             <h1 className="font-semibold text-base">Contract</h1>
             <div className="grid grid-cols-12 gap-4 my-3">
@@ -91,46 +116,58 @@ const CustomerBookings = ({ listing }) => {
         </div>
         <div className="col-start-9 col-end-13">
           <div className="grid grid-cols-1 gap-4 mx-5">
-              <Button
-                variant="contained"
-                color="primary"
-                style={{
-                  backgroundColor: "black",
-                }}
-                fullWidth
-              >
-                View User Profile
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                style={{
-                  backgroundColor: "black",
-                }}
-                fullWidth
-              >
-                Room Details
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                style={{
-                  backgroundColor: "black",
-                }}
-                fullWidth
-              >
-                Chat with User
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                style={{
-                  backgroundColor: "darkred",
-                }}
-                fullWidth
-              >
-                Cancel
-              </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{
+                backgroundColor: "black",
+              }}
+              fullWidth
+            >
+              View User Profile
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{
+                backgroundColor: "black",
+              }}
+              fullWidth
+            >
+              Room Details
+            </Button>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{
+                backgroundColor: "black",
+              }}
+              fullWidth
+            >
+              Chat with User
+            </Button>
+            {listing.status==="pending"?<><Button
+              variant="contained"
+              color="success"
+              style={{
+                backgroundColor: "darkgreen",
+              }}
+              fullWidth
+              onClick={onAccept}
+            >
+              Accept
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{
+                backgroundColor: "darkred",
+              }}
+              fullWidth
+              onClick={onDecline}
+            >
+              Declined
+            </Button></>:null}
           </div>
         </div>
       </div>

@@ -5,8 +5,19 @@ import { useState } from "react";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import InputFieldCustom from "../../components/InputField";
-const RentedPropertiesCard = ({ listing }) => {
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../../firebase/Config";
+const RentedPropertiesCard = ({ listing ,refresher}) => {
   const [show, setShow] = useState(false);
+  const bookingDocRef = doc(db, "bookings", listing.id);
+  const onCancel = async () => {
+    try {
+      await setDoc(bookingDocRef, { status: "cancelled" }, { merge: true });
+      refresher();
+    } catch (e) {
+      console.error("Error updating document: ", e);
+    }
+  }
   return (
     <div
       className="rounded-xl my-3 p-4  w-200"
@@ -34,7 +45,9 @@ const RentedPropertiesCard = ({ listing }) => {
           />
         </div>
         <div className="col-start-4 col-end-10">
-          <h3 className="text-lg font-medium">{listing.roomDetails.name}</h3>
+          <div className="flex flex-row justify-between"><h3 className="text-lg font-medium">{listing.roomDetails.name}</h3>
+          <p>Status : {listing.status}</p>
+          </div>
           <div className="overflow-scroll no-scrollbar">
             <div
               className="flex flex-row"
@@ -101,31 +114,15 @@ const RentedPropertiesCard = ({ listing }) => {
                 }}
                 fullWidth
               >
-                {listing.status==="completed"?"Accepted":"Pending"}
-              </Button>
-            </div>
-            <div
-              className="my-1 ml-auto"
-              style={{
-                width: "120px",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                style={{
-                  backgroundColor: "black",
-                }}
-                fullWidth
-              >
                 Chat
               </Button>
             </div>
-            <div
+            {listing.status==="pending"?<div
               className="my-1 ml-auto"
               style={{
                 width: "120px",
               }}
+              onClick={onCancel}
             >
               <Button
                 variant="contained"
@@ -137,7 +134,7 @@ const RentedPropertiesCard = ({ listing }) => {
               >
                 Cancel
               </Button>
-            </div>
+            </div>:null}
             <div className="flex flex-row ml-auto">
               <p className="text-xl font-medium">
                 Price: {listing.roomDetails.price}
