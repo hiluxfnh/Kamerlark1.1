@@ -18,6 +18,7 @@ const RoomCardNew = (props) => {
     "Security",
     "Laundry",
   ];
+  console.log(props.room.images[0]);
   return (
     <div
       className="w-64 rounded-xl p-4 gap-4"
@@ -25,17 +26,13 @@ const RoomCardNew = (props) => {
         boxShadow: "0 0 10px 0 lightgrey",
       }}
     >
-      <div className="w-full h-36 overflow-hidden rounded-lg relative">
+      <div className="w-full h-40 overflow-hidden rounded-lg">
         <Image
-          className="w-full absolute top-1/2 left-1/2"
-          style={{
-            width: "100%",
-            transform: "translate(-50%,-50%)",
-          }}
+          className="h-40 object-cover rounded-lg"
           src={props.room.images[0]}
           alt={props.room.name}
-          width={200}
-          height={200}
+          width={500}
+          height={500}
         />
       </div>
       <div>

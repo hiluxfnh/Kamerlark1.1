@@ -30,6 +30,11 @@ import {
   InformationCircleIcon,
   TrashIcon,
 } from "@heroicons/react/outline";
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import Spinner from "../components/Spinner"; // Import Spinner
 import TextField from "@mui/material/TextField";
 import PropTypes from "prop-types";
@@ -38,11 +43,11 @@ import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
 import { Button } from "@mui/material";
 import Image from "next/image";
-import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import RentedPropertiesCard from "./Components/RentedPropertiesCard";
 import CustomerBookings from "./Components/CustomerBookings";
 import Appointments from "./Components/Appointments";
+import { usePathname, useRouter } from "next/navigation";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -76,15 +81,16 @@ function a11yProps(index) {
 export default function UserProfile() {
   const [tab, setTab] = useState("account");
   useEffect(() => {
-    if(window){
-      const queryParameters = new URLSearchParams(window.location.search)
-      setTab(queryParameters.get('redirect') || 'account')
+    if (window) {
+      const queryParameters = new URLSearchParams(window.location.search);
+      setTab(queryParameters.get("redirect") || "account");
     }
-  },[])
+  }, []);
   const [user] = useAuthState(auth);
   const [personalInfo, setPersonalInfo] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state
-
+  const pathname = usePathname();
+  const router = useRouter();
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
@@ -121,46 +127,54 @@ export default function UserProfile() {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <Header />
-      <header className="bg-white shadow">
-        <div className="container mx-auto flex justify-between items-center h-[60px] px-4 sm:px-6">
-          <h1 className="text-2xl font-bold">Profile</h1>
-        </div>
-      </header>
       <div className="flex flex-1">
         <nav className="w-[250px] bg-white border-r">
           <ul className="flex flex-col">
             <li
-              className={`p-4 cursor-pointer ${
+              className={`p-4 cursor-pointer flex flex-row items-center ${
                 tab === "account" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("account")}
             >
-              <UserIcon className="w-6 h-6 inline-block mr-2" /> Account
-              Management
+              <ManageAccountsIcon className="mr-3"/> Account Management
             </li>
             <li
-              className={`p-4 cursor-pointer ${
+              className={`p-4 cursor-pointer flex flex-row items-center ${
                 tab === "properties" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("properties")}
             >
-              <HomeIcon className="w-6 h-6 inline-block mr-2" /> Dashboard
+             <DashboardIcon className="mr-3"/> Dashboard
             </li>
             <li
-              className={`p-4 cursor-pointer ${
+              className={`p-4 cursor-pointer flex flex-row items-center ${
                 tab === "notifications" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("notifications")}
             >
-              <BellIcon className="w-6 h-6 inline-block mr-2" /> Notifications
+             <NotificationsActiveIcon className="mr-3"/> Notifications
             </li>
             <li
-              className={`p-4 cursor-pointer ${
+              className={`p-4 cursor-pointer flex flex-row items-center ${
                 tab === "settings" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("settings")}
             >
-              <CogIcon className="w-6 h-6 inline-block mr-2" /> Settings
+             <SettingsIcon className="mr-3"/> Settings
+            </li>
+            <li
+              className={`p-4 cursor-pointer flex flex-row items-center ${
+                tab === "settings" ? "bg-gray-200" : ""
+              }`}
+              onClick={() => {
+                auth.signOut().then(() => {
+                  if (pathname !== "/") {
+                    router.push("/login");
+                  }
+                });
+              }}
+            >
+             <MeetingRoomIcon className="mr-3"/> Logout
             </li>
           </ul>
         </nav>
@@ -197,11 +211,12 @@ function RentedProperties({ personalInfo, user }) {
           collection(db, "bookings"),
           where("ownerId", "==", user.uid)
         );
-        const [listingsSnapshot, bookingsSnapshot, adminBookingsSnapshot] = await Promise.all([
-          getDocs(listingsQuery),
-          getDocs(bookingsQuery),
-          getDocs(adminBookingsQuery),
-        ]);
+        const [listingsSnapshot, bookingsSnapshot, adminBookingsSnapshot] =
+          await Promise.all([
+            getDocs(listingsQuery),
+            getDocs(bookingsQuery),
+            getDocs(adminBookingsQuery),
+          ]);
 
         const fetchedListings = listingsSnapshot.docs.map((doc) => ({
           id: doc.id,
@@ -214,7 +229,10 @@ function RentedProperties({ personalInfo, user }) {
         }));
         const roomDetailsPromises = fetchedBookings.map(async (booking) => {
           const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
-          return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
+          return {
+            ...booking,
+            roomDetails: roomDoc.exists() ? roomDoc.data() : null,
+          };
         });
 
         const bookingsWithRoomDetails = await Promise.all(roomDetailsPromises);
@@ -223,11 +241,20 @@ function RentedProperties({ personalInfo, user }) {
           id: doc.id,
           ...doc.data(),
         }));
-        const adminRoomDetailsPromises = fetchedAdminBookings.map(async (booking) => {
-          const roomDoc = await getDoc(doc(db, "roomdetails", booking.roomId));
-          return { ...booking, roomDetails: roomDoc.exists() ? roomDoc.data() : null };
-        });
-        const adminBookingsWithRoomDetails = await Promise.all(adminRoomDetailsPromises);
+        const adminRoomDetailsPromises = fetchedAdminBookings.map(
+          async (booking) => {
+            const roomDoc = await getDoc(
+              doc(db, "roomdetails", booking.roomId)
+            );
+            return {
+              ...booking,
+              roomDetails: roomDoc.exists() ? roomDoc.data() : null,
+            };
+          }
+        );
+        const adminBookingsWithRoomDetails = await Promise.all(
+          adminRoomDetailsPromises
+        );
         setAdminBookings(adminBookingsWithRoomDetails);
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -239,7 +266,7 @@ function RentedProperties({ personalInfo, user }) {
     fetchListingsAndBookings();
   }, [user]);
   useEffect(() => {
-    console.log("vook",bookings);
+    console.log("vook", bookings);
   }, [bookings]);
   useEffect(() => {
     console.log(listings, bookings);
@@ -299,11 +326,25 @@ function RentedProperties({ personalInfo, user }) {
         </Box>
         <CustomTabPanel value={value} index={0}>
           <h1>Rented Properties</h1>
-          {bookings.length>0 ? bookings.map((listing) => <RentedPropertiesCard listing={listing} refresher={fetchListingsAndBookings}/>):null}
+          {bookings.length > 0
+            ? bookings.map((listing) => (
+                <RentedPropertiesCard
+                  listing={listing}
+                  refresher={fetchListingsAndBookings}
+                />
+              ))
+            : null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <h1>Customer Bookings</h1>
-          {adminBookings.length>0 ? adminBookings.map((listing) => <CustomerBookings listing={listing} refresher={fetchListingsAndBookings}/>):null}
+          {adminBookings.length > 0
+            ? adminBookings.map((listing) => (
+                <CustomerBookings
+                  listing={listing}
+                  refresher={fetchListingsAndBookings}
+                />
+              ))
+            : null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <h1>Listed Properties</h1>
@@ -335,48 +376,97 @@ function RentedProperties({ personalInfo, user }) {
               <div className="col-start-4 col-end-10">
                 <h3 className="text-lg font-medium">{listing.name}</h3>
                 <div className="overflow-scroll no-scrollbar">
-                <div className="flex flex-row" style={{
-                  width:'max-content'
-                }}>
-                  {
-                    listing.amenities.map((amenity) => (
+                  <div
+                    className="flex flex-row"
+                    style={{
+                      width: "max-content",
+                    }}
+                  >
+                    {listing.amenities.map((amenity) => (
                       <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm">
                         {amenity}
                       </p>
-                    ))
-                  }
+                    ))}
                   </div>
                 </div>
                 <div className="flex flex-row flex-wrap mt-2 gap-2">
-                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">{listing.bedType.length!==0?listing.furnishedStatus + " Bed":"Not mentioned"}</p>
-                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">{listing.capacity.length!==0?listing.capacity:"Not mentioned"} Capacity</p>
-                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">{listing.furnishedStatus.length!==0?listing.furnishedStatus:"Not mentioned"}</p>
-                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">{listing.publicTransportAccess.length!==0?listing.publicTransportAccess:"Not mentioned"}</p>
-                  <p className="text-sm">{listing.uni.length!==0?"Near "+listing.uni:"Not mentioned"}</p>
+                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">
+                    {listing.bedType.length !== 0
+                      ? listing.furnishedStatus + " Bed"
+                      : "Not mentioned"}
+                  </p>
+                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">
+                    {listing.capacity.length !== 0
+                      ? listing.capacity
+                      : "Not mentioned"}{" "}
+                    Capacity
+                  </p>
+                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">
+                    {listing.furnishedStatus.length !== 0
+                      ? listing.furnishedStatus
+                      : "Not mentioned"}
+                  </p>
+                  <p className="text-sm pr-2 border-r-2 border-r-slate-400">
+                    {listing.publicTransportAccess.length !== 0
+                      ? listing.publicTransportAccess
+                      : "Not mentioned"}
+                  </p>
+                  <p className="text-sm">
+                    {listing.uni.length !== 0
+                      ? "Near " + listing.uni
+                      : "Not mentioned"}
+                  </p>
                 </div>
-                <Link href={`/room/${listing.id}`} className="text-base text-gray-600">View Details</Link>
+                <Link
+                  href={`/room/${listing.id}`}
+                  className="text-base text-gray-600"
+                >
+                  View Details
+                </Link>
               </div>
               <div className="col-start-10 col-end-13">
                 <div className="flex flex-col mx-4">
-                  <div className="my-1 ml-auto" style={{
-                    width: "100px",
-                  }}><Button variant="contained" color="primary" style={{
-                    backgroundColor: "black",
-                  }} fullWidth>
-                    <Link href={`/listing/edit/${listing.id}`}>Edit</Link>
-                  </Button></div>
-                  <div className="my-1 ml-auto" style={{
-                    width: "100px",
-                  }}>
-                  <Button variant="contained" color="secondary" style={{
-                    backgroundColor: "darkred",
-                  }} fullWidth>
-                    Delete
-                  </Button>
+                  <div
+                    className="my-1 ml-auto"
+                    style={{
+                      width: "100px",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      style={{
+                        backgroundColor: "black",
+                      }}
+                      fullWidth
+                    >
+                      <Link href={`/listing/edit/${listing.id}`}>Edit</Link>
+                    </Button>
+                  </div>
+                  <div
+                    className="my-1 ml-auto"
+                    style={{
+                      width: "100px",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      style={{
+                        backgroundColor: "darkred",
+                      }}
+                      fullWidth
+                    >
+                      Delete
+                    </Button>
                   </div>
                   <div className="flex flex-row ml-auto">
-                    <p className="text-xl font-medium">Price: {listing.price}</p>
-                    <p className="texl-base font-normal mt-1 ml-1">{listing.currency}</p>
+                    <p className="text-xl font-medium">
+                      Price: {listing.price}
+                    </p>
+                    <p className="texl-base font-normal mt-1 ml-1">
+                      {listing.currency}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -384,13 +474,12 @@ function RentedProperties({ personalInfo, user }) {
           ))}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
-        <Appointments/>
+          <Appointments />
         </CustomTabPanel>
       </Box>
     </div>
   );
 }
-
 
 function StatusIcon({ status, className }) {
   switch (status) {

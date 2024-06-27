@@ -23,17 +23,15 @@ const ImageSlider = ({ slides }) => {
 
   return (
     <div className={styles.slider}>
-      <div className={styles.arrowLeft} onClick={goToPrevious}>
-        ❰
-      </div>
       <div className={styles.slide} style={{ backgroundImage: `url(${slides[currentIndex].url})` }}>
-        <div className={styles.content}>
-          <h2>{slides[currentIndex].title}</h2>
-          <p>{slides[currentIndex].description}</p>
+        <div className={`${styles.content} w-256`}>
+          <h2 className='text-4xl font-bold'>{slides[currentIndex].title}</h2>
+          <p className='text-base my-4 w-1/2'>{slides[currentIndex].description}</p>
+          <div className='mt-10 relative'>
+          <input type="text" placeholder="Search Location for accommodation..." className="w-256 p-3 border border-gray-300 rounded-lg outline-none" />
+          <button className='p-2 px-5 rounded-md bg-cyan-950 text-white shadow-lg font-sans absolute right-1 top-1'>EXPLORE NOW</button>
+          </div>
         </div>
-      </div>
-      <div className={styles.arrowRight} onClick={goToNext}>
-        ❱
       </div>
     </div>
   );

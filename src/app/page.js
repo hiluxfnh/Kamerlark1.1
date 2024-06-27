@@ -12,6 +12,7 @@ import Spinner from "./components/Spinner"; // Import Spinner
 import RoomCardNew from "./components/roomCard"; // Import RoomCardNew
 import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import Image from "next/image";
 const slides = [
   {
     url: "https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-16.png?alt=media&token=269515d4-2e7d-4380-8b6d-6de5029168a9",
@@ -110,31 +111,47 @@ export default function Home() {
   return (
     <>
       <Header />
-      <div className="w-256 h-96 mx-auto my-5">
+      <div className="w-screen bg-black">
+      <div className="w-screen h-120 mx-auto mb-5">
         <ImageSlider slides={slides} />
       </div>
+      </div>
       <div className="w-256 mx-auto">
-        <input type="text" placeholder="Search for accommodation..." className="w-256 p-3 border border-gray-300 rounded-lg outline-none" />
-        <div className="grid grid-cols-4 w-full mx-auto gap-4 mt-5">
-          {rooms.slice(0, visibleCount).map((room) => (
+        <h1 className="text-xl font-semibold my-3">Popular Accommodations</h1>
+        <p>Here are most rated Accommodations you can view.</p>
+        <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
+          {[...rooms,...rooms].slice(0, visibleCount).map((room) => (
             <RoomCardNew room={room} key={room.id} />
           ))}
         </div>
-        <div style={buttonContainerStyles}>
-          {visibleCount < rooms.length && (
-            <button onClick={handleViewMore} style={buttonStyles}>
-              View More
-            </button>
-          )}
-          {visibleCount > 4 && (
-            <button
-              onClick={handleViewLess}
-              style={{ ...buttonStyles, backgroundColor: "#dc3545" }}
-            >
-              View Less
-            </button>
-          )}
-        </div>
+      </div>
+      <div className="w-256 mx-auto rounded-lg my-5 flex flex-row items-center overflow-hidden relative" style={{
+        boxShadow: "0 0 10px 0 lightgrey",
+        height: "280px",
+      }}>
+          <Image src={require('./assets/work_2_dribbble-01_4x.png')} alt="Work from Home" className="rounded-lg w-80 ml-32" width={1000} height={1000}/>
+          <div style={{
+            width:'450px',
+            height:'380px',
+          }} className="rounded-full bg-teal-950 flex flex-row items-center justify-center flex-wrap ml-16">
+              <div className="m-10"><p className="text-lg text-white">
+                Find your next accommodation from <span className="text-xl text-gray-300">KamerLark.</span> 
+              </p>
+              <button className="p-2 px-4 bg-cyan-700 rounded-lg text-white my-2">FIND STAYS</button></div>
+          </div>
+          <div className=" absolute rounded-full bg-yellow-500 bottom-3" style={{
+            width: '150px',
+            height: '150px',
+            left:'-50px',
+          }}>
+
+          </div>
+          <div className=" absolute rounded-full bg-yellow-500 top-10 left-5" style={{
+            width: '50px',
+            height: '50px',
+          }}>
+
+          </div>
       </div>
       <Footer />
     </>
