@@ -31,7 +31,7 @@ const CustomerBookings = ({ listing,refresher }) => {
 
   return (
     <div
-      className="rounded-xl my-3 p-4  w-200"
+      className="rounded-xl my-3 p-4  w-200 bg-white"
       style={{ boxShadow: "0px 0px 10px lightgrey" }}
     >
       <div className="grid grid-cols-12">

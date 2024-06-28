@@ -8,7 +8,7 @@ import {
 } from 'react-firebase-hooks/auth';
 import { GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 import styles from '../styles/login.module.css'; 
 import Image from 'next/image';
 import kl from '../assets/kl_christmas.png';
@@ -75,11 +75,10 @@ const LoginSignup = () => {
         });
 
         await setDoc(doc(db, "Users", user.uid), {
-          firstName: firstName,
-          lastName: lastName,
+          userName: `${firstName} ${lastName}`,
           email: email,
           phoneNumber: phoneNumber,
-          profilePicture: profilePictureURL
+          photoURL: profilePictureURL
         });
 
         setSuccessMessage('User created successfully');
@@ -98,6 +97,16 @@ const LoginSignup = () => {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
+        const userRef = doc(db, "Users", result.user.uid);
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+          await setDoc(userRef, {
+            userName: result.user.displayName,
+            email: result.user.email,
+            phoneNumber: result.user.phoneNumber,
+            photoURL: result.user.photoURL,
+          });
+        }
         setSuccessMessage('User logged in with Google successfully');
         sessionStorage.setItem('user', true);
         router.push('/');

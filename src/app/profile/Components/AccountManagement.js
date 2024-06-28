@@ -5,6 +5,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { Button } from "@mui/material";
+import { doc } from "firebase/firestore";
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
   
@@ -41,8 +42,7 @@ export default function AccountManagement({ personalInfo, user }) {
       setValue(newValue);
     };
     const [personalInfoState, setPersonalInfoState] = useState({
-      firstName: "",
-      lastName: "",
+      userName:"",
       email: "",
       phoneNumber: "",
       address: "",
@@ -137,7 +137,7 @@ export default function AccountManagement({ personalInfo, user }) {
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt className="text-sm font-medium text-gray-500">Full name</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                  {personalInfoState.firstName} {personalInfoState.lastName}
+                  {personalInfoState.userName}
                 </dd>
               </div>
               <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -181,18 +181,10 @@ export default function AccountManagement({ personalInfo, user }) {
           <div className="grid grid-cols-12 gap-4">
           <TextField
             id="outlined-required"
-            label="First Name"
-            className="col-start-1 col-end-7 w-full"
-            value={personalInfoState.firstName}
-            name="firstName"
-            onChange={handlePersonalInfoChange}
-          />
-          <TextField
-            id="outlined-required"
-            label="Last Name"          
-            className="col-start-7 col-end-13 w-full"
-            value={personalInfoState.lastName}
-            name="lastName"
+            label="User Name"          
+            className="col-start-1 col-end-13 w-full"
+            value={personalInfoState.userName}
+            name="userName"
             onChange={handlePersonalInfoChange}
           />
           </div>

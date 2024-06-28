@@ -2,12 +2,15 @@
 import React from 'react';
 import styles from '../styles/Footer.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFacebook, faTwitter, faInstagram } from '@fortawesome/free-brands-svg-icons';
-import { faEnvelope, faPhone, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import Image from 'next/image';
 import kl from "../assets/Kl_christmas.png";
 import Link from 'next/link';
-
+import EmailIcon from '@mui/icons-material/Email';
+import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import InstagramIcon from '@mui/icons-material/Instagram';
 const Footer = () => {
   return (
     <footer className="text-white text-sm" style={{
@@ -26,9 +29,9 @@ const Footer = () => {
             height: '2px',
             backgroundColor:'white'
           }}></div>
-          <p className='py-2 ml-3'><FontAwesomeIcon icon={faEnvelope} /> info@kamerlark.com</p>
-          <p className='py-2 ml-3'><FontAwesomeIcon icon={faPhone} /> +123 456 7890</p>
-          <p className='py-2 ml-3'><FontAwesomeIcon icon={faMapMarkerAlt} /> 123 Main Street, City, Country</p>
+          <p className='py-2 ml-3'><EmailIcon/> info@kamerlark.com</p>
+          <p className='py-2 ml-3'><LocalPhoneIcon/> +123 456 7890</p>
+          <p className='py-2 ml-3'><LocationOnIcon/> 123 Main Street, City, Country</p>
         </div>
         <div className="mt-12 w-1/4">
           <h4 className='text-base py-2'>Quick Links</h4>
@@ -54,9 +57,9 @@ const Footer = () => {
             backgroundColor:'white'
           }}></div>
           <div className='grid grid-cols-1 gap-2 gap-y-4'>
-          <Link  href={""}><FontAwesomeIcon icon={faFacebook}  /> Facebook</Link>
-          <Link  href={""}><FontAwesomeIcon icon={faTwitter}  /> Twitter</Link>
-          <Link  href={""}><FontAwesomeIcon icon={faInstagram}  /> Instagram</Link>
+          <Link  href={""}><FacebookIcon/> Facebook</Link>
+          <Link  href={""}><TwitterIcon /> Twitter</Link>
+          <Link  href={""}><InstagramIcon/> Instagram</Link>
           </div>
         </div>
       </div>

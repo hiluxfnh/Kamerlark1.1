@@ -5,7 +5,7 @@ module.exports = nextConfig
 // next.config.js
 module.exports = {
     images: {
-      domains: ['firebasestorage.googleapis.com', 'helloaditya.me', 'cdn.pixabay.com','picsum.photos'],
+      domains: ['firebasestorage.googleapis.com', 'helloaditya.me', 'cdn.pixabay.com','picsum.photos','lh3.googleusercontent.com'],
 
 
     },
