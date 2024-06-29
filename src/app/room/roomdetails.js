@@ -17,8 +17,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
 import { useAuthState } from "react-firebase-hooks/auth";
+import ChatRoomHandler from "../components/ChatRoomHandler";
+import { useRouter } from "next/navigation";
 const RoomDetails = ({ room }) => {
-  
+  const router=useRouter();
   const [user] = useAuthState(auth);
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
@@ -55,14 +57,14 @@ const RoomDetails = ({ room }) => {
           setUserProfile(userDoc.data());
           setBookingDetails((prevDetails) => ({
             ...prevDetails,
-            name: userDoc.data().firstName + " " + userDoc.data().lastName,
+            name: userDoc.data().userName,
             email: userDoc.data().email,
             phone: userDoc.data().phoneNumber,
             address: userDoc.data().address || "",
           }));
           setAppointmentDetails((prevDetails) => ({
             ...prevDetails,
-            name: userDoc.data().firstName + " " + userDoc.data().lastName,
+            name: userDoc.data().userName,
             email: userDoc.data().email,
             phone: userDoc.data().phoneNumber,
           }));
@@ -138,7 +140,21 @@ const RoomDetails = ({ room }) => {
         status:"pending",
       }
        alert("Booking in progress..." + auth.currentUser.uid);
-       await addDoc(collection(db, "bookings"), bookingDetailsModified);
+       const booking=await addDoc(collection(db, "bookings"), bookingDetailsModified);
+       const bookingId=booking.id;
+       const roomId=await ChatRoomHandler({
+        userId1: auth.currentUser.uid,
+        userId2: room.ownerId,
+       });
+       console.log("roomId",{roomId});
+       const roomRef = doc(db, "chatRoom", roomId);
+        await addDoc(collection(roomRef, "messages"), {
+        bookingId: bookingId,
+        userId: user.uid,
+        type: "booking",
+        photoURL: user.photoURL,
+        timestamp: new Date().getTime(),
+      });
        alert("Booking successful!");
        setIsBookNowOpen(false);
        setAddBookingSuccess(true);
@@ -492,6 +508,9 @@ const RoomDetails = ({ room }) => {
         title="Booking Successful"
       >
         <p>Your booking has submitted for approval. Wait for the owners response.</p>
+        <button onClick={()=>{
+          router.push("/chat/messagecenter")
+        }}>Go to Message center</button>
       </CustomModal>
 
       <CustomModal

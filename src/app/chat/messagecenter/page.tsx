@@ -16,6 +16,8 @@ import { Button, ImageList, ImageListItem, styled } from "@mui/material";
 import Image from "next/image";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import ChatSideBar from "../components/ChatSideBar";
+import backImage from "../../assets/backChat.jpg";
+import message from "../../assets/message.webp"
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -32,27 +34,74 @@ const Messages = ({ roomId }) => {
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
   const messagesQuery = query(messagesRef, orderBy("timestamp"));
-  const [messages, loading, error] = useCollectionData(messagesQuery, {
-    idField: "id",
-  });
+  const [messages, loading, error] = useCollectionData(messagesQuery, {idField: "id"});
+
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="">
+    <div className="" >
       <MessagesDisplay messages={messages} />
+      {/* <div ref={messagesEndRef} /> */}
     </div>
   );
 };
-const chatRoom = ({ params }: any) => {
+const ChatRoom = () => {
+  
+  const [chatRoomId, setChatRoomId] = useState("");
+  const [currentUser, setCurrentUser] = useState("");
+  useEffect(() => {
+    if (window) {
+      const queryParameters = new URLSearchParams(window.location.search);
+      setChatRoomId(queryParameters.get("roomId") || "");
+    }
+  }, []);
+  return (
+    <>
+      <Header />
+      <div className="h-170 grid grid-cols-12 w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden"
+      style={{
+        boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)"
+      }}>
+        <div className="col-start-1 col-end-5 border-r-2">
+            <ChatSideBar chatRoomId={chatRoomId} setChatRoomId={setChatRoomId} setCurrentUser={setCurrentUser}/>
+        </div>
+        <div className="col-start-5 col-end-13 grid grid-rows-12 max-h-full">
+            <ChatBox chatRoomId={chatRoomId} currentUser={currentUser}/>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+};
+export default ChatRoom;
+
+
+
+const ChatBox = ({chatRoomId,currentUser}) => {
+  if(chatRoomId===""){
+    return <div className="flex flex-col justify-center items-center mt-28">
+      <Image src={message} width={400} height={400} alt="back" />
+      <button className="bg-black p-3 px-4 rounded-md text-white" style={{
+        marginTop:'-50px'
+      }}>Start Messaging</button>
+    </div>
+  }
   const [files, setFiles] = useState([]);
 
   const handleFileChange = (event) => {
     setFiles([...files, ...event.target.files]);
   };
-  const scrollRef = useRef(null);
-  const { chatRoomId } = params;
   const roomRef: any = doc(db, "chatRoom", chatRoomId);
   const [chatRoomMappingId, setChatRoomMappingId] = useState("");
   const [oppUserId, setOppUserId] = useState("");
@@ -60,9 +109,7 @@ const chatRoom = ({ params }: any) => {
   const [newMessage, setNewMessage] = useState("");
   const router = useRouter();
   const [imageUploader, setImageUploader] = useState(false);
-  const [oppDetails, setOppDetails]:any = useState({});
   useEffect(()=>{
-    console.log(user);
     if(user){
     const fetchMappingId = async () => {
         const chatRoomMappingQuery =query(
@@ -74,28 +121,13 @@ const chatRoom = ({ params }: any) => {
             setChatRoomMappingId(doc.id);
             console.log(doc.data().userIds);
             const oppositeUserId:any=doc.data().userIds.filter((id)=>id!==user.uid)[0];
+            console.log("oppsoUser",oppositeUserId);
             setOppUserId(oppositeUserId);
         });
     }
     fetchMappingId();
     }
   },[user])
-  useEffect(() => {
-    if(oppUserId!==''){
-    const fetchUser=async()=>{
-        const userRef=doc(db, "Users", oppUserId);
-        const userDoc=await getDoc(userRef);
-        if(userDoc.exists()){
-            setOppDetails({
-                id:userDoc.id,
-                ...userDoc.data()
-            });
-        }
-        
-    }
-    fetchUser();
-    }
-  },[oppUserId]);
   const uploadImages = async () => {
     const uploadPromises = files.map((image) => {
       const storageRef = ref(
@@ -163,26 +195,25 @@ const chatRoom = ({ params }: any) => {
       console.error("Error uploading images:", e);
     }
   };
-  return (
+  return(
     <>
-      <Header />
-      <div className="h-170 grid grid-cols-12 w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden"
-      style={{
-        boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)"
-      }}>
-        <div className="col-start-1 col-end-5 border-r-2">
-            <ChatSideBar/>
-        </div>
-        <div className="col-start-5 col-end-13 grid grid-rows-12 max-h-full">
-          <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
-            <Image src={oppDetails?.photoURL} width={40} height={40} alt="" className="mx-3 rounded-full"/>
+    <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
+            <Image src={currentUser?.photoURL} width={40} height={40} alt="" className="mx-3 rounded-full"/>
             <p className="text-white text-sm font-sans font-semibold">
-              {oppDetails?.userName}
+              {currentUser?.userName}
             </p>
           </div>
           {imageUploader === false ? (
-            <div className="row-start-2 row-end-12 bg-gray-100 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140">
-              <Messages roomId={chatRoomId} />
+            <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 bg-gray-100"
+            >
+             <div  style={{
+              backgroundImage:`url(${backImage})`,
+              backgroundSize:'cover',
+              backgroundPosition:'center',
+              backgroundRepeat:'no-repeat',
+              height:'100%',
+              width:'100%',
+            }}> <Messages roomId={chatRoomId} /></div>
             </div>
           ) : (
             <></>
@@ -277,11 +308,6 @@ const chatRoom = ({ params }: any) => {
             </div>
           ) : (
             <></>
-          )}
-        </div>
-      </div>
-      <Footer />
-    </>
+          )}</>
   );
 };
-export default chatRoom;

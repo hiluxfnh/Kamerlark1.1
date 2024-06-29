@@ -2,6 +2,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase/Config";
 import Image from "next/image";
 import BookingComponent from "./BookingComponent";
+import TimeStampConvertor from "../../components/timestampConvertor";
 
 const MessagesDisplay = ({ messages, scrollRef }) => {
   const [user] = useAuthState(auth);
@@ -18,26 +19,21 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
               }}
             >
               {msg.type === "text" ? (
-                index > 0 && messages[index - 1].userId === msg.userId ? (
-                  <p
-                    className="text-white p-2 px-4 bg-cyan-900 rounded-t-xl rounded-bl-xl mr-2 max-w-96"
+                  <div className="flex flex-row mr-2 items-end">
+                     <span style={{
+                      fontSize:"12px"
+                    }} className="mr-2">{TimeStampConvertor(msg.timestamp)}</span>
+                    <p
+                    className="text-white p-2 px-4 bg-cyan-900 rounded-t-xl rounded-bl-xl max-w-96"
                     style={{
                       width: "fit-content",
-                      marginRight: "46px",
+                      marginRight: index > 0 && messages[index - 1].userId === msg.userId?"46px":"0px",
                     }}
                   >
                     {msg.message}
                   </p>
-                ) : (
-                  <p
-                    className="text-white p-2 px-4 bg-cyan-900 rounded-t-xl rounded-bl-xl mr-2 max-w-96"
-                    style={{
-                      width: "fit-content",
-                    }}
-                  >
-                    {msg.message}
-                  </p>
-                )
+                  </div>
+               
               ) : msg.type === "image" ? (
                 msg.message.length === 1 ? (
                   <div className="">
@@ -92,8 +88,7 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
                         width={400}
                         height={400}
                         style={{
-                          height: "auto",
-                          width: "400px",
+                          height:"200px"
                         }}
                       />
                     </div>
@@ -122,9 +117,9 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
                   </div>
                 )
               ) : msg.type==="booking"?(
-                <>
-                <BookingComponent bookingId={msg.message}/>
-                </>
+                <div className="mr-2">
+                <BookingComponent message={msg}/>
+                </div>
               ):(<></>)}
               {index === 0 ||
               (index > 0 && messages[index - 1].userId !== msg.userId) ? (
@@ -166,26 +161,20 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
                 <></>
               )}
               {msg.type === "text" ? (
-                index > 0 && messages[index - 1].userId === msg.userId ? (
+                  <div className="flex flex-row items-end  ml-2">
                   <p
-                    className="p-2 px-4 bg-gray-300 rounded-t-xl text-black rounded-br-xl ml-2 max-w-96"
+                    className="p-2 px-4 bg-gray-300 rounded-t-xl text-black rounded-br-xl max-w-96"
                     style={{
                       width: "fit-content",
-                      marginLeft: "46px",
+                      marginLeft:index > 0 && messages[index - 1].userId === msg.userId ? "46px":"0px",
                     }}
                   >
                     {msg.message}
                   </p>
-                ) : (
-                  <p
-                    className="p-2 px-4 bg-gray-300 rounded-t-xl text-black rounded-br-xl ml-2 max-w-96"
-                    style={{
-                      width: "fit-content",
-                    }}
-                  >
-                    {msg.message}
-                  </p>
-                )
+                  <span style={{
+                    fontSize:"12px"
+                  }} className="ml-2">{TimeStampConvertor(msg.timestamp)}</span>
+                  </div>
               ) : msg.type === "image" ? (
                 msg.message.length === 1 ? (
                   <div className="">
@@ -195,7 +184,7 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
                       width={400}
                       height={400}
                       style={{
-                        width: "200px",
+                        height: "200px",
                       }}
                     />
                   </div>
@@ -270,9 +259,9 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
                   </div>
                 )
               ) : msg.type==="booking"?(
-                <>
-                <BookingComponent bookingId={msg.message}/>
-                </>
+                <div className="ml-3">
+                  <BookingComponent message={msg}/>
+                </div>
               ):(<></>)}
             </div>
           )

@@ -27,6 +27,8 @@ const InputFieldCustom = ({
         rows={rows}
         fullWidth
         size={size}
+        inputProps={{style: {fontSize: 14}}} // font size of input text
+      InputLabelProps={{style: {fontSize: 14}}} 
       />
     </div>
   );

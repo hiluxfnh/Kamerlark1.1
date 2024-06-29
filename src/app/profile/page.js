@@ -350,7 +350,7 @@ function RentedProperties({ personalInfo, user }) {
           <h1>Listed Properties</h1>
           {listings.map((listing) => (
             <div
-              className="grid grid-cols-12 w-200 rounded-xl my-3 p-4"
+              className="grid grid-cols-12 w-200 rounded-xl my-3 p-4 text-sm"
               style={{ boxShadow: "0px 0px 10px lightgrey" }}
             >
               <div
@@ -374,8 +374,8 @@ function RentedProperties({ personalInfo, user }) {
                 />
               </div>
               <div className="col-start-4 col-end-10">
-                <h3 className="text-lg font-medium">{listing.name}</h3>
-                <div className="overflow-scroll no-scrollbar">
+                <h3 className="text-sm font-semibold">{listing.name}</h3>
+                <div className="overflow-scroll no-scrollbar my-2">
                   <div
                     className="flex flex-row"
                     style={{
@@ -419,7 +419,7 @@ function RentedProperties({ personalInfo, user }) {
                 </div>
                 <Link
                   href={`/room/${listing.id}`}
-                  className="text-base text-gray-600"
+                  className="text-base text-gray-600 my-2 cursor-pointer"
                 >
                   View Details
                 </Link>
@@ -437,6 +437,7 @@ function RentedProperties({ personalInfo, user }) {
                       color="primary"
                       style={{
                         backgroundColor: "black",
+                        fontSize: "12px",
                       }}
                       fullWidth
                     >
@@ -454,6 +455,7 @@ function RentedProperties({ personalInfo, user }) {
                       color="secondary"
                       style={{
                         backgroundColor: "darkred",
+                        fontSize: "12px",
                       }}
                       fullWidth
                     >
@@ -461,10 +463,10 @@ function RentedProperties({ personalInfo, user }) {
                     </Button>
                   </div>
                   <div className="flex flex-row ml-auto">
-                    <p className="text-xl font-medium">
+                    <p className="text-base font-medium">
                       Price: {listing.price}
                     </p>
-                    <p className="texl-base font-normal mt-1 ml-1">
+                    <p className="mt-1 ml-1">
                       {listing.currency}
                     </p>
                   </div>

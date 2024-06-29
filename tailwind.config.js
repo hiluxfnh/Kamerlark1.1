@@ -19,6 +19,8 @@ module.exports = {
       170:'42.5rem',
       130:'32.5rem',
       120:'30rem',
+      160:'40rem',
+      150:'37.5rem',
     },
     height:{
       256: '68.75rem',
@@ -47,6 +49,9 @@ module.exports = {
       256: '68.75rem',
       140:'35rem',
     },
+    scale:{
+      80:'0.80',
+    }
   },
   plugins: [],
 }

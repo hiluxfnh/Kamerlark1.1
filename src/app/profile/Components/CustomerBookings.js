@@ -8,7 +8,7 @@ import InputFieldCustom from "../../components/InputField";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
 import { useRouter } from "next/navigation";
-const CustomerBookings = ({ listing,refresher }) => {
+const CustomerBookings = ({ listing,refresher,fromChat=false }) => {
   const [show, setShow] = useState(false);
   const bookingDocRef = doc(db, "bookings", listing.id);
   const router = useRouter();
@@ -31,17 +31,17 @@ const CustomerBookings = ({ listing,refresher }) => {
 
   return (
     <div
-      className="rounded-xl my-3 p-4  w-200 bg-white"
+      className="rounded-xl my-3 p-4  w-160 bg-white text-sm"
       style={{ boxShadow: "0px 0px 10px lightgrey" }}
     >
       <div className="grid grid-cols-12">
         <div className="col-start-1 col-end-9">
           <div className="flex flex-row justify-between">
-          <h3 className="text-lg font-medium">{listing.roomDetails.name}</h3>
+          <h3 className="text-sm font-semibold">{listing.roomDetails.name}</h3>
           <p>Status : {listing.status}</p>
           </div>
           <div className="pt-3 border-t-2 mt-3">
-            <h1 className="font-semibold text-base">Contract</h1>
+            <h1 className="font-semibold text-sm">Contract</h1>
             <div className="grid grid-cols-12 gap-4 my-3">
               <InputFieldCustom
                 label={"User Name"}
@@ -121,6 +121,7 @@ const CustomerBookings = ({ listing,refresher }) => {
               color="primary"
               style={{
                 backgroundColor: "black",
+                fontSize: "12px",
               }}
               fullWidth
             >
@@ -131,26 +132,29 @@ const CustomerBookings = ({ listing,refresher }) => {
               color="primary"
               style={{
                 backgroundColor: "black",
+                fontSize: "12px",
               }}
               fullWidth
             >
               Room Details
             </Button>
-            <Button
+            {fromChat?<></>:<Button
               variant="contained"
               color="primary"
               style={{
                 backgroundColor: "black",
+                fontSize: "12px",
               }}
               fullWidth
             >
               Chat with User
-            </Button>
+            </Button>}
             {listing.status==="pending"?<><Button
               variant="contained"
               color="success"
               style={{
                 backgroundColor: "darkgreen",
+                fontSize: "12px",
               }}
               fullWidth
               onClick={onAccept}
@@ -162,6 +166,7 @@ const CustomerBookings = ({ listing,refresher }) => {
               color="secondary"
               style={{
                 backgroundColor: "darkred",
+                fontSize: "12px",
               }}
               fullWidth
               onClick={onDecline}

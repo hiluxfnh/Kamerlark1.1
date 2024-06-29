@@ -5,7 +5,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { Button } from "@mui/material";
-import { doc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/Config";
+import { useAuthState } from "react-firebase-hooks/auth";
+
 function CustomTabPanel(props) {
     const { children, value, index, ...other } = props;
   
@@ -35,7 +38,8 @@ function a11yProps(index) {
   };
 }
 
-export default function AccountManagement({ personalInfo, user }) {
+export default function AccountManagement({ personalInfo}) {
+    const [user]=useAuthState(auth);
     const [value, setValue] = React.useState(0);
   
     const handleChange = (event, newValue) => {
@@ -79,7 +83,8 @@ export default function AccountManagement({ personalInfo, user }) {
     const handlePersonalInfoSubmit = async (e) => {
       e.preventDefault();
       try {
-        const userDocRef = doc(db, "Users", auth.currentUser.uid);
+        console.log(user.uid);
+        const userDocRef = doc(db,"Users", user.uid);
         await setDoc(userDocRef, personalInfoState, { merge: true });
         alert("Personal information updated successfully");
       } catch (error) {

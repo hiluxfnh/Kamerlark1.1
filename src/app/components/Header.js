@@ -85,7 +85,7 @@ const Header = () => {
             ADD LISTING
           </Link>
           <Link
-            href={""}
+            href={"/chat/messagecenter"}
             className="text-white flex flex-row items-center text-sm font-sans"
           >
             <ForumIcon fontSize="24" className="mr-1" />

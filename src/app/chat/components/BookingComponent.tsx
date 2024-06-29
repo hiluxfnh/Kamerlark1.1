@@ -1,19 +1,22 @@
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../firebase/Config";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { auth, db } from "../../firebase/Config";
 import { useEffect, useState } from "react";
 import CustomerBookings from "../../profile/Components/CustomerBookings";
 import RentedPropertiesCard from "../../profile/Components/RentedPropertiesCard";
+import { useAuthState } from "react-firebase-hooks/auth";
 
-const BookingComponent= ({bookingId}) => {
+const BookingComponent = ({ message }) => {
+    const bookingId = message.bookingId;
+    const [user] = useAuthState(auth);
     const bookingRef = doc(db, "bookings", bookingId);
     const [booking, setBooking] = useState(null);
+
     useEffect(() => {
-        const getBooking = async () => {
-            const bookingDoc = await getDoc(bookingRef);
-            if(bookingDoc.exists()) {
-                const roomRef=doc(db, "roomdetails", bookingDoc.data().roomId);
-                const roomDoc=await getDoc(roomRef);
-                if(roomDoc.exists()) {
+        const unsubscribe = onSnapshot(bookingRef, async (bookingDoc) => {
+            if (bookingDoc.exists()) {
+                const roomRef = doc(db, "roomdetails", bookingDoc.data().roomId);
+                const roomDoc = await getDoc(roomRef);
+                if (roomDoc.exists()) {
                     setBooking({
                         id: bookingDoc.id,
                         ...bookingDoc.data(),
@@ -21,20 +24,30 @@ const BookingComponent= ({bookingId}) => {
                     });
                 }
             }
-        };
-        getBooking();
+        });
+
+        return () => unsubscribe();
     }, []);
+
     useEffect(() => {
         console.log(booking);
-    }
-    , [booking]);
-    if(!booking) {
+    }, [booking]);
+
+    if (!booking) {
         return <div>Loading...</div>;
     }
+
     return (
-        <div className="scale-75">
-            <RentedPropertiesCard listing={booking} refresher={()=>{}} />
+        <div className="">
+            {
+                user.uid === message.userId ? (
+                    <RentedPropertiesCard listing={booking} refresher={() => { }} fromChat={true} />
+                ) : (
+                    <CustomerBookings listing={booking} refresher={() => { }} fromChat={true} />
+                )
+            }
         </div>
     );
 };
+
 export default BookingComponent;
