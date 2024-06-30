@@ -95,6 +95,7 @@ const RoomDetails = ({ room }) => {
   const images = room.images.slice(0, 4); // Only take the first 4 images
   const [selectedImage, setSelectedImage] = useState(images[0]);
   const [addBookingSuccess, setAddBookingSuccess] = useState(false); 
+  const [addAppointmentSuccess, setAddAppointmentSuccess] = useState(false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingDetails((prevDetails) => ({
@@ -179,10 +180,26 @@ const RoomDetails = ({ room }) => {
         userId: auth.currentUser.uid, // Add user ID to the booking details
         chatId: "",
         status:"pending",
+        appointmentType: appointmentDetails.appointmenttype,
       }
-       await addDoc(collection(db, "appointments"), appointmentDetailsModified);
+       const appointment=await addDoc(collection(db, "appointments"), appointmentDetailsModified);
+        const appointmentId=appointment.id;
+        const roomId=await ChatRoomHandler({
+          userId1: auth.currentUser.uid,
+          userId2: room.ownerId,
+        });
+        console.log("roomId",{roomId});
+        const roomRef = doc(db, "chatRoom", roomId);
+        await addDoc(collection(roomRef, "messages"), {
+          appointmentId: appointmentId,
+          userId: user.uid,
+          type: "appointment",
+          photoURL: user.photoURL,
+          timestamp: new Date().getTime(),
+        });
        alert("Appointment successful!");
        setIsAppointmentOpen(false);
+       setAddAppointmentSuccess(true);
      } catch (error) {
       console.error("Error adding booking: ", error);
       alert("Failed to book the room");
@@ -508,6 +525,17 @@ const RoomDetails = ({ room }) => {
         title="Booking Successful"
       >
         <p>Your booking has submitted for approval. Wait for the owners response.</p>
+        <button onClick={()=>{
+          router.push("/chat/messagecenter")
+        }}>Go to Message center</button>
+      </CustomModal>
+
+      <CustomModal
+        isOpen={addAppointmentSuccess}
+        onClose={() => setAddAppointmentSuccess(false)}
+        title="Appointment sent Successful"
+      >
+        <p>Your appointment has submitted for approval. Wait for the owners response.</p>
         <button onClick={()=>{
           router.push("/chat/messagecenter")
         }}>Go to Message center</button>

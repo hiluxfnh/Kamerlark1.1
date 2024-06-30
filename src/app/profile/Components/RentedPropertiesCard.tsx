@@ -48,8 +48,9 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
           />
         </div>
         <div className="col-start-4 col-end-10">
-          <div className="flex flex-row justify-between"><h3 className="font-semibold">{listing.roomDetails.name}</h3>
-          <p>Status : {listing.status}</p>
+          <div className="flex flex-row justify-between">
+            <h3 className="font-semibold">{listing.roomDetails.name}</h3>
+            <p>Status : {listing.status}</p>
           </div>
           <div className="overflow-scroll no-scrollbar my-2">
             <div
@@ -103,52 +104,61 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
         </div>
         <div className="col-start-10 col-end-13">
           <div className="flex flex-col mx-2">
-            {fromChat?<></>:<div
-              className="my-1 ml-auto"
-              style={{
-                width: "120px",
-              }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
+            {fromChat ? (
+              <></>
+            ) : (
+              <div
+                className="my-1 ml-auto"
                 style={{
-                  backgroundColor: "black",
-                  fontSize: "12px",
-                }}
-                fullWidth
-                onClick={()=>{
-                 const fetch=async()=>{
-                  const roomId= await ChatRoomHandler({userId1:listing.userId,userId2:listing.ownerId});
-                  if(roomId){
-                      router.push(`/chat/messagecenter?roomId=${roomId}`);
-                  }
-                 }
-                  fetch();
+                  width: "120px",
                 }}
               >
-                Chat
-              </Button>
-            </div>}
-            {listing.status==="pending"?<div
-              className="my-1 ml-auto"
-              style={{
-                width: "120px",
-              }}
-              onClick={onCancel}
-            >
-              <Button
-                variant="contained"
-                color="secondary"
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{
+                    backgroundColor: "black",
+                    fontSize: "12px",
+                  }}
+                  fullWidth
+                  onClick={() => {
+                    const fetch = async () => {
+                      const roomId = await ChatRoomHandler({
+                        userId1: listing.userId,
+                        userId2: listing.ownerId,
+                      });
+                      if (roomId) {
+                        router.push(`/chat/messagecenter?roomId=${roomId}`);
+                      }
+                    };
+                    fetch();
+                  }}
+                >
+                  Chat
+                </Button>
+              </div>
+            )}
+            {listing.status === "pending" ? (
+              <div
+                className="my-1 ml-auto"
                 style={{
-                  backgroundColor: "darkred",
-                  fontSize: "12px",
+                  width: "120px",
                 }}
-                fullWidth
+                onClick={onCancel}
               >
-                Cancel
-              </Button>
-            </div>:null}
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  style={{
+                    backgroundColor: "darkred",
+                    fontSize: "12px",
+                  }}
+                  fullWidth
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : null}
             <div className="flex flex-row ml-auto">
               <p className="text-base font-medium">
                 Price: {listing.roomDetails.price}

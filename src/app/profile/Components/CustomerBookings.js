@@ -8,7 +8,7 @@ import InputFieldCustom from "../../components/InputField";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
 import { useRouter } from "next/navigation";
-const CustomerBookings = ({ listing,refresher,fromChat=false }) => {
+const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
   const [show, setShow] = useState(false);
   const bookingDocRef = doc(db, "bookings", listing.id);
   const router = useRouter();
@@ -27,7 +27,7 @@ const CustomerBookings = ({ listing,refresher,fromChat=false }) => {
     } catch (e) {
       console.error("Error updating document: ", e);
     }
-  }
+  };
 
   return (
     <div
@@ -37,8 +37,10 @@ const CustomerBookings = ({ listing,refresher,fromChat=false }) => {
       <div className="grid grid-cols-12">
         <div className="col-start-1 col-end-9">
           <div className="flex flex-row justify-between">
-          <h3 className="text-sm font-semibold">{listing.roomDetails.name}</h3>
-          <p>Status : {listing.status}</p>
+            <h3 className="text-sm font-semibold">
+              {listing.roomDetails.name}
+            </h3>
+            <p>Status : {listing.status}</p>
           </div>
           <div className="pt-3 border-t-2 mt-3">
             <h1 className="font-semibold text-sm">Contract</h1>
@@ -138,41 +140,61 @@ const CustomerBookings = ({ listing,refresher,fromChat=false }) => {
             >
               Room Details
             </Button>
-            {fromChat?<></>:<Button
-              variant="contained"
-              color="primary"
-              style={{
-                backgroundColor: "black",
-                fontSize: "12px",
-              }}
-              fullWidth
-            >
-              Chat with User
-            </Button>}
-            {listing.status==="pending"?<><Button
-              variant="contained"
-              color="success"
-              style={{
-                backgroundColor: "darkgreen",
-                fontSize: "12px",
-              }}
-              fullWidth
-              onClick={onAccept}
-            >
-              Accept
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              style={{
-                backgroundColor: "darkred",
-                fontSize: "12px",
-              }}
-              fullWidth
-              onClick={onDecline}
-            >
-              Declined
-            </Button></>:null}
+            {fromChat ? (
+              <></>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                style={{
+                  backgroundColor: "black",
+                  fontSize: "12px",
+                }}
+                fullWidth
+                onClick={() => {
+                  const fetch = async () => {
+                    const roomId = await ChatRoomHandler({
+                      userId1: listing.userId,
+                      userId2: listing.ownerId,
+                    });
+                    if (roomId) {
+                      router.push(`/chat/messagecenter?roomId=${roomId}`);
+                    }
+                  };
+                  fetch();
+                }}
+              >
+                Chat with User
+              </Button>
+            )}
+            {listing.status === "pending" ? (
+              <>
+                <Button
+                  variant="contained"
+                  color="success"
+                  style={{
+                    backgroundColor: "darkgreen",
+                    fontSize: "12px",
+                  }}
+                  fullWidth
+                  onClick={onAccept}
+                >
+                  Accept
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  style={{
+                    backgroundColor: "darkred",
+                    fontSize: "12px",
+                  }}
+                  fullWidth
+                  onClick={onDecline}
+                >
+                  Declined
+                </Button>
+              </>
+            ) : null}
           </div>
         </div>
       </div>

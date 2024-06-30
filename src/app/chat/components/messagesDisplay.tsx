@@ -3,6 +3,7 @@ import { auth } from "../../firebase/Config";
 import Image from "next/image";
 import BookingComponent from "./BookingComponent";
 import TimeStampConvertor from "../../components/timestampConvertor";
+import AppointmentComponent from "./AppointmentComponent";
 
 const MessagesDisplay = ({ messages, scrollRef }) => {
   const [user] = useAuthState(auth);
@@ -119,6 +120,10 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
               ) : msg.type==="booking"?(
                 <div className="mr-2">
                 <BookingComponent message={msg}/>
+                </div>
+              ):msg.type==="appointment"?(
+                <div className="mr-2">
+                  <AppointmentComponent message={msg}/>
                 </div>
               ):(<></>)}
               {index === 0 ||
@@ -261,6 +266,10 @@ const MessagesDisplay = ({ messages, scrollRef }) => {
               ) : msg.type==="booking"?(
                 <div className="ml-3">
                   <BookingComponent message={msg}/>
+                </div>
+              ):msg.type==="appointment"?(
+                <div className="mr-2">
+                  <AppointmentComponent message={msg}/>
                 </div>
               ):(<></>)}
             </div>
