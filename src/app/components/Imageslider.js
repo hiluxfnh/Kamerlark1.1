@@ -112,7 +112,7 @@ const ImageSlider = () => {
                       University
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {universities.map((uni) =>
+                      {universities.map((uni,index) =>
                         uni.value === searchedUniversity ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -122,6 +122,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedUniversity(uni.value);
                             }}
+                            key={index}
                           >
                             {uni.label}
                           </p>
@@ -131,6 +132,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedUniversity(uni.value);
                             }}
+                            key={index}
                           >
                             {uni.label}
                           </p>
@@ -143,7 +145,7 @@ const ImageSlider = () => {
                       Furnished Status
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {funishedStatus.map((status) =>
+                      {funishedStatus.map((status,index) =>
                         status.value=== searchedFurnishedStatus ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -153,6 +155,8 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedFurnishedStatus(status.value);
                             }}
+                            key={index}
+
                           >
                             {status.label}
                           </p>
@@ -162,6 +166,8 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedFurnishedStatus(status.value);
                             }}
+                            key={index}
+
                           >
                             {status.label}
                           </p>
@@ -174,7 +180,7 @@ const ImageSlider = () => {
                       Bed Type
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {bedTypes.map((bed) =>
+                      {bedTypes.map((bed,index) =>
                         bed.value === searchedBedType ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -184,6 +190,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedBedType(bed.value);
                             }}
+                            key={index}
                           >
                             {bed.label}
                           </p>
@@ -193,6 +200,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedBedType(bed.value);
                             }}
+                            key={index}
                           >
                             {bed.label}
                           </p>
@@ -206,7 +214,7 @@ const ImageSlider = () => {
                       Washroom Type
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {washroomTypes.map((washroom) =>
+                      {washroomTypes.map((washroom,index) =>
                         washroom.value === searchedWashroomType ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -216,6 +224,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedWashroomType(washroom.value);
                             }}
+                            key={index}
                           >
                             {washroom.label}
                           </p>
@@ -225,6 +234,7 @@ const ImageSlider = () => {
                             onClick={() => {
                               setSearchedWashroomType(washroom.value);
                             }}
+                            key={index}
                           >
                             {washroom.label}
                           </p>

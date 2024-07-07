@@ -72,7 +72,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
         >
           <div className="flex flex-row items-center">
             <Image
-              src={room && room.user && room.user.photoURL? room.user.photoURL : require('../../assets/kl_christmas.png')}
+              src={room && room.user && room.user.photoURL? room.user.photoURL : require('../../assets/klchristmas.png')}
               alt="profile"
               width={40}
               height={40}

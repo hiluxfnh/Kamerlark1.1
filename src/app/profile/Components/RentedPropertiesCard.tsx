@@ -59,8 +59,8 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
                 width: "max-content",
               }}
             >
-              {listing.roomDetails.amenities.map((amenity) => (
-                <p className="px-4 rounded-md mr-2 bg-slate-500 text-white font-sans">
+              {listing.roomDetails.amenities.map((amenity,index) => (
+                <p className="px-4 rounded-md mr-2 bg-slate-500 text-white font-sans" key={index}>
                   {amenity}
                 </p>
               ))}

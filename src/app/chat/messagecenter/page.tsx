@@ -1,5 +1,15 @@
 "use client";
-import { addDoc, collection, doc, getDoc, getDocs, orderBy, query, setDoc, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { auth, db, storage } from "../../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect, useRef, useState } from "react";
@@ -17,7 +27,7 @@ import Image from "next/image";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
 import ChatSideBar from "../components/ChatSideBar";
 import backImage from "../../assets/backChat.jpg";
-import message from "../../assets/message.webp"
+import message from "../../assets/message.webp";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -34,7 +44,9 @@ const Messages = ({ roomId }) => {
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
   const messagesQuery = query(messagesRef, orderBy("timestamp"));
-  const [messages, loading, error] = useCollectionData(messagesQuery, {idField: "id"});
+  const [messages, loading, error] = useCollectionData(messagesQuery, {
+    idField: "id",
+  });
 
   const messagesEndRef = useRef(null);
 
@@ -50,14 +62,13 @@ const Messages = ({ roomId }) => {
   if (error) return <div>Error: {error.message}</div>;
 
   return (
-    <div className="" >
+    <div className="">
       <MessagesDisplay messages={messages} />
       {/* <div ref={messagesEndRef} /> */}
     </div>
   );
 };
 const ChatRoom = () => {
-  
   const [chatRoomId, setChatRoomId] = useState("");
   const [currentUser, setCurrentUser] = useState("");
   useEffect(() => {
@@ -69,15 +80,35 @@ const ChatRoom = () => {
   return (
     <>
       <Header />
-      <div className="h-170 grid grid-cols-12 w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden"
-      style={{
-        boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)"
-      }}>
+      <div
+        className="h-170 grid grid-cols-12 w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden"
+        style={{
+          boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)",
+        }}
+      >
         <div className="col-start-1 col-end-5 border-r-2">
-            <ChatSideBar chatRoomId={chatRoomId} setChatRoomId={setChatRoomId} setCurrentUser={setCurrentUser}/>
+          <ChatSideBar
+            chatRoomId={chatRoomId}
+            setChatRoomId={setChatRoomId}
+            setCurrentUser={setCurrentUser}
+          />
         </div>
         <div className="col-start-5 col-end-13 grid grid-rows-12 max-h-full">
-            <ChatBox chatRoomId={chatRoomId} currentUser={currentUser}/>
+          {chatRoomId !== "" ? (
+            <ChatBox chatRoomId={chatRoomId} currentUser={currentUser} />
+          ) : (
+            <div className="flex flex-col justify-center items-center mt-28">
+              <Image src={message} width={400} height={400} alt="back" />
+              <button
+                className="bg-black p-3 px-4 rounded-md text-white"
+                style={{
+                  marginTop: "-50px",
+                }}
+              >
+                Start Messaging
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <Footer />
@@ -86,19 +117,8 @@ const ChatRoom = () => {
 };
 export default ChatRoom;
 
-
-
-const ChatBox = ({chatRoomId,currentUser}) => {
-  if(chatRoomId===""){
-    return <div className="flex flex-col justify-center items-center mt-28">
-      <Image src={message} width={400} height={400} alt="back" />
-      <button className="bg-black p-3 px-4 rounded-md text-white" style={{
-        marginTop:'-50px'
-      }}>Start Messaging</button>
-    </div>
-  }
+const ChatBox = ({ chatRoomId, currentUser }) => {
   const [files, setFiles] = useState([]);
-
   const handleFileChange = (event) => {
     setFiles([...files, ...event.target.files]);
   };
@@ -109,25 +129,27 @@ const ChatBox = ({chatRoomId,currentUser}) => {
   const [newMessage, setNewMessage] = useState("");
   const router = useRouter();
   const [imageUploader, setImageUploader] = useState(false);
-  useEffect(()=>{
-    if(user){
-    const fetchMappingId = async () => {
-        const chatRoomMappingQuery =query(
-            collection(db, "chatRoomMapping"),
-            where("roomId", "==", chatRoomId)
-          );
-        const chatRoomMappingSnapshot=await getDocs(chatRoomMappingQuery);
-        chatRoomMappingSnapshot.forEach((doc)=>{
-            setChatRoomMappingId(doc.id);
-            console.log(doc.data().userIds);
-            const oppositeUserId:any=doc.data().userIds.filter((id)=>id!==user.uid)[0];
-            console.log("oppsoUser",oppositeUserId);
-            setOppUserId(oppositeUserId);
+  useEffect(() => {
+    if (user) {
+      const fetchMappingId = async () => {
+        const chatRoomMappingQuery = query(
+          collection(db, "chatRoomMapping"),
+          where("roomId", "==", chatRoomId)
+        );
+        const chatRoomMappingSnapshot = await getDocs(chatRoomMappingQuery);
+        chatRoomMappingSnapshot.forEach((doc) => {
+          setChatRoomMappingId(doc.id);
+          console.log(doc.data().userIds);
+          const oppositeUserId: any = doc
+            .data()
+            .userIds.filter((id) => id !== user.uid)[0];
+          console.log("oppsoUser", oppositeUserId);
+          setOppUserId(oppositeUserId);
         });
+      };
+      fetchMappingId();
     }
-    fetchMappingId();
-    }
-  },[user])
+  }, [user]);
   const uploadImages = async () => {
     const uploadPromises = files.map((image) => {
       const storageRef = ref(
@@ -163,9 +185,13 @@ const ChatBox = ({chatRoomId,currentUser}) => {
     if (newMessage === "") {
       return;
     }
-    await setDoc(doc(db, "chatRoomMapping", chatRoomMappingId), {
-      timestamp: new Date().getTime(),
-    }, { merge: true });
+    await setDoc(
+      doc(db, "chatRoomMapping", chatRoomMappingId),
+      {
+        timestamp: new Date().getTime(),
+      },
+      { merge: true }
+    );
     await addDoc(collection(roomRef, "messages"), {
       message: newMessage,
       userId: user.uid,
@@ -198,119 +224,135 @@ const ChatBox = ({chatRoomId,currentUser}) => {
       console.error("Error uploading images:", e);
     }
   };
-  return(
+  return (
     <>
-    <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
-            <Image src={currentUser?.photoURL} width={40} height={40} alt="" className="mx-3 rounded-full"/>
-            <p className="text-white text-sm font-sans font-semibold">
-              {currentUser?.userName}
-            </p>
+      <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
+        <Image
+          src={currentUser?.photoURL}
+          width={40}
+          height={40}
+          alt=""
+          className="mx-3 rounded-full"
+        />
+        <p className="text-white text-sm font-sans font-semibold">
+          {currentUser?.userName}
+        </p>
+      </div>
+      {imageUploader === false ? (
+        <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 bg-gray-100">
+          <div
+            style={{
+              backgroundImage: `url(${backImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+              height: "100%",
+              width: "100%",
+            }}
+          >
+            {" "}
+            <Messages roomId={chatRoomId} />
           </div>
-          {imageUploader === false ? (
-            <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 bg-gray-100"
-            >
-             <div  style={{
-              backgroundImage:`url(${backImage})`,
-              backgroundSize:'cover',
-              backgroundPosition:'center',
-              backgroundRepeat:'no-repeat',
-              height:'100%',
-              width:'100%',
-            }}> <Messages roomId={chatRoomId} /></div>
-            </div>
-          ) : (
-            <></>
-          )}
-          {imageUploader === false ? (
-            <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between">
-              <input
-                type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                className="border-black p-2 rounded-md ml-2"
-                placeholder="Type a message..."
-                style={{
-                  border: "1px solid black",
-                  width: "80%",
-                }}
-              />
-              <button
-                onClick={() => {
-                  setImageUploader(true);
-                }}
-              >
-                <AttachFileIcon fontSize={"medium"} />
-              </button>
-              <button
-                onClick={handleAddMessage}
-                className="text-white bg-black p-2 px-4 rounded-md flex flex-row items-center text-sm font-sans font-bold"
-              >
-                Send
-                <SendIcon fontSize={"small"} className="ml-1" />
-              </button>
-            </div>
-          ) : (
-            <></>
-          )}
+        </div>
+      ) : (
+        <></>
+      )}
+      {imageUploader === false ? (
+        <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            className="border-black p-2 rounded-md ml-2"
+            placeholder="Type a message..."
+            style={{
+              border: "1px solid black",
+              width: "80%",
+            }}
+          />
+          <button
+            onClick={() => {
+              setImageUploader(true);
+            }}
+          >
+            <AttachFileIcon fontSize={"medium"} />
+          </button>
+          <button
+            onClick={handleAddMessage}
+            className="text-white bg-black p-2 px-4 rounded-md flex flex-row items-center text-sm font-sans font-bold"
+          >
+            Send
+            <SendIcon fontSize={"small"} className="ml-1" />
+          </button>
+        </div>
+      ) : (
+        <></>
+      )}
 
-          {imageUploader === true ? (
-            <div className="row-start-2 row-end-13 p-4">
-              <div className="pb-3 border-b-2 flex flex-row justify-between">
-                <h1 className="text-lg font-sans font-semibold">
-                  Upload Images
-                </h1>
-                <button onClick={()=>{
-                    setImageUploader(false);
-                    setFiles([]);
-                }}><CloseIcon className="cursor-pointer"/></button>
-              </div>
-              <Button
-                component="label"
-                role={undefined}
-                variant="outlined"
-                tabIndex={-1}
-                className=" text-black"
-                style={{
-                  width: "150px",
-                  height: "150px",
-                  border: "1px solid grey",
-                }}
-              >
-                <AddIcon />
-                <VisuallyHiddenInput type="file" onChange={handleFileChange} />
-              </Button>
-              <div>
-                <p>Uploaded Images</p>
-                <div
-                  className="w-170"
-                  style={{
-                    height: "200px",
-                  }}
-                >
-                  <div className="flex flex-row" style={{}}>
-                    {files.map((file) => (
-                      <div className="">
-                        <Image
-                          src={URL.createObjectURL(file)}
-                          alt="d"
-                          width={200}
-                          height={200}
-                          style={{
-                            width:'100%',
-                            height: "200px",
-                          }}
-                        />
-                      </div>
-                    ))}
+      {imageUploader === true ? (
+        <div className="row-start-2 row-end-13 p-4">
+          <div className="pb-3 border-b-2 flex flex-row justify-between">
+            <h1 className="text-lg font-sans font-semibold">Upload Images</h1>
+            <button
+              onClick={() => {
+                setImageUploader(false);
+                setFiles([]);
+              }}
+            >
+              <CloseIcon className="cursor-pointer" />
+            </button>
+          </div>
+          <Button
+            component="label"
+            role={undefined}
+            variant="outlined"
+            tabIndex={-1}
+            className=" text-black"
+            style={{
+              width: "150px",
+              height: "150px",
+              border: "1px solid grey",
+            }}
+          >
+            <AddIcon />
+            <VisuallyHiddenInput type="file" onChange={handleFileChange} />
+          </Button>
+          <div>
+            <p>Uploaded Images</p>
+            <div
+              className="w-170"
+              style={{
+                height: "200px",
+              }}
+            >
+              <div className="flex flex-row" style={{}}>
+                {files.map((file,index) => (
+                  <div className="" key={index}>
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt="d"
+                      width={200}
+                      height={200}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                      }}
+                    />
                   </div>
-                  <button className="p-3 bg-black text-white w-full rounded-md px-10 flex flex-row items-center text-sm font-sans font-bold" onClick={handleAddImages}>
-                    Send <SendIcon fontSize={"small"} className="ml-1" />
-                  </button>
-                </div>
+                ))}
               </div>
+              <button
+                className="p-3 bg-black text-white w-full rounded-md px-10 flex flex-row items-center text-sm font-sans font-bold"
+                onClick={handleAddImages}
+              >
+                Send <SendIcon fontSize={"small"} className="ml-1" />
+              </button>
             </div>
-          ) : (
-            <></>
-          )}</>
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
+    </>
   );
 };

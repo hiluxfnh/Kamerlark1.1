@@ -343,7 +343,7 @@ const AddListing = () => {
                 renderValue={(selected) => selected.join(', ')}
                 MenuProps={MenuProps}
               >
-                {utilitiesIncludedNames.map((name) => (
+                {utilitiesIncludedNames.map((name,index) => (
                   <MenuItem key={name} value={name}>
                     <Checkbox checked={roomDetails.utilitiesIncluded.indexOf(name) > -1} />
                     <ListItemText primary={name} />
@@ -372,7 +372,7 @@ const AddListing = () => {
                 renderValue={(selected) => selected.join(', ')}
                 MenuProps={MenuProps}
               >
-                {amenitiesNames.map((name) => (
+                {amenitiesNames.map((name,index) => (
                   <MenuItem key={name} value={name}>
                     <Checkbox checked={roomDetails.amenities.indexOf(name) > -1} />
                     <ListItemText primary={name} />
@@ -408,8 +408,8 @@ const AddListing = () => {
             <div className="col-start-1 col-end-12">
               {roomDetails.rules.length>0 ? <h3 className="text-lg font-medium my-3">Rules</h3>:null}
               {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
-                {roomDetails.rules.map((rule)=>(
-                  <li className="w-full list-disc">{rule}</li>
+                {roomDetails.rules.map((rule,index)=>(
+                  <li className="w-full list-disc" key={index}>{rule}</li>
                 ))}
               </ul>:null}
             </div>
@@ -436,8 +436,8 @@ const AddListing = () => {
             <div className="col-start-1 col-end-12">
               {roomDetails.safetyFeatures.length>0 ? <h3 className="text-lg font-medium my-3">Safety Features</h3>:null}
               {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
-                {roomDetails.safetyFeatures.map((feature)=>(
-                  <li className="w-full list-disc">{feature}</li>
+                {roomDetails.safetyFeatures.map((feature,index)=>(
+                  <li className="w-full list-disc" key={index}>{feature}</li>
                 ))}
               </ul>:null}
             </div>
@@ -464,8 +464,8 @@ const AddListing = () => {
             <div className="col-start-1 col-end-12">
               {roomDetails.accessibilityFeatures.length>0 ? <h3 className="text-lg font-medium my-3">Accessibility Features</h3>:null}
               {roomDetails.rules.length>0 ?<ul className="ml-10 mb-3">
-                {roomDetails.accessibilityFeatures.map((feature)=>(
-                  <li className="w-full list-disc">{feature}</li>
+                {roomDetails.accessibilityFeatures.map((feature,index)=>(
+                  <li className="w-full list-disc" key={index}>{feature}</li>
                 ))}
               </ul>:null}
             </div>
@@ -483,8 +483,8 @@ const AddListing = () => {
               <VisuallyHiddenInput type="file"  onChange={handleFileChange}/>
             </Button>
           </div>
-          <div className="flex flex-row flex-wrap">{files.length>0 ?files.map((file)=>(
-            <div className="w-40 h-40 my-2 mx-2 overflow-hidden">
+          <div className="flex flex-row flex-wrap">{files.length>0 ?files.map((file,index)=>(
+            <div className="w-40 h-40 my-2 mx-2 overflow-hidden" key={index}>
               <Image src={URL.createObjectURL(file)} alt="Uploaded file" width={200} height={200} 
               className="w-40 object-contain"
               />

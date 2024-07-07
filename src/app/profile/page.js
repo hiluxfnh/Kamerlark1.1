@@ -27,6 +27,8 @@ import {
 } from "@heroicons/react/solid";
 import {
   CalendarIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
   InformationCircleIcon,
   TrashIcon,
 } from "@heroicons/react/outline";
@@ -327,10 +329,11 @@ function RentedProperties({ personalInfo, user }) {
         <CustomTabPanel value={value} index={0}>
           <h1>Rented Properties</h1>
           {bookings.length > 0
-            ? bookings.map((listing) => (
+            ? bookings.map((listing,index) => (
                 <RentedPropertiesCard
                   listing={listing}
                   refresher={fetchListingsAndBookings}
+                  key={index}
                 />
               ))
             : null}
@@ -338,20 +341,22 @@ function RentedProperties({ personalInfo, user }) {
         <CustomTabPanel value={value} index={1}>
           <h1>Customer Bookings</h1>
           {adminBookings.length > 0
-            ? adminBookings.map((listing) => (
+            ? adminBookings.map((listing,index) => (
                 <CustomerBookings
                   listing={listing}
                   refresher={fetchListingsAndBookings}
+                  key={index}
                 />
               ))
             : null}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <h1>Listed Properties</h1>
-          {listings.map((listing) => (
+          {listings.map((listing,index) => (
             <div
               className="grid grid-cols-12 w-200 rounded-xl my-3 p-4 text-sm"
               style={{ boxShadow: "0px 0px 10px lightgrey" }}
+              key={index}
             >
               <div
                 className="relative col-start-1 col-end-4 rounded-xl overflow-hidden h-full"
@@ -382,8 +387,8 @@ function RentedProperties({ personalInfo, user }) {
                       width: "max-content",
                     }}
                   >
-                    {listing.amenities.map((amenity) => (
-                      <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm">
+                    {listing.amenities.map((amenity,index) => (
+                      <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm" key={index}>
                         {amenity}
                       </p>
                     ))}
@@ -510,7 +515,7 @@ function Notifications() {
       <h2 className="text-xl font-bold mb-4">Notifications</h2>
       <p>Here you can view your notifications.</p>
       <div className="mt-6">
-        {notifications.map((notification) => (
+        {notifications.map((notification,index) => (
           <div
             key={notification.id}
             className="bg-white shadow rounded-lg p-4 mb-4 border border-gray-200"

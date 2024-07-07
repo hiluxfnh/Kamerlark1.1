@@ -1,9 +1,7 @@
 // components/Footer.js
 import React from 'react';
-import styles from '../styles/Footer.module.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
-import kl from "../assets/Kl_christmas.png";
+import kl from "../assets/klchristmas.png";
 import Link from 'next/link';
 import EmailIcon from '@mui/icons-material/Email';
 import LocalPhoneIcon from '@mui/icons-material/LocalPhone';

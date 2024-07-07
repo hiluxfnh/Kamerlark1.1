@@ -97,15 +97,15 @@ const Appointments = () => {
       </Box>
       <CustomTabPanel value={value} index={0}>
         <div className="flex flex-row flex-wrap gap-4">
-        {incomingAppointments.map((appointment) =>(
-            <IncomingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} />
+        {incomingAppointments.map((appointment,index) =>(
+            <IncomingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} key={index}/>
         ))}
         </div>
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
         <div className="flex flex-row flex-wrap gap-4">
-          {outgoingAppointments.map((appointment) => (
-            <OutgoingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} />
+          {outgoingAppointments.map((appointment,index) => (
+            <OutgoingAppointmentCard appointment={appointment} fetchAppointments={fetchAppointments} key={index}/>
           ))}
         </div>
       </CustomTabPanel>

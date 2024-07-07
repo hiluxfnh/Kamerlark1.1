@@ -5,7 +5,7 @@ import BookingComponent from "./BookingComponent";
 import TimeStampConvertor from "../../components/timestampConvertor";
 import AppointmentComponent from "./AppointmentComponent";
 
-const MessagesDisplay = ({ messages, scrollRef }) => {
+const MessagesDisplay = ({ messages }) => {
   const [user] = useAuthState(auth);
   return (
     <div className="w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-130 text-sm font-sans">

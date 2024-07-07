@@ -1,9 +1,8 @@
 "use client";
-
 import React, { useState } from "react";
 import styles from "../styles/Header.module.css";
 import Image from "next/image";
-import kl from "../assets/Kl_christmas.png";
+import kl from "../assets/klchristmas.png";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/Config";
@@ -11,7 +10,6 @@ import LoginPromptModal from "./LoginPromptModal"; // Import the LoginPromptModa
 import Link from "next/link";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
-import LogoutIcon from "@mui/icons-material/Logout";
 import HomeIcon from "@mui/icons-material/Home";
 import PlaylistAddCircleIcon from "@mui/icons-material/PlaylistAddCircle";
 import PeopleIcon from "@mui/icons-material/People";

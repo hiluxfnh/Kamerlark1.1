@@ -11,7 +11,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 import styles from '../styles/login.module.css'; 
 import Image from 'next/image';
-import kl from '../assets/kl_christmas.png';
+import kl from '../assets/klchristmas.png';
 import { useRouter } from 'next/navigation'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGooglePlusG, faFacebook } from '@fortawesome/free-brands-svg-icons';

@@ -44,8 +44,8 @@ const RoomCardNew = (props) => {
               width: "max-content",
             }}
           >
-            {props.room.amenities.map((amenity) => (
-              <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm">
+            {props.room.amenities.map((amenity,index) => (
+              <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm" key={index}>
                 {amenity}
               </p>
             ))}

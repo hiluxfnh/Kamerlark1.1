@@ -24,7 +24,7 @@ const Subscription = () => {
         <ul>
           <li>Access to all amenities <FontAwesomeIcon icon={faCheck} /></li>
           <li>Multiple room booking <FontAwesomeIcon icon={faCheck} /></li>
-          <li>Access to KamarLark's community<FontAwesomeIcon icon={faCheck} /></li>
+          <li>Access to KamarLark`&apos;`s community<FontAwesomeIcon icon={faCheck} /></li>
           <li>Free parking <FontAwesomeIcon icon={faCheck} /></li>
         </ul>
         <button className={styles.subscribeButton}>Subscribe</button>

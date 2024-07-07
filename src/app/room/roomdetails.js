@@ -40,15 +40,6 @@ import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined
 import BathtubOutlinedIcon from "@mui/icons-material/BathtubOutlined";
 import BikeScooterOutlinedIcon from "@mui/icons-material/BikeScooterOutlined";
 import FamilyRestroomOutlinedIcon from "@mui/icons-material/FamilyRestroomOutlined";
-import GoogleMapReact from "google-map-react";
-const defaultProps = {
-  center: {
-    lat: 10.99835602,
-    lng: 77.01502627,
-  },
-  zoom: 11,
-};
-const AnyReactComponent = ({ text }) => <div>{text}</div>;
 
 const reviews = [
   {
@@ -91,6 +82,9 @@ const RoomDetails = ({ room }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isVideoConfOpen, setIsVideoConfOpen] = useState(false);
   const [isContractTermsOpen, setIsContractTermsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
+  const [addBookingSuccess, setAddBookingSuccess] = useState(false);
+  const [addAppointmentSuccess, setAddAppointmentSuccess] = useState(false);
 
   const [dropDownMenu, setDropDownMenu] = useState({
     safetyFeatures: false,
@@ -159,15 +153,17 @@ const RoomDetails = ({ room }) => {
       fetchOwnerDetails();
     }
   }, [room]);
+  const images = room.images.slice(0, 4); // Only take the first 4 images
+
+  useEffect(() => {
+    if(images && images.length > 0)
+      setSelectedImage(images[0]);
+  }, [room]);
 
   if (!room) {
     return <Spinner />; // Show spinner while loading room data
   }
 
-  const images = room.images.slice(0, 4); // Only take the first 4 images
-  const [selectedImage, setSelectedImage] = useState(images[0]);
-  const [addBookingSuccess, setAddBookingSuccess] = useState(false);
-  const [addAppointmentSuccess, setAddAppointmentSuccess] = useState(false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setBookingDetails((prevDetails) => ({
@@ -339,14 +335,14 @@ const RoomDetails = ({ room }) => {
             <h1 className="text-base font-semibold my-2">Amenties</h1>
             <div className="flex flex-row flex-wrap gap-2 text-sm">
               {room.amenities.map((amenity, index) => (
-                <div className="p-1 px-2 bg-gray-500 text-white rounded-md">
+                <div className="p-1 px-2 bg-gray-500 text-white rounded-md" key={index}>
                   <span className="">{amenity}</span>
                 </div>
               ))}
             </div>
             <div className="flex flex-row flex-wrap gap-2 text-sm mt-2">
               {room.utilitiesIncluded.map((utility, index) => (
-                <div className="p-1 px-2 border rounded-md">
+                <div className="p-1 px-2 border rounded-md" key={index}>
                   <span className="">{utility}</span>
                 </div>
               ))}
@@ -569,7 +565,6 @@ const RoomDetails = ({ room }) => {
 
         <div className="p-4 py-6 rounded-md border my-3">
           <h2 className="text-base font-medium my-3">Location</h2>
-          {/* <MapComponent latitude={room.latitude} longitude={room.longitude} /> */}
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15531.517911782868!2d77.5963265!3d13.2954684!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3df04c9efe91%3A0x74ef0f7e2f81d564!2sGitam%20University%20Bengaluru!5e0!3m2!1sen!2sin!4v1718653227233!5m2!1sen!2sin"
             className="w-full h-60"
@@ -577,19 +572,6 @@ const RoomDetails = ({ room }) => {
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
           ></iframe>
-          <GoogleMapReact
-            bootstrapURLKeys={{
-              key: "AIzaSyBO5tXe7vH1N0Y5flqGlenXq0pKUj86MSk",
-            }}
-            defaultCenter={defaultProps.center}
-            defaultZoom={defaultProps.zoom}
-          >
-            <AnyReactComponent
-              lat={59.955413}
-              lng={30.337844}
-              text="My Marker"
-            />
-          </GoogleMapReact>
         </div>
 
         <div className="p-4 py-6 rounded-md border my-3">
@@ -604,7 +586,7 @@ const RoomDetails = ({ room }) => {
               }}
             >
               {reviews.map((review, index) => (
-                <div className="flex flex-row gap-2 p-4 border rounded-xl mb-2  ">
+                <div className="flex flex-row gap-2 p-4 border rounded-xl mb-2" key={index}>
                   <div className="w-10 h-10 bg-black rounded-full overflow-hidden mr-3">
                     <Image
                       src={review.image}
