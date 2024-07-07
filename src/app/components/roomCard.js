@@ -5,30 +5,30 @@ import HouseIcon from "@mui/icons-material/House";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { Button } from "@mui/material";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 const RoomCardNew = (props) => {
   const navigation = useRouter();
-  const ameneties = [
-    "Furnished",
-    "Pet Friendly",
-    "Parking",
-    "Balcony",
-    "Garden",
-    "Swimming Pool",
-    "Gym",
-    "Security",
-    "Laundry",
-  ];
-  console.log(props.room.images[0]);
   return (
     <div
-      className="w-64 rounded-xl p-4 gap-4"
+      className="w-64 rounded-xl p-4 gap-4 relative"
       style={{
         boxShadow: "0 0 10px 0 lightgrey",
+        height: "350px",
       }}
     >
-      <div className="w-full h-40 overflow-hidden rounded-lg">
+      <div
+        className="w-full overflow-hidden rounded-lg"
+        style={{
+          height: "150px",
+        }}
+      >
         <Image
-          className="h-40 object-cover rounded-lg"
+          loading="lazy"
+          className="object-cover rounded-lg"
+          style={{
+            width: "100%",
+            height: "100%",
+          }}
           src={props.room.images[0]}
           alt={props.room.name}
           width={500}
@@ -51,11 +51,9 @@ const RoomCardNew = (props) => {
             ))}
           </div>
         </div>
-        <div className="flex flex-row flex-wrap mt-2 gap-2 justify-between">
+        <div className="flex flex-row mt-2 gap-2 justify-between w-58">
           <p className="text-sm pr-1">
-            <HotelIcon fontSize="16" /> {
-              props.room.furnishedStatus
-            }
+            <HotelIcon fontSize="16" /> Semi
           </p>
           <p className="text-sm pr-1">
             <PersonIcon fontSize="16" /> {props.room.capacity}
@@ -65,20 +63,30 @@ const RoomCardNew = (props) => {
           </p>
         </div>
         <div className="my-2">
-          <p className="text-sm pr-1">
-            <LocationOnIcon fontSize="16" /> 
+          <p className="text-xs pr-1">
+            <LocationOnIcon fontSize="16" />
             {props.room.location}
           </p>
         </div>
         {/* <div>{props.room.description.slice(0,50)+"..."}</div> */}
-        <div className="flex flex-row justify-between items-center">
-          <p className="font-bold">{props.room.price} <span className="font-medium text-sm">{props.room.currency}</span></p>
-          <Button variant="contained" color="primary" style={{
-            fontSize: "12px",
-            backgroundColor: "#082e4d",
-          }} onClick={()=>{
-            navigation.push("/room/"+props.room.id);
-          }}>More details</Button>
+        <div className="flex flex-row justify-between items-center absolute bottom-2 w-56">
+          <p className="font-bold">
+            {props.room.price}{" "}
+            <span className="font-medium text-xs">{props.room.currency}</span>
+          </p>
+          <Button
+            variant="contained"
+            color="primary"
+            style={{
+              fontSize: "12px",
+              backgroundColor: "#082e4d",
+            }}
+            onClick={() => {
+              navigation.push("/room/" + props.room.id);
+            }}
+          >
+            More details
+          </Button>
         </div>
       </div>
     </div>

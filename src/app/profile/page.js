@@ -127,7 +127,7 @@ export default function UserProfile() {
   return (
     <div className="flex flex-col h-screen bg-gray-100">
       <Header />
-      <div className="flex flex-1">
+      <div className="flex flex-1 pt-16">
         <nav className="w-[250px] bg-white border-r">
           <ul className="flex flex-col">
             <li

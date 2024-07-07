@@ -1,38 +1,110 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/roomdetails.module.css";
-import stylesRoomDetails from "../../app/styles/CustomModal.module.css";
 import Image from "next/image";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPhone, faFacebook, faBed } from "@fortawesome/free-solid-svg-icons";
-import MapComponent from "../components/MapComponent"; // Ensure the path is correct
 import Spinner from "../components/Spinner"; // Import Spinner
-import Link from "next/link";
 import CustomModal from "../components/CustomModal"; // Import CustomModal component
 import { addDoc, collection, doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
-import { Button, Checkbox, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import InputFieldCustom from '../components/InputField'
-import { DatePicker, LocalizationProvider, StaticTimePicker } from "@mui/x-date-pickers";
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import {
+  Button,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+} from "@mui/material";
+import InputFieldCustom from "../components/InputField";
+import {
+  DatePicker,
+  LocalizationProvider,
+  StaticTimePicker,
+} from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
 import { useAuthState } from "react-firebase-hooks/auth";
 import ChatRoomHandler from "../components/ChatRoomHandler";
 import { useRouter } from "next/navigation";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
+import SwitchAccessShortcutAddOutlinedIcon from "@mui/icons-material/SwitchAccessShortcutAddOutlined";
+import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
+import WeekendOutlinedIcon from "@mui/icons-material/WeekendOutlined";
+import AspectRatioOutlinedIcon from "@mui/icons-material/AspectRatioOutlined";
+import BedOutlinedIcon from "@mui/icons-material/BedOutlined";
+import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined";
+import BathtubOutlinedIcon from "@mui/icons-material/BathtubOutlined";
+import BikeScooterOutlinedIcon from "@mui/icons-material/BikeScooterOutlined";
+import FamilyRestroomOutlinedIcon from "@mui/icons-material/FamilyRestroomOutlined";
+import GoogleMapReact from "google-map-react";
+const defaultProps = {
+  center: {
+    lat: 10.99835602,
+    lng: 77.01502627,
+  },
+  zoom: 11,
+};
+const AnyReactComponent = ({ text }) => <div>{text}</div>;
+
+const reviews = [
+  {
+    name: "John Doe",
+    review:
+      "The apartment was great, it had everything I needed and the location was perfect.",
+    image: "https://picsum.photos/200/300",
+  },
+  {
+    name: "John Doe",
+    review:
+      "The apartment was great, it had everything I needed and the location was perfect.",
+    image: "https://picsum.photos/200/300",
+  },
+  {
+    name: "John Doe",
+    review:
+      "The apartment was great, it had everything I needed and the location was perfect.",
+    image: "https://picsum.photos/200/300",
+  },
+  {
+    name: "John Doe",
+    review:
+      "The apartment was great, it had everything I needed and the location was perfect.",
+    image: "https://picsum.photos/200/300",
+  },
+  {
+    name: "John Doe",
+    review:
+      "The apartment was great, it had everything I needed and the location was perfect.",
+    image: "https://picsum.photos/200/300",
+  },
+];
+
 const RoomDetails = ({ room }) => {
-  const router=useRouter();
+  const router = useRouter();
   const [user] = useAuthState(auth);
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isVideoConfOpen, setIsVideoConfOpen] = useState(false);
   const [isContractTermsOpen, setIsContractTermsOpen] = useState(false);
+
+  const [dropDownMenu, setDropDownMenu] = useState({
+    safetyFeatures: false,
+    accessibilityFeatures: false,
+    rules: false,
+    neighborhoodInfo: false,
+  });
+
   const [bookingDetails, setBookingDetails] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
-    moveInDate: dayjs('2022-04-17'),
+    moveInDate: dayjs("2022-04-17"),
     notes: "",
     agreeTerms: false,
   });
@@ -40,8 +112,8 @@ const RoomDetails = ({ room }) => {
     name: "",
     email: "",
     phone: "",
-    date: dayjs('2022-04-17'),
-    time: dayjs('2022-04-17T15:30'),
+    date: dayjs("2022-04-17"),
+    time: dayjs("2022-04-17T15:30"),
     appointmenttype: "",
     message: "",
   });
@@ -94,7 +166,7 @@ const RoomDetails = ({ room }) => {
 
   const images = room.images.slice(0, 4); // Only take the first 4 images
   const [selectedImage, setSelectedImage] = useState(images[0]);
-  const [addBookingSuccess, setAddBookingSuccess] = useState(false); 
+  const [addBookingSuccess, setAddBookingSuccess] = useState(false);
   const [addAppointmentSuccess, setAddAppointmentSuccess] = useState(false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -126,7 +198,7 @@ const RoomDetails = ({ room }) => {
       );
       return;
     }
-     try {
+    try {
       const bookingDetailsModified = {
         userName: bookingDetails.name,
         userEmail: bookingDetails.email,
@@ -138,36 +210,39 @@ const RoomDetails = ({ room }) => {
         ownerId: room.ownerId,
         userId: auth.currentUser.uid, // Add user ID to the booking details
         chatId: "",
-        status:"pending",
-      }
-       alert("Booking in progress..." + auth.currentUser.uid);
-       const booking=await addDoc(collection(db, "bookings"), bookingDetailsModified);
-       const bookingId=booking.id;
-       const roomId=await ChatRoomHandler({
+        status: "pending",
+      };
+      alert("Booking in progress..." + auth.currentUser.uid);
+      const booking = await addDoc(
+        collection(db, "bookings"),
+        bookingDetailsModified
+      );
+      const bookingId = booking.id;
+      const roomId = await ChatRoomHandler({
         userId1: auth.currentUser.uid,
         userId2: room.ownerId,
-       });
-       console.log("roomId",{roomId});
-       const roomRef = doc(db, "chatRoom", roomId);
-        await addDoc(collection(roomRef, "messages"), {
+      });
+      console.log("roomId", { roomId });
+      const roomRef = doc(db, "chatRoom", roomId);
+      await addDoc(collection(roomRef, "messages"), {
         bookingId: bookingId,
         userId: user.uid,
         type: "booking",
         photoURL: user.photoURL,
         timestamp: new Date().getTime(),
       });
-       alert("Booking successful!");
-       setIsBookNowOpen(false);
-       setAddBookingSuccess(true);
-     } catch (error) {
+      alert("Booking successful!");
+      setIsBookNowOpen(false);
+      setAddBookingSuccess(true);
+    } catch (error) {
       console.error("Error adding booking: ", error);
       alert("Failed to book the room");
-     }
+    }
   };
 
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
-     try {
+    try {
       const appointmentDetailsModified = {
         userName: appointmentDetails.name,
         userEmail: appointmentDetails.email,
@@ -179,355 +254,397 @@ const RoomDetails = ({ room }) => {
         ownerId: room.ownerId,
         userId: auth.currentUser.uid, // Add user ID to the booking details
         chatId: "",
-        status:"pending",
+        status: "pending",
         appointmentType: appointmentDetails.appointmenttype,
-      }
-       const appointment=await addDoc(collection(db, "appointments"), appointmentDetailsModified);
-        const appointmentId=appointment.id;
-        const roomId=await ChatRoomHandler({
-          userId1: auth.currentUser.uid,
-          userId2: room.ownerId,
-        });
-        console.log("roomId",{roomId});
-        const roomRef = doc(db, "chatRoom", roomId);
-        await addDoc(collection(roomRef, "messages"), {
-          appointmentId: appointmentId,
-          userId: user.uid,
-          type: "appointment",
-          photoURL: user.photoURL,
-          timestamp: new Date().getTime(),
-        });
-       alert("Appointment successful!");
-       setIsAppointmentOpen(false);
-       setAddAppointmentSuccess(true);
-     } catch (error) {
+      };
+      const appointment = await addDoc(
+        collection(db, "appointments"),
+        appointmentDetailsModified
+      );
+      const appointmentId = appointment.id;
+      const roomId = await ChatRoomHandler({
+        userId1: auth.currentUser.uid,
+        userId2: room.ownerId,
+      });
+      console.log("roomId", { roomId });
+      const roomRef = doc(db, "chatRoom", roomId);
+      await addDoc(collection(roomRef, "messages"), {
+        appointmentId: appointmentId,
+        userId: user.uid,
+        type: "appointment",
+        photoURL: user.photoURL,
+        timestamp: new Date().getTime(),
+      });
+      alert("Appointment successful!");
+      setIsAppointmentOpen(false);
+      setAddAppointmentSuccess(true);
+    } catch (error) {
       console.error("Error adding booking: ", error);
       alert("Failed to book the room");
-     }
+    }
   };
   return (
     <>
-      <div className="w-256 mx-auto">
+      <div className="w-256 mx-auto pt-16">
         <h1 className="text-2xl font-bold my-5">{room.name}</h1>
         <div className="flex flex-row">
           <div className={`${styles.gallery} ${styles.lightbox}`}>
-            <div className="w-148 h-96 overflow-hidden mb-4 rounded-xl mr-5">
+            <div
+              className="w-148 overflow-hidden mb-4 rounded-xl mr-5"
+              style={{
+                height: "350px",
+              }}
+            >
               <Image
                 src={selectedImage}
                 alt={room.name}
                 width={450}
                 height={350}
                 layout="responsive"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  objectFit: "cover",
+                }}
               />
             </div>
             <div className="grid grid-cols-4 gap-4 w-148">
               {images.map((image, index) => (
                 <div
                   key={index}
-                  className="w-1/4 h-20 rounded-md overflow-hidden cursor-pointer"
+                  className="w-1/4 rounded-md overflow-hidden cursor-pointer"
+                  style={{
+                    height: "80px",
+                  }}
                   onClick={() => setSelectedImage(image)}
                 >
-                  <div className={styles.image1}>
-                    <Image
-                      src={image}
-                      alt={`Image ${index}`}
-                      width={100}
-                      height={75}
-                      layout="responsive"
-                    />
-                  </div>
+                  <Image
+                    src={image}
+                    alt={`Image ${index}`}
+                    width={100}
+                    height={100}
+                    layout="responsive"
+                    style={{
+                      width: "auto",
+                      height: "100px",
+                      objectFit: "cover",
+                    }}
+                  />
                 </div>
               ))}
             </div>
           </div>
 
           <div className={styles.info}>
-            <h1 className="text-xl font-medium my-2">Amenties</h1>
-            <div className="flex flex-row flex-wrap gap-2">
+            <h1 className="text-base font-semibold my-2">Amenties</h1>
+            <div className="flex flex-row flex-wrap gap-2 text-sm">
               {room.amenities.map((amenity, index) => (
                 <div className="p-1 px-2 bg-gray-500 text-white rounded-md">
-                  <span className="text-base">{amenity}</span>
+                  <span className="">{amenity}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-row flex-wrap gap-2 text-sm mt-2">
+              {room.utilitiesIncluded.map((utility, index) => (
+                <div className="p-1 px-2 border rounded-md">
+                  <span className="">{utility}</span>
                 </div>
               ))}
             </div>
             <div className="mt-5">
-              <h2 className="text-lg font-medium">Description</h2>
-              <p className="text-base mt-3 mb-5">{room.description}</p>
+              <h2 className="text-base font-medium">Description</h2>
+              <p className="text-sm mt-3 mb-5">{room.description}</p>
             </div>
-            <div>
-              <h2 className="text-lg font-medium">Price</h2>
-              <p className="text-2xl font-bold mt-3 mb-5">
-                $ {room.price}{" "}
-                <span className="text-lg font-medium">(Inclusive taxes)</span>
+            <div className="mb-2">
+              <p className="text-sm flex flex-row items-center">
+                <LocationOnIcon fontSize="small" /> {room.location}
               </p>
             </div>
-            {room.ownerId!==user.uid?<><div className="grid grid-cols-12 w-96  gap-2 my-2">
-              <Button
-                onClick={() => setIsBookNowOpen(true)}
-                variant="contained"
-                className="col-start-1 col-end-5 bg-black"
-                fullWidth
-                style={{
-                  backgroundColor: "black",
-                }}
-              >
-                Book Now
-              </Button>
-              <Button
-                onClick={() => setIsAppointmentOpen(true)}
-                variant="contained"
-                className="col-start-5 col-end-13 bg-black"
-                fullWidth
-                style={{
-                  backgroundColor: "black",
-                }}
-              >
-                Book Appointment
-              </Button>
+            <div>
+              <h2 className="text-base font-medium">Price</h2>
+              <p className="text-2xl font-bold mt-2 mb-3">
+                $ {room.price}{" "}
+                <span className="text-sm font-medium">(Inclusive taxes)</span>
+              </p>
             </div>
-            <div className="grid grid-cols-12 w-96 gap-2 my-2">
-              <Button
-                onClick={() => setIsChatOpen(true)}
-                variant="contained"
-                className="col-start-1 col-end-7 bg-black"
-                fullWidth
-                style={{
-                  backgroundColor: "black",
-                }}
-              >
-                Chat
-              </Button>
-              <Button
-                onClick={() => setIsContractTermsOpen(true)}
-                variant="contained"
-                className="col-start-7 col-end-13 bg-black"
-                fullWidth
-                style={{
-                  backgroundColor: "black",
-                }}
-              >
-                View Contract Terms
-              </Button>
-            </div></>:null}
-
-            <div className={styles.social_media_icon}>
-              <FontAwesomeIcon icon={faFacebook} />
-            </div>
+            {room.ownerId !== user.uid ? (
+              <>
+                <div className="grid grid-cols-12 w-100  gap-2 my-2">
+                  <Button
+                    onClick={() => setIsBookNowOpen(true)}
+                    variant="contained"
+                    className="col-start-1 col-end-5 bg-black"
+                    fullWidth
+                    style={{
+                      backgroundColor: "black",
+                    }}
+                  >
+                    Book Now
+                  </Button>
+                  <Button
+                    onClick={() => setIsAppointmentOpen(true)}
+                    variant="contained"
+                    className="col-start-5 col-end-13 bg-black"
+                    fullWidth
+                    style={{
+                      backgroundColor: "black",
+                    }}
+                  >
+                    Book Appointment
+                  </Button>
+                </div>
+                <div className="grid grid-cols-12 w-100 gap-2 my-2">
+                  <Button
+                    onClick={() => setIsChatOpen(true)}
+                    variant="contained"
+                    className="col-start-1 col-end-7 bg-black"
+                    fullWidth
+                    style={{
+                      backgroundColor: "black",
+                    }}
+                  >
+                    Chat
+                  </Button>
+                  <Button
+                    onClick={() => setIsContractTermsOpen(true)}
+                    variant="contained"
+                    className="col-start-7 col-end-13 bg-black"
+                    fullWidth
+                    style={{
+                      backgroundColor: "black",
+                    }}
+                  >
+                    View Contract Terms
+                  </Button>
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
-        <div className="flex flex-row w-256 justify-between rounded-xl py-2 mt-8">
-          <div className="">
-            <p className="font-medium text-center">
-              <FontAwesomeIcon icon={faBed} /> Capacity
-            </p>
-            <p className="text-lg font-bold text-center">
-              {room.capacity} people
+        <div className="flex flex-row flex-wrap w-256 my-2 gap-2">
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-blue-900">
+            <SchoolOutlinedIcon fontSize="small" />
+            <p className="text-black">{room.uni}</p>
+          </div>
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-orange-600">
+            <EmailOutlinedIcon fontSize="small" />
+            <p className="text-black">{room.ownerEmail}</p>
+          </div>
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-rose-800">
+            <WeekendOutlinedIcon fontSize="small" />
+            <p className="text-black">
+              {room.furnishedStatus[0].toUpperCase() +
+                room.furnishedStatus.slice(1)}
             </p>
           </div>
-          <div className="">
-            <p className="font-medium text-center">
-              <FontAwesomeIcon icon={faBed} /> Bed Type
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-cyan-800">
+            <AspectRatioOutlinedIcon fontSize="small" />
+            <p className="text-black">
+              {room.roomSize} m
+              <span
+                className=""
+                style={{
+                  fontSize: "10px",
+                }}
+              >
+                2
+              </span>
             </p>
-            <p className="text-lg font-bold text-center">{room.bedType}</p>
           </div>
-          <div className="">
-            <p className="font-medium text-center">
-              <FontAwesomeIcon icon={faBed} /> Washrooms
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-amber-500">
+            <BedOutlinedIcon fontSize="small" />
+            <p className="text-black">
+              {room.bedType[0].toUpperCase() + room.bedType.slice(1)} Bed
             </p>
-            <p className="text-lg font-bold text-center">{room.washrooms}</p>
           </div>
-          <div className="">
-            <p className="font-medium text-center">
-              <FontAwesomeIcon icon={faBed} /> Nearby School / University
-            </p>
-            <p className="text-lg font-bold text-center">{room.uni}</p>
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-orange-700">
+            <PeopleOutlineOutlinedIcon fontSize="small" />
+            <p className="text-black">{room.capacity} People</p>
           </div>
-          <div className="">
-            <p className="font-medium text-center">
-              <FontAwesomeIcon icon={faBed} /> Contact
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-green-800">
+            <BathtubOutlinedIcon fontSize="small" />
+            <p className="text-black">
+              {room.washrooms[0].toUpperCase() + room.washrooms.slice(1)}{" "}
+              washroom
             </p>
-            <p className="text-lg font-bold text-center">{room.phno}</p>
+          </div>
+          <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-pink-800">
+            <BikeScooterOutlinedIcon fontSize="small" />
+            <p className="text-black">
+              {room.publicTransportAccess[0].toUpperCase() +
+                room.publicTransportAccess.slice(1)}
+            </p>
           </div>
         </div>
 
-        <div className={styles.location}>
-          <h2 className="text-xl font-medium my-3">Location</h2>
+        <div className="rounded-md border">
+          <div className="p-3 border-b text-sm">
+            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
+                ...dropDownMenu,
+                safetyFeatures: !dropDownMenu.safetyFeatures,
+            })}}>
+              <div className="flex flex-row justify-between items-center gap-3">
+                <LockOpenOutlinedIcon fontSize="small" />
+                <p>Safety Features</p>
+              </div>
+              <div>
+                {dropDownMenu.safetyFeatures?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+              </div>
+            </div>
+            {dropDownMenu.safetyFeatures && <div className="px-8 py-3">
+              <ul className="list-disc">
+                {room.safetyFeatures.map((feature, index) => (
+                  <li key={index} className="text-sm">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>}
+          </div>
+          <div className="p-3 border-b text-sm">
+            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
+                 ...dropDownMenu,
+                accessibilityFeatures: !dropDownMenu.accessibilityFeatures,
+            })}}>
+              <div className="flex flex-row justify-between items-center gap-3">
+                <SwitchAccessShortcutAddOutlinedIcon fontSize="small" />
+                <p>Accessibility Features</p>
+              </div>
+              <div>
+                {dropDownMenu.accessibilityFeatures?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+              </div>
+            </div>
+            {dropDownMenu.accessibilityFeatures &&<div className="px-8 py-3">
+              <ul className="list-disc">
+                {room.accessibilityFeatures.map((feature, index) => (
+                  <li key={index} className="text-sm">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>}
+          </div>
+          <div className="p-3 border-b text-sm">
+            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
+                ...dropDownMenu,
+                rules: !dropDownMenu.rules,
+            })}}>
+              <div className="flex flex-row justify-between items-center gap-3">
+                <GavelOutlinedIcon fontSize="small" />
+                <p>Rules</p>
+              </div>
+              <div>
+                {dropDownMenu.rules?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+              </div>
+            </div>
+            {dropDownMenu.rules &&<div className="px-8 py-3">
+              <ul className="list-disc">
+                {room.rules.map((feature, index) => (
+                  <li key={index} className="text-sm">
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>}
+          </div>
+          <div className="p-3 border-b text-sm">
+            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
+                ...dropDownMenu,
+                neighborhoodInfo: !dropDownMenu.neighborhoodInfo,
+            })}}>
+              <div className="flex flex-row justify-between items-center gap-3">
+                <FamilyRestroomOutlinedIcon fontSize="small" />
+                <p>Neighborhood Info</p>
+              </div>
+              <div>
+                {dropDownMenu.neighborhoodInfo?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+              </div>
+            </div>
+            {dropDownMenu.neighborhoodInfo &&<div className="px-8 py-3">
+              <p>{room.neighborhoodInfo}</p>
+            </div>
+            }
+          </div>
+        </div>
+
+        <div className="p-4 py-6 rounded-md border my-3">
+          <h2 className="text-base font-medium my-3">Location</h2>
           {/* <MapComponent latitude={room.latitude} longitude={room.longitude} /> */}
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15531.517911782868!2d77.5963265!3d13.2954684!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3df04c9efe91%3A0x74ef0f7e2f81d564!2sGitam%20University%20Bengaluru!5e0!3m2!1sen!2sin!4v1718653227233!5m2!1sen!2sin"
-            className="w-256 h-60"
+            className="w-full h-60"
             allowfullscreen=""
             loading="lazy"
             referrerpolicy="no-referrer-when-downgrade"
           ></iframe>
+          <GoogleMapReact
+            bootstrapURLKeys={{
+              key: "AIzaSyBO5tXe7vH1N0Y5flqGlenXq0pKUj86MSk",
+            }}
+            defaultCenter={defaultProps.center}
+            defaultZoom={defaultProps.zoom}
+          >
+            <AnyReactComponent
+              lat={59.955413}
+              lng={30.337844}
+              text="My Marker"
+            />
+          </GoogleMapReact>
         </div>
-      </div>
 
-      {/* Feedback/Reviews Section */}
-      <div className="w-256 mx-auto">
-        <h2 className="text-xl font-medium mt-6 mb-4">Feedback & Reviews</h2>
-        <div className="grid grid-rows-2 grid-cols-2 gap-5">
-          <div
-            className=" p-2 flex flex-row rounded-xl"
-            style={{
-              boxShadow: "0px 0px 5px lightgrey",
-            }}
-          >
-            <div className="" style={{
-              width:"80px"
-            }}>
-              <Image
-                src={"https://picsum.photos/200/300"}
-                width={100}
-                height={100}
-                alt="image"
-                className="rounded-full"
-                style={{
-                  width:"40px",
-                  height:"40px"
-                }}
-              />
-            </div>
-            <div>
-              <h3>John Doe</h3>
-              <p>
-                "The apartment was great, it had everything I needed and the
-                location was perfect."
-              </p>
-              <p>-Jane Doe</p>
-            </div>
-          </div>
-          <div
-            className=" p-2 flex flex-row rounded-xl"
-            style={{
-              boxShadow: "0px 0px 5px lightgrey",
-            }}
-          >
-            <div className="" style={{
-              width:"80px"
-            }}>
-              <Image
-                src={"https://picsum.photos/200/300"}
-                width={100}
-                height={100}
-                alt="image"
-                className="rounded-full"
-                style={{
-                  width:"40px",
-                  height:"40px"
-                }}
-              />
-            </div>
-            <div>
-              <h3>John Doe</h3>
-              <p>
-                "The apartment was great, it had everything I needed and the
-                location was perfect."
-              </p>
-              <p>-Jane Doe</p>
-            </div>
-          </div>
-          <div
-            className=" p-2 flex flex-row rounded-xl"
-            style={{
-              boxShadow: "0px 0px 5px lightgrey",
-            }}
-          >
-            <div className="" style={{
-              width:"80px"
-            }}>
-              <Image
-                src={"https://picsum.photos/200/300"}
-                width={100}
-                height={100}
-                alt="image"
-                className="rounded-full"
-                style={{
-                  width:"40px",
-                  height:"40px"
-                }}
-              />
-            </div>
-            <div>
-              <h3>John Doe</h3>
-              <p>
-                "The apartment was great, it had everything I needed and the
-                location was perfect."
-              </p>
-              <p>-Jane Doe</p>
-            </div>
-          </div>
-          <div
-            className=" p-2 flex flex-row rounded-xl"
-            style={{
-              boxShadow: "0px 0px 5px lightgrey",
-            }}
-          >
-            <div className="" style={{
-              width:"80px"
-            }}>
-              <Image
-                src={"https://picsum.photos/200/300"}
-                width={100}
-                height={100}
-                alt="image"
-                className="rounded-full"
-                style={{
-                  width:"40px",
-                  height:"40px"
-                }}
-              />
-            </div>
-            <div>
-              <h3>John Doe</h3>
-              <p>
-                "I really liked my stay at the apartment, the owner was very
-                helpful and accommodating."
-              </p>
-              <p>-Jane Doe</p>
+        <div className="p-4 py-6 rounded-md border my-3">
+          <h2 className="text-base font-medium my-3">
+            Reviews ({reviews.length})
+          </h2>
+          <div className="w-full mx-auto overflow-x-scroll no-scrollbar">
+            <div
+              className="flex flex-row gap-2"
+              style={{
+                width: "max-content",
+              }}
+            >
+              {reviews.map((review, index) => (
+                <div className="flex flex-row gap-2 p-4 border rounded-xl mb-2  ">
+                  <div className="w-10 h-10 bg-black rounded-full overflow-hidden mr-3">
+                    <Image
+                      src={review.image}
+                      alt="User"
+                      width={100}
+                      height={100}
+                      layout="responsive"
+                      style={{
+                        width: "auto",
+                        height: "100px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </div>
+                  <div className="w-40">
+                    <p className="text-sm font-semibold mb-1">{review.name}</p>
+                    <p className="text-sm">{review.review}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
-        <Link href="/community" passHref legacyBehavior>
-          <a className={styles.join_button}>Join Student Community</a>
-        </Link>
       </div>
-
-      {/* Contact The Owner Section */}
-      {/* <div className={styles.contact_owner}>
-        <h2>Contact The Owner</h2>
-        {ownerDetails ? (
-          <div className={styles.owner_details}>
-            <div className={styles.owner_image}>
-              <img
-                src={ownerDetails.photoURL || "/path/to/default_image.png"}
-                alt="Owner"
-              />
-            </div>
-            <div className={styles.owner_info}>
-              <p className={styles.owner_name}>
-                Name: {ownerDetails.firstName} {ownerDetails.lastName}
-              </p>
-              <p className={styles.owner_email}>Email: {ownerDetails.email}</p>
-              <p className={styles.owner_phone}>
-                Phone: {ownerDetails.phoneNumber}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div>Loading owner details...</div>
-        )}
-      </div> */}
 
       <CustomModal
         isOpen={addBookingSuccess}
         onClose={() => setAddBookingSuccess(false)}
         title="Booking Successful"
       >
-        <p>Your booking has submitted for approval. Wait for the owners response.</p>
-        <button onClick={()=>{
-          router.push("/chat/messagecenter")
-        }}>Go to Message center</button>
+        <p>
+          Your booking has submitted for approval. Wait for the owners response.
+        </p>
+        <button
+          onClick={() => {
+            router.push("/chat/messagecenter");
+          }}
+        >
+          Go to Message center
+        </button>
       </CustomModal>
 
       <CustomModal
@@ -535,10 +652,17 @@ const RoomDetails = ({ room }) => {
         onClose={() => setAddAppointmentSuccess(false)}
         title="Appointment sent Successful"
       >
-        <p>Your appointment has submitted for approval. Wait for the owners response.</p>
-        <button onClick={()=>{
-          router.push("/chat/messagecenter")
-        }}>Go to Message center</button>
+        <p>
+          Your appointment has submitted for approval. Wait for the owners
+          response.
+        </p>
+        <button
+          onClick={() => {
+            router.push("/chat/messagecenter");
+          }}
+        >
+          Go to Message center
+        </button>
       </CustomModal>
 
       <CustomModal
@@ -546,33 +670,84 @@ const RoomDetails = ({ room }) => {
         onClose={() => setIsBookNowOpen(false)}
         title="Book Now"
       >
-        <p className="text-base font-sans mb-3">Fill in the details to book the room</p>
+        <p className="text-base font-sans mb-3">
+          Fill in the details to book the room
+        </p>
         <div className="grid grid-cols-12 gap-4">
-          <InputFieldCustom label={"Name"} name="name" value={bookingDetails.name} onChange={handleInputChange} colStart={1} colEnd={6}/>
-          <InputFieldCustom label={"Email"} name="email" value={bookingDetails.email} onChange={handleInputChange} colStart={6} colEnd={13}/>
-          <InputFieldCustom label={"Phone"} name="phone" value={bookingDetails.phone} onChange={handleInputChange} colStart={1} colEnd={8}/>
-          <div className="col-start-8 col-end-13"><LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
-            <DatePicker label="Move in date" value={bookingDetails.moveInDate}
-              onChange={(newValue) => setBookingDetails((prevDetails) => ({
-                ...prevDetails,
-                moveInDate: newValue
-              }))}
-            />
-          </LocalizationProvider></div>
-          <InputFieldCustom label={"Address"} name="address" value={bookingDetails.address} onChange={handleInputChange} colStart={1} colEnd={13}/>
-          <InputFieldCustom label={"Notes"} name="notes" value={bookingDetails.notes} onChange={handleInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
+          <InputFieldCustom
+            label={"Name"}
+            name="name"
+            value={bookingDetails.name}
+            onChange={handleInputChange}
+            colStart={1}
+            colEnd={6}
+          />
+          <InputFieldCustom
+            label={"Email"}
+            name="email"
+            value={bookingDetails.email}
+            onChange={handleInputChange}
+            colStart={6}
+            colEnd={13}
+          />
+          <InputFieldCustom
+            label={"Phone"}
+            name="phone"
+            value={bookingDetails.phone}
+            onChange={handleInputChange}
+            colStart={1}
+            colEnd={8}
+          />
+          <div className="col-start-8 col-end-13">
+            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+              <DatePicker
+                label="Move in date"
+                value={bookingDetails.moveInDate}
+                onChange={(newValue) =>
+                  setBookingDetails((prevDetails) => ({
+                    ...prevDetails,
+                    moveInDate: newValue,
+                  }))
+                }
+              />
+            </LocalizationProvider>
+          </div>
+          <InputFieldCustom
+            label={"Address"}
+            name="address"
+            value={bookingDetails.address}
+            onChange={handleInputChange}
+            colStart={1}
+            colEnd={13}
+          />
+          <InputFieldCustom
+            label={"Notes"}
+            name="notes"
+            value={bookingDetails.notes}
+            onChange={handleInputChange}
+            multiline={true}
+            rows={5}
+            colStart={1}
+            colEnd={13}
+          />
           <div className="col-start-1 col-end-13 flex flex-row items-center">
             <Checkbox
               name="agreeTerms"
               checked={bookingDetails.agreeTerms}
               onChange={handleCheckboxChange}
-              inputProps={{ 'aria-label': 'controlled' }}
+              inputProps={{ "aria-label": "controlled" }}
             />
             <p className="text-base font-sans">
-              I agree to the terms of the leasing contract and policies of KamerLark.
+              I agree to the terms of the leasing contract and policies of
+              KamerLark.
             </p>
           </div>
-          <CustomButton label={"Submit"} onClick={handleBookingSubmit} colStart={1} colEnd={13}/>
+          <CustomButton
+            label={"Submit"}
+            onClick={handleBookingSubmit}
+            colStart={1}
+            colEnd={13}
+          />
         </div>
       </CustomModal>
 
@@ -581,49 +756,96 @@ const RoomDetails = ({ room }) => {
         onClose={() => setIsAppointmentOpen(false)}
         title="Book an Appointment"
       >
-        <p className="text-base font-sans mb-3">Fill in the details to book an appointment</p>
+        <p className="text-base font-sans mb-3">
+          Fill in the details to book an appointment
+        </p>
         <div className="grid grid-cols-12 gap-4">
-        <InputFieldCustom label={"Name"} name="name" value={appointmentDetails.name} onChange={handleAppointmentInputChange} colStart={1} colEnd={13}/>
-        <InputFieldCustom label={"Email"} name="email" value={appointmentDetails.email} onChange={handleAppointmentInputChange} colStart={1} colEnd={7}/>
-        <InputFieldCustom label={"Phone"} name="phone" value={appointmentDetails.phone} onChange={handleAppointmentInputChange} colStart={7} colEnd={13}/>
-        <div className="col-start-1 col-end-13">
-        <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
-            <DatePicker label="Preferred Date" 
-              fullWidth
-              value={appointmentDetails.date}
-              onChange={(newValue) => setAppointmentDetails((prevDetails) => ({
-                ...prevDetails,
-                date: newValue
-              }))}
-            />
-          </LocalizationProvider>
-        </div>
-        <div className="col-start-1 col-end-13"><LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
-            <StaticTimePicker defaultValue={dayjs('2022-04-17T15:30')} value={appointmentDetails.time} onChange={(newValue)=>{
-              setAppointmentDetails((prevDetails) => ({
-                ...prevDetails,
-                time: newValue
-              }))
-              console.log({newValue})
-            }}/>
-          </LocalizationProvider>
-        </div>
-        <FormControl fullWidth className="col-start-1 col-end-13 mt-2">
-              <InputLabel id="demo-simple-select-label">Appointment Type</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                value={appointmentDetails.appointmenttype}
-                label="Appoinment Type"
-                name="appointmenttype"
-                onChange={handleAppointmentInputChange}
-              >
-                <MenuItem value={"inperson"}>In Person</MenuItem>
-                <MenuItem value={"virtual"}>Virtual</MenuItem>
-              </Select>
-            </FormControl>
-        <InputFieldCustom label={"Message"} name="message" value={appointmentDetails.message} onChange={handleAppointmentInputChange} multiline={true} rows={5} colStart={1} colEnd={13}/>
-        <CustomButton label={"Submit"} onClick={handleAppointmentSubmit} colStart={1} colEnd={13}/>
+          <InputFieldCustom
+            label={"Name"}
+            name="name"
+            value={appointmentDetails.name}
+            onChange={handleAppointmentInputChange}
+            colStart={1}
+            colEnd={13}
+          />
+          <InputFieldCustom
+            label={"Email"}
+            name="email"
+            value={appointmentDetails.email}
+            onChange={handleAppointmentInputChange}
+            colStart={1}
+            colEnd={7}
+          />
+          <InputFieldCustom
+            label={"Phone"}
+            name="phone"
+            value={appointmentDetails.phone}
+            onChange={handleAppointmentInputChange}
+            colStart={7}
+            colEnd={13}
+          />
+          <div className="col-start-1 col-end-13">
+            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+              <DatePicker
+                label="Preferred Date"
+                fullWidth
+                value={appointmentDetails.date}
+                onChange={(newValue) =>
+                  setAppointmentDetails((prevDetails) => ({
+                    ...prevDetails,
+                    date: newValue,
+                  }))
+                }
+              />
+            </LocalizationProvider>
+          </div>
+          <div className="col-start-1 col-end-13">
+            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+              <StaticTimePicker
+                defaultValue={dayjs("2022-04-17T15:30")}
+                value={appointmentDetails.time}
+                onChange={(newValue) => {
+                  setAppointmentDetails((prevDetails) => ({
+                    ...prevDetails,
+                    time: newValue,
+                  }));
+                  console.log({ newValue });
+                }}
+              />
+            </LocalizationProvider>
+          </div>
+          <FormControl fullWidth className="col-start-1 col-end-13 mt-2">
+            <InputLabel id="demo-simple-select-label">
+              Appointment Type
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={appointmentDetails.appointmenttype}
+              label="Appoinment Type"
+              name="appointmenttype"
+              onChange={handleAppointmentInputChange}
+            >
+              <MenuItem value={"inperson"}>In Person</MenuItem>
+              <MenuItem value={"virtual"}>Virtual</MenuItem>
+            </Select>
+          </FormControl>
+          <InputFieldCustom
+            label={"Message"}
+            name="message"
+            value={appointmentDetails.message}
+            onChange={handleAppointmentInputChange}
+            multiline={true}
+            rows={5}
+            colStart={1}
+            colEnd={13}
+          />
+          <CustomButton
+            label={"Submit"}
+            onClick={handleAppointmentSubmit}
+            colStart={1}
+            colEnd={13}
+          />
         </div>
       </CustomModal>
 

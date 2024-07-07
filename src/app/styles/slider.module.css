@@ -1,12 +1,3 @@
-.slider {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
 
 .arrowLeft, .arrowRight {
   position: absolute;
@@ -37,7 +28,6 @@
   transition: background-image 0.5s ease-in-out;
   background-size: cover;
   background-position: center;
-  overflow: hidden; /* Ensure pseudo-element doesn't overflow */
 }
 
 .slide::before {

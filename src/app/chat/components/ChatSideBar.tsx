@@ -19,7 +19,6 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
   useEffect(() => {
     const fetch = async () => {
       if (user) {
-        console.log("user curr", user.uid);
         const docRef = collection(db, "chatRoomMapping");
         const q = query(
           docRef,
@@ -57,9 +56,6 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
     };
     fetch();
   }, [user]);
-  useEffect(() => {
-    console.log(chatRooms);
-  }, [chatRooms]);
   return (
     <div>
       <h1 className="text-xl font-sans font-semibold px-3 py-3 pb-4 bg-black text-white">

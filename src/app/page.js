@@ -3,15 +3,9 @@ import React, { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { db } from "./firebase/Config";
 import { collection, getDocs } from "firebase/firestore";
-import SearchBar from "./components/searchbar";
-import RoomCard from "./components/rooms/listing";
 import Footer from "./components/Footer";
-import kam from "./styles/roomcard.module.css";
 import ImageSlider from "./components/Imageslider";
-import Spinner from "./components/Spinner"; // Import Spinner
 import RoomCardNew from "./components/roomCard"; // Import RoomCardNew
-import { FormControl, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import Image from "next/image";
 const slides = [
   {
@@ -50,14 +44,6 @@ const slides = [
   },
 ];
 
-const containerStyles = {
-  width: "90%",
-  height: "50vh",
-  margin: "0 auto",
-  marginTop: "2%",
-  marginBottom: "2%",
-  fontFamily: "'Poppins', sans-serif",
-};
 
 export default function Home() {
   const [rooms, setRooms] = useState([]);
@@ -79,34 +65,6 @@ export default function Home() {
 
     fetchRooms();
   }, []);
-
-  const handleViewMore = () => {
-    setVisibleCount((prevCount) => prevCount + 4); // Increase by 4 items (2 more rows)
-  };
-
-  const handleViewLess = () => {
-    setVisibleCount(4); // Reset to show only 4 items
-  };
-
-  const buttonStyles = {
-    margin: "10px",
-    padding: "10px 20px",
-    backgroundColor: "#28a745",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-    fontSize: "16px",
-  };
-
-  const buttonContainerStyles = {
-    textAlign: "center",
-    margin: "20px 0",
-  };
-
-  // if (loading) {
-  //   return <Spinner />; // Show spinner while loading
-  // }
 
   return (
     <>
@@ -134,10 +92,10 @@ export default function Home() {
             width:'450px',
             height:'380px',
           }} className="rounded-full bg-teal-950 flex flex-row items-center justify-center flex-wrap ml-16">
-              <div className="m-10"><p className="text-lg text-white">
-                Find your next accommodation from <span className="text-xl text-gray-300">KamerLark.</span> 
+              <div className="m-10"><p className="text-base text-white">
+                Find your next accommodation from <span className="text-base text-gray-300">KamerLark.</span> 
               </p>
-              <button className="p-2 px-4 bg-cyan-700 rounded-lg text-white my-2">FIND STAYS</button></div>
+              <button className="text-sm p-2 px-4 bg-cyan-700 rounded-sm text-white my-2">FIND STAYS</button></div>
           </div>
           <div className=" absolute rounded-full bg-yellow-500 bottom-3" style={{
             width: '150px',

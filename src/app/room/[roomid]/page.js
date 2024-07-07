@@ -8,6 +8,7 @@ import styles from '../../styles/roomdetails.module.css';
 import kam from '../../styles/roomcard.module.css';
 import Spinner from '../../components/Spinner'; // Import Spinner
 import RoomCardNew from '../../components/roomCard';
+import Footer from '../../components/Footer';
 
 export default function Roomid({ params }) {
   const [showMoreRooms, setShowMoreRooms] = useState(false);
@@ -65,28 +66,7 @@ export default function Roomid({ params }) {
               <div>Room not found</div>
             )}
           </div>
-          <div className="grid grid-cols-4 w-256 mx-auto justify-between gap-4 mt-4">
-            {allRooms.slice(0, 4).map((room) => (
-              <RoomCardNew key={room.id} room={room} />
-            ))}
-          </div>
-          <div className={styles.more_rooms_button_container}>
-            {!showMoreRooms && (
-              <button className={styles.viewmorebutton} onClick={handleMoreRoomsClick} style={{ display: buttonshow }}>More Rooms..</button>
-            )}
-          </div>
-          {showMoreRooms && (
-            <div>
-              <div className={kam.cardcon}>
-                {allRooms.slice(4).map((room) => (
-                  <RoomCardNew key={room.id} room={room} />
-                ))}
-              </div>
-              <div style={{ textAlign: 'center', margin: '20px 0' }}>
-                <button className={styles.viewmorebutton} onClick={() => setShowMoreRooms(false)}>View Less</button>
-              </div>
-            </div>
-          )}
+          <Footer />
         </>
       )}
     </>

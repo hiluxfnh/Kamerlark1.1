@@ -35,7 +35,11 @@ const Header = () => {
   };
 
   return (
-    <div className="bg-black">
+    <div className="bg-black fixed z-50" 
+      style={{
+        width:"100vw"
+      }}
+    >
       <header className="w-256 mx-auto flex flex-row justify-between p-2 relative">
         <div className="flex flex-row items-center">
           <Image src={kl} alt="Logo" className={styles.logoImage} />

@@ -160,6 +160,9 @@ const ChatBox = ({chatRoomId,currentUser}) => {
       router.push("/login");
       return;
     }
+    if (newMessage === "") {
+      return;
+    }
     await setDoc(doc(db, "chatRoomMapping", chatRoomMappingId), {
       timestamp: new Date().getTime(),
     }, { merge: true });
