@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/slider.module.css";
 import CloseIcon from '@mui/icons-material/Close';
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 const universities = [
   { label: "University of Dschang", value: "University of Dschang" },
@@ -35,25 +34,13 @@ const washroomTypes = [
   {label:"Other", value:"other"}
 ];
 
-const ImageSlider = ({ slides }) => {
+const ImageSlider = () => {
   const router = useRouter();
   const [searchedUniversity, setSearchedUniversity] = useState("");
   const [searchedFurnishedStatus, setSearchedFurnishedStatus] = useState("");
   const [searchedBedType, setSearchedBedType] = useState("");
   const [searchedWashroomType, setSearchedWashroomType] = useState("");
-
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [showSearch, setShowSearch] = useState(false);
-  const goToNext = () => {
-    const isLastSlide = currentIndex === slides.length - 1;
-    const newIndex = isLastSlide ? 0 : currentIndex + 1;
-    setCurrentIndex(newIndex);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(goToNext, 5000); // Change slide every 5 seconds
-    return () => clearInterval(timer); // Clean up the interval on unmount
-  }, [currentIndex]);
 
   return (
     <div
@@ -66,20 +53,31 @@ const ImageSlider = ({ slides }) => {
     >
       <div
         className={styles.slide}
-        style={{ backgroundImage: `url(${slides[currentIndex].url})` }}
+        style={{ backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-12.png?alt=media&token=e5163b88-de44-47fe-956e-01ac18dbbc53)` }}
       >
-        <div className={`${styles.content} w-256 relative`}>
-          <h2 className="text-4xl font-bold">{slides[currentIndex].title}</h2>
-          <p className="text-base my-4 w-1/2">
-            {slides[currentIndex].description}
+        <div className={`${styles.content} w-256 absolute` }
+          style={{
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <div className="w-170 mx-auto">
+          <h2 className="text-4xl font-bold text-center">
+            Find Your Perfect Accommodation
+          </h2>
+          <p className="text-base text-center my-3">
+            Find the best accommodation for your stay near your university. And get the best experience of your life.
           </p>
+          </div>
           <div
-            className="absolute z-50">
+            className="w-170 mx-auto z-50"
+            >
             <div className="mt-10 relative">
               <input
                 type="text"
                 placeholder="Search Location for accommodation..."
-                className="w-256 p-4 border border-gray-300 rounded-lg outline-none text-black text-sm"
+                className="w-170 p-4 border border-gray-300 rounded-lg outline-none text-black text-sm"
                 onFocus={() => {
                   setShowSearch(true);
                 }}
@@ -105,7 +103,7 @@ const ImageSlider = ({ slides }) => {
                 SEARCH
               </button>
               {showSearch && (
-                <div className="w-256 h-80 bg-white rounded-md shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
+                <div className="w-170 h-80 bg-white rounded-md shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
                   <div className="sticky float-end right-2 top-2 text-black cursor-pointer">
                     <CloseIcon onClick={() => setShowSearch(false)} />
                   </div>
