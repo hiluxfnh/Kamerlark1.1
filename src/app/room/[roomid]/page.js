@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from '../../components/Header';
 import { db } from '../../firebase/Config'; // Adjust the import as necessary
-import {doc, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs } from "firebase/firestore";
 import RoomDetails from '../roomdetails';
 import Spinner from '../../components/Spinner'; // Import Spinner
 import Footer from '../../components/Footer';
@@ -11,17 +11,16 @@ export default function Roomid({ params }) {
   const [room, setRoom] = useState(null);
   const [loading, setLoading] = useState(true);
   const { roomid } = params;
+
   useEffect(() => {
     const fetchRoomData = async () => {
       setLoading(true); // Show spinner
       try {
-        const querySnapshot = await getDocs(doc(db, "rooms", roomid));
-        querySnapshot.forEach((doc) => {
-          setRoom({
-            id: doc.id,
-            ...doc.data(),
-          });
-        });
+        const roomCollection = collection(db, "roomdetails");
+        const roomSnapshot = await getDocs(roomCollection);
+        roomSnapshot.docs.map((doc) => (
+          doc.id === roomid && setRoom({ id: doc.id, ...doc.data() })
+        ));
       } catch (error) {
         console.error("Error fetching room data: ", error);
       } finally {
@@ -33,6 +32,7 @@ export default function Roomid({ params }) {
       fetchRoomData();
     }
   }, [roomid]);
+
   return (
     <>
       {loading ? (

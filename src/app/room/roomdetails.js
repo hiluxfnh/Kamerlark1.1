@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+import KeyboardArrowUpOutlinedIcon from "@mui/icons-material/KeyboardArrowUpOutlined";
 import GavelOutlinedIcon from "@mui/icons-material/GavelOutlined";
 import SwitchAccessShortcutAddOutlinedIcon from "@mui/icons-material/SwitchAccessShortcutAddOutlined";
 import SchoolOutlinedIcon from "@mui/icons-material/SchoolOutlined";
@@ -156,8 +156,7 @@ const RoomDetails = ({ room }) => {
   const images = room.images.slice(0, 4); // Only take the first 4 images
 
   useEffect(() => {
-    if(images && images.length > 0)
-      setSelectedImage(images[0]);
+    if (images && images.length > 0) setSelectedImage(images[0]);
   }, [room]);
 
   if (!room) {
@@ -335,7 +334,10 @@ const RoomDetails = ({ room }) => {
             <h1 className="text-base font-semibold my-2">Amenties</h1>
             <div className="flex flex-row flex-wrap gap-2 text-sm">
               {room.amenities.map((amenity, index) => (
-                <div className="p-1 px-2 bg-gray-500 text-white rounded-md" key={index}>
+                <div
+                  className="p-1 px-2 bg-gray-500 text-white rounded-md"
+                  key={index}
+                >
                   <span className="">{amenity}</span>
                 </div>
               ))}
@@ -475,91 +477,134 @@ const RoomDetails = ({ room }) => {
 
         <div className="rounded-md border">
           <div className="p-3 border-b text-sm">
-            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
-                ...dropDownMenu,
-                safetyFeatures: !dropDownMenu.safetyFeatures,
-            })}}>
+            <div
+              className="flex flex-row justify-between items-center cursor-pointer"
+              onClick={() => {
+                setDropDownMenu({
+                  ...dropDownMenu,
+                  safetyFeatures: !dropDownMenu.safetyFeatures,
+                });
+              }}
+            >
               <div className="flex flex-row justify-between items-center gap-3">
                 <LockOpenOutlinedIcon fontSize="small" />
                 <p>Safety Features</p>
               </div>
               <div>
-                {dropDownMenu.safetyFeatures?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+                {dropDownMenu.safetyFeatures ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
               </div>
             </div>
-            {dropDownMenu.safetyFeatures && <div className="px-8 py-3">
-              <ul className="list-disc">
-                {room.safetyFeatures.map((feature, index) => (
-                  <li key={index} className="text-sm">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>}
+            {dropDownMenu.safetyFeatures && (
+              <div className="px-8 py-3">
+                <ul className="list-disc">
+                  {room.safetyFeatures.map((feature, index) => (
+                    <li key={index} className="text-sm">
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div className="p-3 border-b text-sm">
-            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
-                 ...dropDownMenu,
-                accessibilityFeatures: !dropDownMenu.accessibilityFeatures,
-            })}}>
+            <div
+              className="flex flex-row justify-between items-center cursor-pointer"
+              onClick={() => {
+                setDropDownMenu({
+                  ...dropDownMenu,
+                  accessibilityFeatures: !dropDownMenu.accessibilityFeatures,
+                });
+              }}
+            >
               <div className="flex flex-row justify-between items-center gap-3">
                 <SwitchAccessShortcutAddOutlinedIcon fontSize="small" />
                 <p>Accessibility Features</p>
               </div>
               <div>
-                {dropDownMenu.accessibilityFeatures?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+                {dropDownMenu.accessibilityFeatures ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
               </div>
             </div>
-            {dropDownMenu.accessibilityFeatures &&<div className="px-8 py-3">
-              <ul className="list-disc">
-                {room.accessibilityFeatures.map((feature, index) => (
-                  <li key={index} className="text-sm">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>}
+            {dropDownMenu.accessibilityFeatures && (
+              <div className="px-8 py-3">
+                <ul className="list-disc">
+                  {room.accessibilityFeatures.map((feature, index) => (
+                    <li key={index} className="text-sm">
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div className="p-3 border-b text-sm">
-            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
-                ...dropDownMenu,
-                rules: !dropDownMenu.rules,
-            })}}>
+            <div
+              className="flex flex-row justify-between items-center cursor-pointer"
+              onClick={() => {
+                setDropDownMenu({
+                  ...dropDownMenu,
+                  rules: !dropDownMenu.rules,
+                });
+              }}
+            >
               <div className="flex flex-row justify-between items-center gap-3">
                 <GavelOutlinedIcon fontSize="small" />
                 <p>Rules</p>
               </div>
               <div>
-                {dropDownMenu.rules?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+                {dropDownMenu.rules ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
               </div>
             </div>
-            {dropDownMenu.rules &&<div className="px-8 py-3">
-              <ul className="list-disc">
-                {room.rules.map((feature, index) => (
-                  <li key={index} className="text-sm">
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>}
+            {dropDownMenu.rules && (
+              <div className="px-8 py-3">
+                <ul className="list-disc">
+                  {room.rules.map((feature, index) => (
+                    <li key={index} className="text-sm">
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
           <div className="p-3 border-b text-sm">
-            <div className="flex flex-row justify-between items-center cursor-pointer" onClick={()=>{setDropDownMenu({
-                ...dropDownMenu,
-                neighborhoodInfo: !dropDownMenu.neighborhoodInfo,
-            })}}>
+            <div
+              className="flex flex-row justify-between items-center cursor-pointer"
+              onClick={() => {
+                setDropDownMenu({
+                  ...dropDownMenu,
+                  neighborhoodInfo: !dropDownMenu.neighborhoodInfo,
+                });
+              }}
+            >
               <div className="flex flex-row justify-between items-center gap-3">
                 <FamilyRestroomOutlinedIcon fontSize="small" />
                 <p>Neighborhood Info</p>
               </div>
               <div>
-                {dropDownMenu.neighborhoodInfo?<KeyboardArrowUpOutlinedIcon/>:<KeyboardArrowDownOutlinedIcon />}
+                {dropDownMenu.neighborhoodInfo ? (
+                  <KeyboardArrowUpOutlinedIcon />
+                ) : (
+                  <KeyboardArrowDownOutlinedIcon />
+                )}
               </div>
             </div>
-            {dropDownMenu.neighborhoodInfo &&<div className="px-8 py-3">
-              <p>{room.neighborhoodInfo}</p>
-            </div>
-            }
+            {dropDownMenu.neighborhoodInfo && (
+              <div className="px-8 py-3">
+                <p>{room.neighborhoodInfo}</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -586,7 +631,10 @@ const RoomDetails = ({ room }) => {
               }}
             >
               {reviews.map((review, index) => (
-                <div className="flex flex-row gap-2 p-4 border rounded-xl mb-2" key={index}>
+                <div
+                  className="flex flex-row gap-2 p-4 border rounded-xl mb-2"
+                  key={index}
+                >
                   <div className="w-10 h-10 bg-black rounded-full overflow-hidden mr-3">
                     <Image
                       src={review.image}

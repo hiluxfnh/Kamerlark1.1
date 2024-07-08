@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import styles from "../styles/slider.module.css";
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from "@mui/icons-material/Close";
 import { useRouter } from "next/navigation";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase/Config";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 const universities = [
   { label: "University of Dschang", value: "University of Dschang" },
   { label: "University of Douala", value: "University of Douala" },
@@ -26,12 +29,12 @@ const bedTypes = [
   { label: "Triple Bed", value: "triple" },
   { label: "Quadruple Bed", value: "quadruple" },
   { label: "Other", value: "other" },
-]
+];
 
 const washroomTypes = [
-  {label:"Attached", value:"attached"},
-  {label:"Common", value:"common"},
-  {label:"Other", value:"other"}
+  { label: "Attached", value: "attached" },
+  { label: "Common", value: "common" },
+  { label: "Other", value: "other" },
 ];
 
 const ImageSlider = () => {
@@ -41,7 +44,40 @@ const ImageSlider = () => {
   const [searchedBedType, setSearchedBedType] = useState("");
   const [searchedWashroomType, setSearchedWashroomType] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [search, setSearch] = useState("");
+  const [rooms, setRooms] = useState([]);
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const roomCollection = collection(db, "roomdetails");
+        const roomSnapshot = await getDocs(roomCollection);
+        const roomList = roomSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        const filteredRooms = roomList.filter((room) =>
+          [
+            room.location.toLowerCase(),
+            room.uni.toLowerCase(),
+            room.name.toLowerCase()
+          ].some(field => field.includes(search.toLowerCase()))
+        ).map((room) => ({
+          ...room,
+          origin: 
+            room.location.toLowerCase().includes(search.toLowerCase()) ? "Location" :
+            room.uni.toLowerCase().includes(search.toLowerCase()) ? "University" :
+            room.name.toLowerCase().includes(search.toLowerCase()) ? "Property" :
+            ""
+        }));
+  
+        setRooms(filteredRooms);
+      } catch (e) {
+        console.log(e);
+      }
+    };
 
+    fetchRooms();
+  }, [search]);
   return (
     <div
       className=""
@@ -53,9 +89,12 @@ const ImageSlider = () => {
     >
       <div
         className={styles.slide}
-        style={{ backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-12.png?alt=media&token=e5163b88-de44-47fe-956e-01ac18dbbc53)` }}
+        style={{
+          backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-12.png?alt=media&token=e5163b88-de44-47fe-956e-01ac18dbbc53)`,
+        }}
       >
-        <div className={`${styles.content} w-256 absolute` }
+        <div
+          className={`${styles.content} w-256 absolute`}
           style={{
             top: "50%",
             left: "50%",
@@ -63,18 +102,19 @@ const ImageSlider = () => {
           }}
         >
           <div className="w-170 mx-auto">
-          <h2 className="text-4xl font-bold text-center">
-            Find Your Perfect Accommodation
-          </h2>
-          <p className="text-base text-center my-3">
-            Find the best accommodation for your stay near your university. And get the best experience of your life.
-          </p>
+            <h2 className="text-4xl font-bold text-center">
+              Find Your Perfect Accommodation
+            </h2>
+            <p className="text-base text-center my-3">
+              Find the best accommodation for your stay near your university.
+              And get the best experience of your life.
+            </p>
           </div>
-          <div
-            className="w-170 mx-auto z-50"
-            >
+          <div className="w-170 mx-auto z-50">
             <div className="mt-10 relative">
               <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 type="text"
                 placeholder="Search Location for accommodation..."
                 className="w-170 p-4 border border-gray-300 rounded-lg outline-none text-black text-sm"
@@ -82,27 +122,34 @@ const ImageSlider = () => {
                   setShowSearch(true);
                 }}
               />
-              <button onClick={()=>{
+              <button
+                onClick={() => {
+                  if(search.length!==0){
+                    router.push(`/search?search=${search}`);
+                    return;
+                  }
                   let query = {};
-                  if(searchedUniversity){
+                  if (searchedUniversity) {
                     query.uni = searchedUniversity;
                   }
-                  if(searchedFurnishedStatus){
+                  if (searchedFurnishedStatus) {
                     query.furnishedStatus = searchedFurnishedStatus;
                   }
-                  if(searchedBedType){
+                  if (searchedBedType) {
                     query.bedType = searchedBedType;
                   }
-                  if(searchedWashroomType){
+                  if (searchedWashroomType) {
                     query.washroomType = searchedWashroomType;
                   }
                   router.push(
                     `/search?${new URLSearchParams(query).toString()}`
                   );
-              }} className="p-2 px-5 rounded-md bg-cyan-950 text-sm text-white shadow-lg font-sans absolute right-2 top-2">
+                }}
+                className="p-2 px-5 rounded-md bg-cyan-950 text-sm text-white shadow-lg font-sans absolute right-2 top-2"
+              >
                 SEARCH
               </button>
-              {showSearch && (
+              {showSearch && search.length === 0 ? (
                 <div className="w-170 h-80 bg-white rounded-md shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
                   <div className="sticky float-end right-2 top-2 text-black cursor-pointer">
                     <CloseIcon onClick={() => setShowSearch(false)} />
@@ -112,7 +159,7 @@ const ImageSlider = () => {
                       University
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {universities.map((uni,index) =>
+                      {universities.map((uni, index) =>
                         uni.value === searchedUniversity ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -145,8 +192,8 @@ const ImageSlider = () => {
                       Furnished Status
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {funishedStatus.map((status,index) =>
-                        status.value=== searchedFurnishedStatus ? (
+                      {funishedStatus.map((status, index) =>
+                        status.value === searchedFurnishedStatus ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
                             style={{
@@ -156,7 +203,6 @@ const ImageSlider = () => {
                               setSearchedFurnishedStatus(status.value);
                             }}
                             key={index}
-
                           >
                             {status.label}
                           </p>
@@ -167,7 +213,6 @@ const ImageSlider = () => {
                               setSearchedFurnishedStatus(status.value);
                             }}
                             key={index}
-
                           >
                             {status.label}
                           </p>
@@ -180,7 +225,7 @@ const ImageSlider = () => {
                       Bed Type
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {bedTypes.map((bed,index) =>
+                      {bedTypes.map((bed, index) =>
                         bed.value === searchedBedType ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -214,7 +259,7 @@ const ImageSlider = () => {
                       Washroom Type
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
-                      {washroomTypes.map((washroom,index) =>
+                      {washroomTypes.map((washroom, index) =>
                         washroom.value === searchedWashroomType ? (
                           <p
                             className="p-2 m-1 bg-white text-black rounded-md max-w-fit cursor-pointer"
@@ -243,6 +288,31 @@ const ImageSlider = () => {
                     </div>
                   </div>
                 </div>
+              ) : (
+                <></>
+              )}
+              {showSearch && search.length !== 0 ? (
+                <div className="bg-white rounded-md overflow-hidden mt-2">
+                  {rooms.map((room, index) => (
+                    <div
+                      key={index}
+                      className="p-2 border-b text-black flex flex-row items-center justify-between cursor-pointer hover:bg-gray-100 text-sm"
+                      onClick={()=>{
+                        router.push(`/room/${room.id}`);
+                      }}
+                    >
+                      <div className="flex flex-row items-center"><OpenInNewIcon fontSize="small" />
+                      <div className="ml-2">
+                        <p>{room.name}</p>
+                        <p>{room.location}</p>
+                      </div>
+                      </div>
+                      <p>{room.origin}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <></>
               )}
             </div>
           </div>

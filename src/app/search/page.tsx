@@ -70,7 +70,7 @@ const SearchPage = () => {
 
   //location
   const [locationModal, setLocationModal] = useState(false);
-  const [location, setLocation] = useState("");
+  const [location, setLocation] = useState( params.get("search")||"");
 
 
   const fetchRooms = async () => {
