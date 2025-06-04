@@ -77,7 +77,7 @@ export default function Home() {
               href={"/search"}
               className="text-sm p-2 px-4 bg-cyan-700 text-white rounded-md"
             >
-              FIND STAYS
+              FIND STAYS     
             </Link>
             </div>
           </div>

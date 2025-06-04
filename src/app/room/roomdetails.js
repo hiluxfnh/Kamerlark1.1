@@ -77,6 +77,8 @@ const reviews = [
 const RoomDetails = ({ room }) => {
   const router = useRouter();
   const [user] = useAuthState(auth);
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState("");
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -113,6 +115,39 @@ const RoomDetails = ({ room }) => {
   });
   const [ownerDetails, setOwnerDetails] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      const roomRef = doc(db, "rooms", room.id);
+      const roomDoc = await getDoc(roomRef);
+      if (roomDoc.exists()) {
+        setReviews(roomDoc.data().reviews || []);
+      }
+    };
+
+    fetchReviews();
+  }, [room.id]);
+
+  const handleAddReview = async () => {
+    if (newReview.trim() === "") return;
+
+    const review = {
+      name: user.displayName || "Anonymous",
+      review: newReview,
+      image: user.photoURL || "https://via.placeholder.com/150",
+    };
+
+    try {
+      const roomRef = doc(db, "rooms", room.id);
+      await updateDoc(roomRef, {
+        reviews: arrayUnion(review)
+      });
+      setReviews(prevReviews => [...prevReviews, review]);
+      setNewReview("");
+    } catch (error) {
+      console.error("Error adding review: ", error);
+    }
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -658,6 +693,7 @@ const RoomDetails = ({ room }) => {
             </div>
           </div>
         </div>
+        
       </div>
 
       <CustomModal

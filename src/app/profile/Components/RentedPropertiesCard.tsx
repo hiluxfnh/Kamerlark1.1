@@ -4,14 +4,45 @@ import Link from "next/link";
 import { useState } from "react";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import InputFieldCustom from "../../components/InputField";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
 import { useRouter } from "next/navigation";
-const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
+
+const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
   const router = useRouter();
   const [show, setShow] = useState(false);
+  const [open, setOpen] = useState(false); // State for modal
+  const [reviewText, setReviewText] = useState(""); // State for review text
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const handleReviewSubmit = async () => {
+    try {
+      // Assuming 'reviews' collection exists in your Firestore
+      await setDoc(doc(db, "reviews", listing.id), {
+        userId: listing.userId,
+        ownerId: listing.ownerId,
+        reviewText: reviewText,
+        timestamp: new Date(),
+      });
+      setReviewText("");
+      setOpen(false);
+      refresher(); // Optional: refresh the listing or reviews after submission
+    } catch (error) {
+      console.error("Error submitting review: ", error);
+    }
+  };
+
   const bookingDocRef = doc(db, "bookings", listing.id);
   const onCancel = async () => {
     try {
@@ -20,18 +51,18 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
     } catch (e) {
       console.error("Error updating document: ", e);
     }
-  }
+  };
+
   return (
     <div
       className="rounded-xl my-3 p-2  w-160 bg-white text-sm"
       style={{ boxShadow: "0px 0px 10px lightgrey" }}
     >
+      {/* Your existing code */}
       <div className="grid grid-cols-12">
         <div
           className="relative col-start-1 col-end-4 rounded-xl overflow-hidden h-full"
-          style={{
-            width: "150px",
-          }}
+          style={{ width: "150px" }}
         >
           <Image
             src={listing.roomDetails.images[0]}
@@ -55,49 +86,16 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
           <div className="overflow-scroll no-scrollbar my-2">
             <div
               className="flex flex-row"
-              style={{
-                width: "max-content",
-              }}
+              style={{ width: "max-content" }}
             >
-              {listing.roomDetails.amenities.map((amenity,index) => (
+              {listing.roomDetails.amenities.map((amenity, index) => (
                 <p className="px-4 rounded-md mr-2 bg-slate-500 text-white font-sans" key={index}>
                   {amenity}
                 </p>
               ))}
             </div>
           </div>
-          {/* <div className="flex flex-row flex-wrap mt-2 gap-2">
-            <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-              {listing.roomDetails.bedType.length !== 0
-                ? listing.roomDetails.furnishedStatus + " Bed"
-                : "Not mentioned"}
-            </p>
-            <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-              {listing.roomDetails.capacity.length !== 0
-                ? listing.roomDetails.capacity
-                : "Not mentioned"}{" "}
-              Capacity
-            </p>
-            <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-              {listing.roomDetails.furnishedStatus.length !== 0
-                ? listing.roomDetails.furnishedStatus
-                : "Not mentioned"}
-            </p>
-            <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-              {listing.roomDetails.publicTransportAccess.length !== 0
-                ? listing.roomDetails.publicTransportAccess
-                : "Not mentioned"}
-            </p>
-            <p className="text-sm">
-              {listing.roomDetails.uni.length !== 0
-                ? "Near " + listing.uni
-                : "Not mentioned"}
-            </p>
-          </div> */}
-          <button
-            onClick={() => setShow(!show)}
-            className=" text-gray-600 mt-5"
-          >
+          <button onClick={() => setShow(!show)} className="text-gray-600 mt-5">
             View Details
             {show ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
           </button>
@@ -107,12 +105,7 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
             {fromChat ? (
               <></>
             ) : (
-              <div
-                className="my-1 ml-auto"
-                style={{
-                  width: "120px",
-                }}
-              >
+              <div className="my-1 ml-auto" style={{ width: "120px" }}>
                 <Button
                   variant="contained"
                   color="primary"
@@ -136,16 +129,24 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
                 >
                   Chat
                 </Button>
+                <br />
+                <br />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  style={{
+                    backgroundColor: "blue",
+                    fontSize: "12px",
+                  }}
+                  fullWidth
+                  onClick={handleClickOpen} // Open the modal
+                >
+                  Review
+                </Button>
               </div>
             )}
             {listing.status === "pending" ? (
-              <div
-                className="my-1 ml-auto"
-                style={{
-                  width: "120px",
-                }}
-                onClick={onCancel}
-              >
+              <div className="my-1 ml-auto" style={{ width: "120px" }} onClick={onCancel}>
                 <Button
                   variant="contained"
                   color="secondary"
@@ -245,7 +246,51 @@ const RentedPropertiesCard = ({ listing ,refresher,fromChat=false}) => {
           </div>
         </div>
       ) : null}
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        sx={{ "& .MuiDialog-paper": { borderRadius: 2, padding: 1, width: "600px" } }} // Style for Dialog
+      >
+        <DialogTitle sx={{ m: 0, p: 2 }}>
+          Submit Your Review on {listing.roomDetails.name}
+          <IconButton
+            aria-label="close"
+            onClick={handleClose}
+            sx={{
+              position: "absolute",
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Review"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            value={reviewText}
+            onChange={(e) => setReviewText(e.target.value)}
+            sx={{ "& .MuiInputBase-root": { borderRadius: 2 } }} // Style for TextField
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleReviewSubmit} color="primary">
+            Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };
+
 export default RentedPropertiesCard;

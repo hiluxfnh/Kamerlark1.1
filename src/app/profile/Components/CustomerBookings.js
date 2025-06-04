@@ -8,6 +8,7 @@ import InputFieldCustom from "../../components/InputField";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
 import { useRouter } from "next/navigation";
+import ChatRoomHandler from "../../components/ChatRoomHandler";
 const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
   const [show, setShow] = useState(false);
   const bookingDocRef = doc(db, "bookings", listing.id);
