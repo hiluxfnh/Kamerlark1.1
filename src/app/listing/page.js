@@ -71,11 +71,16 @@ const AddListing = () => {
     energyEfficiencyRating: "",
     leaseTerms: "",
     accessibilityFeatures: [],
+    ownerId: "", // This will be set after user authentication
   });
   const [files, setFiles] = useState([]);
 
   const handleFileChange = (event) => {
-    console.log(event.target.files[0].lastModified);
+    if (event.target.files && event.target.files.length > 0) {
+        console.log(event.target.files[0].lastModified);
+    } else {
+        console.warn("No files selected.");
+    }
     setFiles([...files, ...event.target.files]);
   };
   const [loading, setLoading] = useState(false); // Loading state
@@ -113,12 +118,11 @@ const AddListing = () => {
       });
     });
     return Promise.all(uploadPromises);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const imageUrls = await uploadImages();
-    console.log(imageUrls);
+    setLoading(true);
+    try {
+      const user = auth.currentUser;
+      const imageUrls = await uploadImages();
+      console.log(imageUrls);
     setLoading(true);
     try {
       const user = auth.currentUser;
@@ -150,6 +154,8 @@ const AddListing = () => {
         leaseTerms: roomDetails.leaseTerms,
         accessibilityFeatures: roomDetails.accessibilityFeatures,
         ownerId: user.uid,
+        createdAt: new Date().toISOString(),
+        roomId: `${user.uid}-${Date.now()}`, // Unique room ID
       });
       alert("Room details added successfully");
       setRoomDetails({
@@ -179,6 +185,7 @@ const AddListing = () => {
         energyEfficiencyRating: "",
         leaseTerms: "",
         accessibilityFeatures: [],
+        ownerId: "",
       });
     } catch (error) {
       console.error("Error adding room details: ", error);
@@ -189,6 +196,7 @@ const AddListing = () => {
 
   if (loading) {
     return <Spinner />; // Show spinner when loading
+
   }
   const universities = [
     { label: "University of Dschang", value: "University of Dschang" },
@@ -200,6 +208,12 @@ const AddListing = () => {
     { label: "University of Maroua", value: "University of Maroua" },
     { label: "University of Ngaoundere", value: "University of Ngaoundere" },
     { label: "University of Bertoua", value: "University of Bertoua" },
+    { label: "University of Ebolowa", value: "University of Ebolowa" },
+    { label: "University of Garoua", value: "University of Garoua" },
+    { label: "University of Bambili", value: "University of Bambili" },
+    { label: "University of Limbe", value: "University of Limbe" },
+    { label: "University of Nkongsamba", value: "University of Nkongsamba" },
+    { label: "University of Kribi", value: "University of Kribi" },
     { label: "other", value: "other" },
   ];
 
@@ -219,6 +233,19 @@ const AddListing = () => {
     "Pool",
     "Terrace",
     "Washing machine",
+    "Dryer",
+    "Gym",
+    "Security",
+    "Fireplace",
+    "Garden",
+    "Pet-friendly",
+    "Smoking allowed",
+    "Elevator",
+    "Wheelchair accessible",
+    "Laundry facilities",
+    "Storage space",
+    "24-hour front desk",
+    "Concierge service",
   ];
   
   const utilitiesIncludedNames = [
@@ -227,6 +254,16 @@ const AddListing = () => {
     "Heating",
     "Internet",
     "Water",
+    "Trash collection",
+    "Cable TV",
+    "Sewer",
+    "Air conditioning",
+    "Maintenance",
+    "Cleaning services",
+    "Security",
+    "Parking",
+    "Gardening",
+    "Pest control",
   ];
   return (
     <>
@@ -257,7 +294,7 @@ const AddListing = () => {
                 onChange={handleChange}
               >
                 <MenuItem defaultValue={"XAF"}>XAF</MenuItem>
-                <MenuItem value={"USD"}>USD</MenuItem>
+                <MenuItem value={"XAF"}>XAF</MenuItem>
                 <MenuItem value={"EUR"}>EUR</MenuItem>
               </Select>
             </FormControl>
@@ -336,7 +373,7 @@ const AddListing = () => {
                 } = event;
                 setRoomDetails({
                   ...roomDetails,
-                  utilitiesIncluded:  typeof value === 'string' ? value.split(',') : value
+                  utilitiesIncluded: value ? (typeof value === 'string' ? value.split(',') : value) : []
                 });
               }}
                 input={<OutlinedInput label="Amenities" />}
@@ -365,7 +402,7 @@ const AddListing = () => {
                 } = event;
                 setRoomDetails({
                   ...roomDetails,
-                  amenities:  typeof value === 'string' ? value.split(',') : value
+                  amenities: value ? (typeof value === 'string' ? value.split(',') : value) : []
                 });
               }}
                 input={<OutlinedInput label="Amenities" />}
@@ -482,6 +519,9 @@ const AddListing = () => {
               Upload files
               <VisuallyHiddenInput type="file"  onChange={handleFileChange}/>
             </Button>
+            <div className="col-start-1 col-end-13">
+              <p className="text-sm text-gray-500">Upload images of the room (max 5 images)</p>
+            </div>
           </div>
           <div className="flex flex-row flex-wrap">{files.length>0 ?files.map((file,index)=>(
             <div className="w-40 h-40 my-2 mx-2 overflow-hidden" key={index}>
