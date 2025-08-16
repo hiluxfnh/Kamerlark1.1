@@ -1,72 +1,166 @@
 // components/Footer.js
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 import kl from "../assets/klchristmas.png";
-import Link from 'next/link';
-import EmailIcon from '@mui/icons-material/Email';
-import LocalPhoneIcon from '@mui/icons-material/LocalPhone';
-import LocationOnIcon from '@mui/icons-material/LocationOn';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import InstagramIcon from '@mui/icons-material/Instagram';
+import Link from "next/link";
+import EmailIcon from "@mui/icons-material/Email";
+import LocalPhoneIcon from "@mui/icons-material/LocalPhone";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import TwitterIcon from "@mui/icons-material/Twitter";
+import InstagramIcon from "@mui/icons-material/Instagram";
+
 const Footer = () => {
   return (
-    <footer className="text-white text-sm" style={{
-      backgroundColor:"black",
-    }}>
-      <div className="w-256 mx-auto flex flex-row justify-between py-10 my-8 mt-12">
-        
-        <div className="w-1/4">
-        <div className="flex flex-row items-center">
-        <Image src={kl} alt="Logo" width={50} height={50} />
-        <span className="text-2xl font-bold text-white ml-4">KAMERLARK</span>
-      </div>
-          <h4 className='text-base py-2'>Contact Us</h4>
-          <div className='mb-4' style={{
-            width: '50px',
-            height: '2px',
-            backgroundColor:'white'
-          }}></div>
-          <p className='py-2 ml-3'><EmailIcon/> info@kamerlark.com</p>
-          <p className='py-2 ml-3'><LocalPhoneIcon/> +123 456 7890</p>
-          <p className='py-2 ml-3'><LocationOnIcon/> 123 Main Street, City, Country</p>
-        </div>
-        <div className="mt-12 w-1/4">
-          <h4 className='text-base py-2'>Quick Links</h4>
-          <div className='mb-4' style={{
-            width: '50px',
-            height: '2px',
-            backgroundColor:'white'
-          }}></div>
-          <ul className='grid grid-cols-2 gap-x-16 gap-y-1'>
-            <Link href="/about" className="text-white py-2">About Us</Link>
-            <Link href="/listings" className="text-white py-2">Listings</Link>
-            <Link href="/contact" className="text-white py-2">Contact Us</Link>
-            <Link href="/faq" className="text-white py-2">FAQ</Link>
-            <Link href="/terms" className="text-white py-2">Terms of Service</Link>
-            <Link href="/privacy" className="text-white py-2">Privacy Policy</Link>
-          </ul>
-        </div>
-        <div className="mt-12 w-2/4">
-          <h4 className='text-base py-2'>Follow Us</h4>
-          <div className='mb-4' style={{
-            width: '50px',
-            height: '2px',
-            backgroundColor:'white'
-          }}></div>
-          <div className='grid grid-cols-1 gap-2 gap-y-4'>
-          <Link  href={""}><FacebookIcon/> Facebook</Link>
-          <Link  href={""}><TwitterIcon /> Twitter</Link>
-          <Link  href={""}><InstagramIcon/> Instagram</Link>
+    <footer className="bg-black text-gray-300 text-sm">
+      <div className="w-256 max-w-[90vw] mx-auto px-4 py-8 md:py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-3 mb-3">
+              <Image
+                src={kl}
+                alt="KamerLark"
+                width={36}
+                height={36}
+                className="rounded"
+              />
+              <span className="text-xl font-semibold text-white">
+                KAMERLARK
+              </span>
+            </div>
+            <p className="text-gray-400 leading-relaxed">
+              Your trusted accommodation platform for students and young
+              professionals.
+            </p>
+            <div className="mt-4 space-y-2 text-gray-300">
+              <div className="flex items-center gap-2">
+                <EmailIcon fontSize="small" /> info@kamerlark.com
+              </div>
+              <div className="flex items-center gap-2">
+                <LocalPhoneIcon fontSize="small" /> +123 456 7890
+              </div>
+            </div>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+              Company
+            </h4>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/community"
+                  className="hover:text-white transition-colors"
+                >
+                  Community
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/help"
+                  className="hover:text-white transition-colors"
+                >
+                  Help & FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className="hover:text-white transition-colors"
+                >
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/privacy"
+                  className="hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Explore */}
+          <div>
+            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+              Explore
+            </h4>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  href="/search"
+                  className="hover:text-white transition-colors"
+                >
+                  Search
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/listing"
+                  className="hover:text-white transition-colors"
+                >
+                  Post a Listing
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/mylisting"
+                  className="hover:text-white transition-colors"
+                >
+                  My Listings
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/profile"
+                  className="hover:text-white transition-colors"
+                >
+                  My Profile
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Social */}
+          <div>
+            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+              Follow Us
+            </h4>
+            <div className="flex items-center gap-3">
+              <Link
+                href="#"
+                aria-label="Facebook"
+                className="p-2 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <FacebookIcon fontSize="small" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="Twitter"
+                className="p-2 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <TwitterIcon fontSize="small" />
+              </Link>
+              <Link
+                href="#"
+                aria-label="Instagram"
+                className="p-2 rounded-md bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <InstagramIcon fontSize="small" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-      <div className='w-256 mx-auto py-2 pt-4' style={{
-        borderTop: '1px solid #333',
-      }}>
-        <div className="flex flex-row justify-between">
-          <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
-          <p>Your trusted accommodation platform.</p>
+      <div className="border-t border-white/10">
+        <div className="w-256 max-w-[90vw] mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+          <p>
+            &copy; {new Date().getFullYear()} KamerLark. All rights reserved.
+          </p>
+          <p>Built for comfortable living and smarter renting.</p>
         </div>
       </div>
     </footer>

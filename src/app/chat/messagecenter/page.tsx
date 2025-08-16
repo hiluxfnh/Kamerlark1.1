@@ -9,6 +9,9 @@ import {
   query,
   setDoc,
   where,
+  limitToLast,
+  endBefore,
+  limit,
 } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -17,17 +20,18 @@ import { useRouter } from "next/navigation";
 import { useCollectionData } from "react-firebase-hooks/firestore";
 import MessagesDisplay from "../components/messagesDisplay";
 import Header from "../../components/Header";
-import Footer from "../../components/Footer";
 import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
-import { Button, ImageList, ImageListItem, styled } from "@mui/material";
+import { Button, styled } from "@mui/material";
 import Image from "next/image";
 import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { onSnapshot, serverTimestamp } from "firebase/firestore";
 import ChatSideBar from "../components/ChatSideBar";
 import backImage from "../../assets/backChat.jpg";
 import message from "../../assets/message.webp";
+import Avatar from "../../components/Avatar";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -40,39 +44,114 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
-const Messages = ({ roomId }) => {
+type MessagesProps = { roomId: string };
+const Messages: React.FC<MessagesProps> = ({ roomId }) => {
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
-  const messagesQuery = query(messagesRef, orderBy("timestamp"));
+  const initialLimit = 50;
+  const messagesQuery = query(messagesRef, orderBy("timestamp"), limitToLast(initialLimit));
   const [messages, loading, error] = useCollectionData(messagesQuery, {
-    idField: "id",
-  });
+    fieldId: "id",
+  } as any);
 
-  const messagesEndRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
+  const [lastSeen, setLastSeen] = useState<any>(null);
+  const [hasMore, setHasMore] = useState<boolean>(false);
+  const [older, setOlder] = useState<any[]>([]);
+  const [earliestAbsolute, setEarliestAbsolute] = useState<any>(null);
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    const loadMapping = async () => {
+      try {
+        // Find mapping by roomId
+        const q = query(collection(db, "chatRoomMapping"), where("roomId", "==", roomId));
+        const snap = await getDocs(q);
+        const doc0 = snap.docs[0];
+        const d = doc0?.data() || {};
+        // Prefer per-user lastRead if exists; fallback to legacy timestamp
+        const authUid = auth.currentUser?.uid;
+        if (authUid && d.lastRead && d.lastRead[authUid]) {
+          setLastSeen(d.lastRead[authUid]);
+        } else if (d.timestamp) {
+          setLastSeen(d.timestamp);
+        }
+        // Probe earliest absolute message
+        try {
+          const earliestSnap = await getDocs(query(messagesRef, orderBy('timestamp'), limit(1)));
+          const e0 = earliestSnap.docs[0]?.data();
+          if (e0?.timestamp) setEarliestAbsolute(e0.timestamp);
+        } catch {}
+      } catch {
+        // ignore
+      }
+    };
+    loadMapping();
+  }, [roomId]);
+  // recompute hasMore based on earliest timestamps known
+  useEffect(() => {
+    const toMillis = (t: any) => t?.toMillis ? t.toMillis() : (t?.toDate ? t.toDate().getTime() : (typeof t === 'number' ? t : Date.parse(t)));
+    const currentEarliest = (older && older.length > 0) ? older[0]?.timestamp : (messages && messages.length > 0 ? messages[0]?.timestamp : null);
+    if (!currentEarliest || !earliestAbsolute) {
+      setHasMore(false);
+      return;
+    }
+    try {
+      setHasMore(toMillis(currentEarliest) > toMillis(earliestAbsolute));
+    } catch {
+      setHasMore(false);
+    }
+  }, [JSON.stringify(older?.map(m => m?.id)?.slice(-3) || []), messages, earliestAbsolute]);
 
+  const onLoadMore = async () => {
+    try {
+      const cursorTs = (older && older.length > 0) ? older[0]?.timestamp : (messages && messages.length > 0 ? messages[0]?.timestamp : null);
+      if (!cursorTs) return;
+      const olderSnap = await getDocs(query(messagesRef, orderBy('timestamp'), endBefore(cursorTs), limitToLast(30)));
+      const batch: any[] = olderSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (batch.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      setOlder(prev => [...batch, ...prev]);
+    } catch {}
+  };
+  // When viewing a room, mark as read for current user (simple policy: whenever new messages arrive and tab is focused)
+  useEffect(() => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) return;
+    const markRead = async () => {
+      try {
+        const q = query(collection(db, "chatRoomMapping"), where("roomId", "==", roomId));
+        const snap = await getDocs(q);
+        const doc0 = snap.docs[0];
+        if (!doc0) return;
+        await setDoc(doc(db, "chatRoomMapping", doc0.id), { lastRead: { [uid]: serverTimestamp() } }, { merge: true });
+      } catch {}
+    };
+    const handleFocus = () => markRead();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('focus', handleFocus);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') markRead();
+      });
+    }
+    // Mark immediately when messages update and user is focused
+    if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+      markRead();
+    }
+    return () => {
+      if (typeof window !== 'undefined') window.removeEventListener('focus', handleFocus);
+    };
+  }, [roomId, JSON.stringify((messages || []).slice(-3))]);
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
-
-  return (
-    <div className="">
-      <MessagesDisplay messages={messages} />
-      {/* <div ref={messagesEndRef} /> */}
-    </div>
-  );
+  const merged = [...(older || []), ...(messages || [])];
+  return <MessagesDisplay messages={merged} lastSeenTimestamp={lastSeen} hasMore={hasMore} onLoadMore={onLoadMore} />;
 };
 const ChatRoom = () => {
   const [chatRoomId, setChatRoomId] = useState("");
-  const [currentUser, setCurrentUser] = useState("");
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   useEffect(() => {
-    if (window) {
+    if (typeof window !== "undefined") {
       const queryParameters = new URLSearchParams(window.location.search);
       setChatRoomId(queryParameters.get("roomId") || "");
     }
@@ -80,55 +159,89 @@ const ChatRoom = () => {
   return (
     <>
       <Header />
-      <div
-        className="h-170 grid grid-cols-12 w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden"
-        style={{
-          boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)",
-        }}
-      >
-        <div className="col-start-1 col-end-5 border-r-2">
-          <ChatSideBar
-            chatRoomId={chatRoomId}
-            setChatRoomId={setChatRoomId}
-            setCurrentUser={setCurrentUser}
-          />
+      <div className="pt-16">
+        <div
+          className="h-170 grid grid-cols-12 w-full md:w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden px-3 md:px-0"
+          style={{ boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)" }}
+        >
+          {/* Mobile toggle */}
+          <div className="col-span-12 md:hidden flex items-center justify-between mb-2">
+            <button
+              className="px-3 py-2 text-sm rounded-md border border-gray-300"
+              onClick={() => setMobileSidebarOpen(true)}
+            >
+              Chats
+            </button>
+          </div>
+
+          {/* Sidebar (desktop) */}
+          <div className="hidden md:block md:col-start-1 md:col-end-5 border-r-2">
+            <ChatSideBar
+              chatRoomId={chatRoomId}
+              setChatRoomId={setChatRoomId}
+              setCurrentUser={setCurrentUser}
+            />
+          </div>
+
+          {/* Chat content */}
+          <div className="col-span-12 md:col-start-5 md:col-end-13 grid grid-rows-12 max-h-full">
+            {chatRoomId !== "" ? (
+              <ChatBox chatRoomId={chatRoomId} currentUser={currentUser} />
+            ) : (
+              <div className="flex flex-col justify-center items-center mt-28">
+                <Image src={message} width={400} height={400} alt="back" />
+                <button
+                  className="bg-black p-3 px-4 rounded-md text-white"
+                  style={{ marginTop: "-50px" }}
+                >
+                  Start Messaging
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-        <div className="col-start-5 col-end-13 grid grid-rows-12 max-h-full">
-          {chatRoomId !== "" ? (
-            <ChatBox chatRoomId={chatRoomId} currentUser={currentUser} />
-          ) : (
-            <div className="flex flex-col justify-center items-center mt-28">
-              <Image src={message} width={400} height={400} alt="back" />
-              <button
-                className="bg-black p-3 px-4 rounded-md text-white"
-                style={{
-                  marginTop: "-50px",
+
+        {/* Mobile sidebar overlay */}
+        {mobileSidebarOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <div
+              className="absolute inset-0 bg-black/40"
+              onClick={() => setMobileSidebarOpen(false)}
+            />
+            <div className="absolute left-0 top-0 h-full w-4/5 max-w-xs bg-white shadow-xl">
+              <ChatSideBar
+                chatRoomId={chatRoomId}
+                setChatRoomId={(id: string) => {
+                  setChatRoomId(id);
+                  setMobileSidebarOpen(false);
                 }}
-              >
-                Start Messaging
-              </button>
+                setCurrentUser={setCurrentUser}
+              />
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-      <Footer />
     </>
   );
 };
 export default ChatRoom;
 
-const ChatBox = ({ chatRoomId, currentUser }) => {
-  const [files, setFiles] = useState([]);
-  const handleFileChange = (event) => {
-    setFiles([...files, ...event.target.files]);
+type ChatBoxProps = { chatRoomId: string; currentUser: any };
+const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
+  const [files, setFiles] = useState<File[]>([]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(event.target.files || []);
+    setFiles((prev) => [...prev, ...selected]);
   };
-  const roomRef: any = doc(db, "chatRoom", chatRoomId);
+  const roomRef = doc(db, "chatRoom", chatRoomId);
   const [chatRoomMappingId, setChatRoomMappingId] = useState("");
   const [oppUserId, setOppUserId] = useState("");
   const [user] = useAuthState(auth);
   const [newMessage, setNewMessage] = useState("");
   const router = useRouter();
   const [imageUploader, setImageUploader] = useState(false);
+  const [oppTyping, setOppTyping] = useState(false);
+  const typingTimeout = useRef<any>(null);
   useEffect(() => {
     if (user) {
       const fetchMappingId = async () => {
@@ -147,15 +260,23 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
           setOppUserId(oppositeUserId);
         });
       };
-      fetchMappingId();
+  fetchMappingId();
     }
-  }, [user]);
+  }, [user, chatRoomId]);
+
+  // Subscribe to typing indicator
+  useEffect(() => {
+    if (!chatRoomMappingId) return;
+    const unsub = onSnapshot(doc(db, 'chatRoomMapping', chatRoomMappingId), (snap) => {
+      const d = snap.data();
+      if (!d) return;
+      setOppTyping(Boolean(d.typing && d.typingUserId !== user?.uid));
+    });
+    return () => unsub();
+  }, [chatRoomMappingId, user?.uid]);
   const uploadImages = async () => {
     const uploadPromises = files.map((image) => {
-      const storageRef = ref(
-        storage,
-        `images/${image.lastModified}-${image.name}`
-      );
+      const storageRef = ref(storage, `images/chat/${user?.uid || 'anon'}/${image.lastModified}-${image.name}`);
       const uploadTask = uploadBytesResumable(storageRef, image);
       return new Promise((resolve, reject) => {
         uploadTask.on(
@@ -182,13 +303,17 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
       router.push("/login");
       return;
     }
-    if (newMessage === "") {
+  if (newMessage.trim() === "") {
       return;
     }
     await setDoc(
       doc(db, "chatRoomMapping", chatRoomMappingId),
       {
-        timestamp: new Date().getTime(),
+  timestamp: serverTimestamp(),
+  // Per-user lastRead map: write sender's lastRead on send to help self-read consistency
+  lastRead: { [user.uid]: serverTimestamp() },
+    typing: false,
+    typingUserId: user.uid,
       },
       { merge: true }
     );
@@ -197,7 +322,7 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
       userId: user.uid,
       type: "text",
       photoURL: user.photoURL,
-      timestamp: new Date().getTime(),
+      timestamp: serverTimestamp(),
     });
     setNewMessage("");
     // scrollRef.current.scrollIntoView({ behavior: "smooth" });
@@ -215,8 +340,12 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
         userId: user.uid,
         type: "image",
         photoURL: user.photoURL,
-        timestamp: new Date().getTime(),
+        timestamp: serverTimestamp(),
       });
+      await setDoc(doc(db, "chatRoomMapping", chatRoomMappingId), {
+        timestamp: serverTimestamp(),
+        lastRead: { [user.uid]: serverTimestamp() },
+      }, { merge: true });
       setFiles([]);
       setImageUploader(false);
       alert("Images uploaded successfully");
@@ -227,30 +356,27 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
   return (
     <>
       <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
-        <Image
-          src={currentUser?.photoURL}
-          width={40}
-          height={40}
-          alt=""
-          className="mx-3 rounded-full"
-        />
+        <div className="mx-3">
+          <Avatar src={currentUser?.photoURL} name={currentUser?.userName} size={40} />
+        </div>
         <p className="text-white text-sm font-sans font-semibold">
           {currentUser?.userName}
         </p>
       </div>
       {imageUploader === false ? (
-        <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 bg-gray-100">
+        <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 relative">
           <div
+            className="absolute inset-0"
             style={{
-              backgroundImage: `url(${backImage})`,
+              backgroundImage: `url(${backImage.src})`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
-              height: "100%",
-              width: "100%",
+              filter: "blur(2px)",
+              opacity: 0.35,
             }}
-          >
-            {" "}
+          />
+          <div className="relative h-full w-full">
             <Messages roomId={chatRoomId} />
           </div>
         </div>
@@ -258,16 +384,30 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
         <></>
       )}
       {imageUploader === false ? (
-        <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between">
-          <input
+         <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between px-2 gap-2">
+          <div className="ml-2 text-xs text-gray-600 min-h-4" aria-live="polite">{oppTyping ? `${currentUser?.userName?.split(' ')?.[0] || 'Someone'} is typing…` : ' '}</div>
+           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            className="border-black p-2 rounded-md ml-2"
+            onChange={async (e) => {
+              setNewMessage(e.target.value);
+              if (!user) return;
+              if (typingTimeout.current) clearTimeout(typingTimeout.current);
+              await setDoc(doc(db, 'chatRoomMapping', chatRoomMappingId), { typing: true, typingUserId: user.uid }, { merge: true });
+              typingTimeout.current = setTimeout(async () => {
+                await setDoc(doc(db, 'chatRoomMapping', chatRoomMappingId), { typing: false, typingUserId: user.uid }, { merge: true });
+              }, 1200);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleAddMessage();
+              }
+            }}
+             className="border-black p-2 rounded-md flex-1 min-w-0"
             placeholder="Type a message..."
             style={{
-              border: "1px solid black",
-              width: "80%",
+               border: "1px solid black",
             }}
           />
           <button
@@ -277,9 +417,10 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
           >
             <AttachFileIcon fontSize={"medium"} />
           </button>
-          <button
+           <button
             onClick={handleAddMessage}
-            className="text-white bg-black p-2 px-4 rounded-md flex flex-row items-center text-sm font-sans font-bold"
+            disabled={newMessage.trim() === ''}
+            className="text-white bg-black disabled:bg-gray-400 p-2 px-4 rounded-md flex flex-row items-center text-sm font-sans font-bold"
           >
             Send
             <SendIcon fontSize={"small"} className="ml-1" />
@@ -315,7 +456,7 @@ const ChatBox = ({ chatRoomId, currentUser }) => {
             }}
           >
             <AddIcon />
-            <VisuallyHiddenInput type="file" onChange={handleFileChange} />
+            <VisuallyHiddenInput accept="image/*" type="file" onChange={handleFileChange} />
           </Button>
           <div>
             <p>Uploaded Images</p>

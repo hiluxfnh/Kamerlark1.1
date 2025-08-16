@@ -1,0 +1,12 @@
+{
+  "mcpServers": [
+    {
+      "name": "default",
+      "url": "https://api.openai.com/",
+      "allowlist": [
+        "https://www.npmjs.com/",
+        "https://github.com/"
+      ]
+    }
+  ]
+}

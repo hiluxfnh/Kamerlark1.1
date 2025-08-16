@@ -116,6 +116,31 @@
   transition: background-color 0.3s;
   width: 100%;
 }
+/* Inline spinner for buttons */
+.buttonContent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: #ffffff;
+  animation: spin .8s linear infinite;
+}
+/* Dark spinner for light backgrounds */
+.spinnerDark {
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  border: 2px solid rgba(0,0,0,0.15);
+  border-top-color: #000000;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 .divider {
   display: flex;
   align-items: center;

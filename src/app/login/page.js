@@ -1,72 +1,85 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { auth, db, storage } from '../firebase/Config';
-import { 
-  useCreateUserWithEmailAndPassword, 
-  useSignInWithEmailAndPassword
-} from 'react-firebase-hooks/auth';
-import { GoogleAuthProvider, signInWithPopup, updateProfile } from 'firebase/auth';
+import { useState, useEffect } from "react";
+import { auth, db, storage } from "../firebase/Config";
+import {
+  useCreateUserWithEmailAndPassword,
+  useSignInWithEmailAndPassword,
+} from "react-firebase-hooks/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  updateProfile,
+} from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, doc, getDoc, setDoc } from "firebase/firestore";
-import styles from '../styles/login.module.css'; 
-import Image from 'next/image';
-import kl from '../assets/klchristmas.png';
-import { useRouter } from 'next/navigation'; 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGooglePlusG, faFacebook } from '@fortawesome/free-brands-svg-icons';
-import Message from '../components/Message';
+import styles from "../styles/login.module.css";
+import Image from "next/image";
+import kl from "../assets/klchristmas.png";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGooglePlusG, faFacebook } from "@fortawesome/free-brands-svg-icons";
+import Message from "../components/Message";
 
 const LoginSignup = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [profilePicture, setProfilePicture] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingSource, setSubmittingSource] = useState(null); // 'email' | 'google' | null
 
-  const [createUserWithFirebase, createUserLoading, createUserError] = useCreateUserWithEmailAndPassword(auth);
-  const [signInWithFirebase, signInLoading, signInError] = useSignInWithEmailAndPassword(auth);
+  const [createUserWithFirebase, createUserLoading, createUserError] =
+    useCreateUserWithEmailAndPassword(auth);
+  const [signInWithFirebase, signInLoading, signInError] =
+    useSignInWithEmailAndPassword(auth);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams?.get("next");
 
-  useEffect(() => {
-    if (signInError) {
-      setErrorMessage(`Login Error: ${signInError.message}`);
-    }
-  }, [signInError]);
-
-  useEffect(() => {
-    if (createUserError) {
-      setErrorMessage(`Sign Up Error: ${createUserError.message}`);
-    }
-  }, [createUserError]);
+  // Avoid hook-driven error popups; handle errors inline in submit handlers.
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setIsSubmitting(true);
+    setSubmittingSource("email");
 
     try {
-      if (!isLogin && (!firstName || !lastName || !email || !password || !phoneNumber)) {
-        setErrorMessage('Please fill in all fields.');
+      if (
+        !isLogin &&
+        (!firstName || !lastName || !email || !password || !phoneNumber)
+      ) {
+        setErrorMessage("Please fill in all fields.");
         return;
       }
 
       if (isLogin) {
         const userCredential = await signInWithFirebase(email, password);
-        if (userCredential) {
-          setSuccessMessage('User logged in successfully');
-          sessionStorage.setItem('user', true);
-          resetForm();
-          router.push('/');
+        if (!userCredential) {
+          const msg = signInError?.message || "Login failed. Please try again.";
+          setErrorMessage(`Login Error: ${msg}`);
+          return;
         }
+        sessionStorage.setItem("user", true);
+        router.replace(nextUrl || "/");
+        return;
       } else {
         const userCredential = await createUserWithFirebase(email, password);
+        if (!userCredential) {
+          const msg =
+            createUserError?.message || "Sign up failed. Please try again.";
+          setErrorMessage(`Sign Up Error: ${msg}`);
+          return;
+        }
         const user = userCredential.user;
-        const profilePictureURL = profilePicture ? await uploadProfilePicture(user.uid) : null;
+        const profilePictureURL = profilePicture
+          ? await uploadProfilePicture(user.uid)
+          : null;
 
         await updateProfile(user, {
           displayName: `${firstName} ${lastName}`,
@@ -78,22 +91,30 @@ const LoginSignup = () => {
           userName: `${firstName} ${lastName}`,
           email: email,
           phoneNumber: phoneNumber,
-          photoURL: profilePictureURL
+          photoURL: profilePictureURL,
         });
 
-        setSuccessMessage('User created successfully');
-        sessionStorage.setItem('user', true);
-        resetForm();
-        router.push('/');
+        sessionStorage.setItem("user", true);
+        router.replace(nextUrl || "/");
+        return;
       }
     } catch (error) {
-      console.error('Error:', error.message);
-      setErrorMessage(`Error: ${error.message}`);
+      const msg =
+        error && error.message
+          ? error.message
+          : String(error || "Unknown error");
+      console.error("Auth Error:", msg);
+      setErrorMessage(`Error: ${msg}`);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittingSource(null);
     }
   };
 
   const handleGoogleSignIn = async () => {
     try {
+      setIsSubmitting(true);
+      setSubmittingSource("google");
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       if (result.user) {
@@ -107,13 +128,20 @@ const LoginSignup = () => {
             photoURL: result.user.photoURL,
           });
         }
-        setSuccessMessage('User logged in with Google successfully');
-        sessionStorage.setItem('user', true);
-        router.push('/');
+        sessionStorage.setItem("user", true);
+        router.replace(nextUrl || "/");
+        return;
       }
     } catch (error) {
-      console.error('Error:', error.message);
-      setErrorMessage(`Error: ${error.message}`);
+      const msg =
+        error && error.message
+          ? error.message
+          : String(error || "Unknown error");
+      console.error("Google Sign-in Error:", msg);
+      setErrorMessage(`Error: ${msg}`);
+    } finally {
+      setIsSubmitting(false);
+      setSubmittingSource(null);
     }
   };
 
@@ -123,18 +151,21 @@ const LoginSignup = () => {
 
   const uploadProfilePicture = async (uid) => {
     if (!profilePicture) return null;
-    const storageRef = ref(storage, `profile_pictures/${uid}/${profilePicture.name}`);
+    const storageRef = ref(
+      storage,
+      `profile_pictures/${uid}/${profilePicture.name}`
+    );
     await uploadBytes(storageRef, profilePicture);
     const downloadURL = await getDownloadURL(storageRef);
     return downloadURL;
   };
 
   const resetForm = () => {
-    setEmail('');
-    setPassword('');
-    setFirstName('');
-    setLastName('');
-    setPhoneNumber('');
+    setEmail("");
+    setPassword("");
+    setFirstName("");
+    setLastName("");
+    setPhoneNumber("");
     setProfilePicture(null);
   };
 
@@ -142,26 +173,55 @@ const LoginSignup = () => {
     <>
       <div className={styles.container}>
         <form className={styles.form} onSubmit={handleSubmit}>
-          <Image src={kl} alt="Kamerlark" className={styles.logo} width={50} height={60} />
+          <Image
+            src={kl}
+            alt="Kamerlark"
+            className={styles.logo}
+            width={50}
+            height={60}
+          />
           <br />
-          <p className={styles.subtitle}>{isLogin ? 'Login to your account' : 'Sign up for an account'}</p>
+          <p className={styles.subtitle}>
+            {isLogin ? "Login to your account" : "Sign up for an account"}
+          </p>
 
           <div className={styles.google}>
-            <button type="button" className={styles.googlebutton} onClick={handleGoogleSignIn} disabled={signInLoading || createUserLoading}>
-              <span className={styles.iconPadding}><FontAwesomeIcon icon={faGooglePlusG} style={{ color: 'red' }} /></span>
-              Continue with Google
+            <button
+              type="button"
+              className={styles.googlebutton}
+              onClick={handleGoogleSignIn}
+              disabled={isSubmitting || signInLoading || createUserLoading}
+            >
+              <span className={styles.buttonContent}>
+                {submittingSource === "google" ? (
+                  <span className={styles.spinnerDark} aria-hidden="true" />
+                ) : (
+                  <span className={styles.iconPadding}>
+                    <FontAwesomeIcon
+                      icon={faGooglePlusG}
+                      style={{ color: "red" }}
+                    />
+                  </span>
+                )}
+                <span>
+                  {submittingSource === "google"
+                    ? "Signing in…"
+                    : "Continue with Google"}
+                </span>
+              </span>
             </button>
           </div>
 
           <div className={styles.facebook}>
             <button className={styles.facebookbutton} type="button">
-              <span className={styles.iconPadding}><FontAwesomeIcon icon={faFacebook} style={{ color: '#1877f2' }} /></span>
+              <span className={styles.iconPadding}>
+                <FontAwesomeIcon
+                  icon={faFacebook}
+                  style={{ color: "#1877f2" }}
+                />
+              </span>
               Continue with Facebook
             </button>
-          </div>
-
-          <div className={styles.divider}>
-            <span className={styles.dividerText}>────────── or ──────────</span>
           </div>
 
           {!isLogin && (
@@ -170,7 +230,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder='First Name'
+                  placeholder="First Name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
@@ -181,7 +241,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder='Last Name'
+                  placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
@@ -194,7 +254,7 @@ const LoginSignup = () => {
             <input
               className={styles.input}
               type="email"
-              placeholder='Email'
+              placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -205,7 +265,7 @@ const LoginSignup = () => {
             <input
               className={styles.input}
               type="password"
-              placeholder='Password'
+              placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -218,7 +278,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder='Phone Number'
+                  placeholder="Phone Number"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   required
@@ -237,16 +297,42 @@ const LoginSignup = () => {
             </>
           )}
 
-          <button className={styles.button} type="submit" disabled={signInLoading || createUserLoading}>
-            {isLogin ? 'Login' : 'Sign Up'}
+          <button
+            className={styles.button}
+            type="submit"
+            disabled={isSubmitting || signInLoading || createUserLoading}
+            aria-busy={isSubmitting}
+          >
+            <span className={styles.buttonContent}>
+              {submittingSource === "email" && (
+                <span className={styles.spinner} aria-hidden="true" />
+              )}
+              <span>
+                {isSubmitting && submittingSource === "email"
+                  ? isLogin
+                    ? "Logging in…"
+                    : "Signing up…"
+                  : isLogin
+                  ? "Login"
+                  : "Sign Up"}
+              </span>
+            </span>
           </button>
         </form>
 
-        {errorMessage && <Message message={errorMessage} type="error" onClose={() => setErrorMessage('')} />}
-        {successMessage && <Message message={successMessage} type="success" onClose={() => setSuccessMessage('')} />}
+        {errorMessage && (
+          <Message
+            message={errorMessage}
+            type="error"
+            onClose={() => setErrorMessage("")}
+          />
+        )}
+        {/* Success toast removed to avoid flicker; we navigate immediately */}
 
         <p className={styles.link} onClick={() => setIsLogin(!isLogin)}>
-          {isLogin ? "Don't have an account? Sign up here." : "Already have an account? Login here."}
+          {isLogin
+            ? "Don't have an account? Sign up here."
+            : "Already have an account? Login here."}
         </p>
       </div>
 

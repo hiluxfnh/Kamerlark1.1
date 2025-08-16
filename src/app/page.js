@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { db } from "./firebase/Config";
 import { collection, getDocs } from "firebase/firestore";
-import Footer from "./components/Footer";
 import ImageSlider from "./components/Imageslider";
 import RoomCardNew from "./components/roomCard"; // Import RoomCardNew
 import Image from "next/image";
@@ -46,6 +45,16 @@ export default function Home() {
             <RoomCardNew room={room} key={room.id} />
           ))}
         </div>
+        <div className="w-full flex items-center justify-center mt-6">
+          <Link
+            href="/search"
+            className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
+            aria-label="See more accommodations"
+          >
+            See more accommodations
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
       </div>
       <div
         className="w-256 mx-auto rounded-lg my-5 flex flex-row items-center overflow-hidden relative"
@@ -73,12 +82,13 @@ export default function Home() {
               Find your next accommodation from{" "}
               <span className="text-base text-gray-300">KamerLark.</span>
             </p>
-            <div className="my-2"><Link
-              href={"/search"}
-              className="text-sm p-2 px-4 bg-cyan-700 text-white rounded-md"
-            >
-              FIND STAYS     
-            </Link>
+            <div className="my-2">
+              <Link
+                href={"/search"}
+                className="text-sm p-2 px-4 bg-cyan-700 text-white rounded-md"
+              >
+                FIND STAYS
+              </Link>
             </div>
           </div>
         </div>
@@ -98,7 +108,7 @@ export default function Home() {
           }}
         ></div>
       </div>
-      <Footer />
+      {/* Footer is included globally via RootLayout */}
     </>
   );
 }

@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isUser(uid) { return isSignedIn() && request.auth.uid == uid; }
+
+    // Users: readable to signed-in users; users can write their own document only.
+    match /Users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isUser(userId);
+      allow update, delete: if isUser(userId);
+    }
+
+    // Chat room metadata: require auth for reads; restrict writes to participants when possible.
+    match /chatRoom/{roomId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isSignedIn(); // TODO: tighten to participants when data model supports it via rules
+
+      // Messages in a room
+      match /messages/{messageId} {
+        allow read, create: if isSignedIn(); // TODO: restrict to participants
+        allow update, delete: if false; // messages are immutable; adjust if needed
+      }
+    }
+
+    // Chat room mapping: contains userIds and roomId mapping
+    match /chatRoomMapping/{mappingId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
+      allow update, delete: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
+    }
+
+    // Listings and public data
+    match /roomdetails/{roomId} {
+      allow read: if true; // public listings
+      allow create, update, delete: if isSignedIn(); // TODO: restrict to ownerId == request.auth.uid
+    }
+
+    // Follows: follower can write their own follow docs
+    match /Follows/{followId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.followerId == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.followerId == request.auth.uid;
+      allow update: if false;
+    }
+
+    // Bookings (if used)
+    match /bookings/{bookingId} {
+      allow read, create: if isSignedIn();
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

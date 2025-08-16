@@ -3,8 +3,17 @@ import styles from "../styles/roomdetails.module.css";
 import Image from "next/image";
 import Spinner from "../components/Spinner"; // Import Spinner
 import CustomModal from "../components/CustomModal"; // Import CustomModal component
-import { addDoc, collection, doc, getDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  increment,
+} from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
+import dynamic from "next/dynamic";
 import {
   Button,
   Checkbox,
@@ -40,45 +49,23 @@ import PeopleOutlineOutlinedIcon from "@mui/icons-material/PeopleOutlineOutlined
 import BathtubOutlinedIcon from "@mui/icons-material/BathtubOutlined";
 import BikeScooterOutlinedIcon from "@mui/icons-material/BikeScooterOutlined";
 import FamilyRestroomOutlinedIcon from "@mui/icons-material/FamilyRestroomOutlined";
-
-const reviews = [
-  {
-    name: "John Doe",
-    review:
-      "The apartment was great, it had everything I needed and the location was perfect.",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "John Doe",
-    review:
-      "The apartment was great, it had everything I needed and the location was perfect.",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "John Doe",
-    review:
-      "The apartment was great, it had everything I needed and the location was perfect.",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "John Doe",
-    review:
-      "The apartment was great, it had everything I needed and the location was perfect.",
-    image: "https://picsum.photos/200/300",
-  },
-  {
-    name: "John Doe",
-    review:
-      "The apartment was great, it had everything I needed and the location was perfect.",
-    image: "https://picsum.photos/200/300",
-  },
-];
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+// Removed demo reviews; we persist reviews on the roomdetails document
 
 const RoomDetails = ({ room }) => {
   const router = useRouter();
   const [user] = useAuthState(auth);
+  const MapComponent = dynamic(() => import("../components/MapComponent"), {
+    ssr: false,
+  });
   const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(0);
   const [newReview, setNewReview] = useState("");
+  const [views, setViews] = useState(
+    typeof room.views === "number" ? room.views : 0
+  );
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -118,32 +105,43 @@ const RoomDetails = ({ room }) => {
 
   useEffect(() => {
     const fetchReviews = async () => {
-      const roomRef = doc(db, "rooms", room.id);
-      const roomDoc = await getDoc(roomRef);
-      if (roomDoc.exists()) {
-        setReviews(roomDoc.data().reviews || []);
-      }
+      try {
+        const roomRef = doc(db, "roomdetails", room.id);
+        const roomDoc = await getDoc(roomRef);
+        if (roomDoc.exists()) {
+          const data = roomDoc.data();
+          setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+          setViews(typeof data.views === "number" ? data.views : views);
+        }
+      } catch {}
     };
-
     fetchReviews();
   }, [room.id]);
 
   const handleAddReview = async () => {
-    if (newReview.trim() === "") return;
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(`/room/${room.id}`)}`);
+      return;
+    }
+    if (newReview.trim() === "" || rating <= 0) return;
 
     const review = {
       name: user.displayName || "Anonymous",
-      review: newReview,
+      review: newReview.trim(),
       image: user.photoURL || "https://via.placeholder.com/150",
+      rating: Number(rating),
+      userId: user.uid,
+      createdAtMs: Date.now(),
     };
 
     try {
-      const roomRef = doc(db, "rooms", room.id);
+      const roomRef = doc(db, "roomdetails", room.id);
       await updateDoc(roomRef, {
-        reviews: arrayUnion(review)
+        reviews: arrayUnion(review),
       });
-      setReviews(prevReviews => [...prevReviews, review]);
+      setReviews((prevReviews) => [...prevReviews, review]);
       setNewReview("");
+      setRating(0);
     } catch (error) {
       console.error("Error adding review: ", error);
     }
@@ -197,6 +195,45 @@ const RoomDetails = ({ room }) => {
   if (!room) {
     return <Spinner />; // Show spinner while loading room data
   }
+
+  // Increment view counter on mount
+  useEffect(() => {
+    const incViews = async () => {
+      try {
+        const ref = doc(db, "roomdetails", room.id);
+        await updateDoc(ref, { views: increment(1) });
+        setViews((v) => (typeof v === "number" ? v + 1 : 1));
+      } catch (e) {
+        // ignore
+      }
+    };
+    incViews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room.id]);
+
+  const averageRating = reviews.length
+    ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) /
+      reviews.length
+    : 0;
+  const roundedAvg = Math.round(averageRating * 10) / 10;
+  const renderStars = (val) => {
+    const full = Math.floor(val);
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        i <= full ? (
+          <StarIcon key={i} fontSize="small" className="text-yellow-500" />
+        ) : (
+          <StarBorderIcon
+            key={i}
+            fontSize="small"
+            className="text-yellow-500"
+          />
+        )
+      );
+    }
+    return <div className="flex flex-row items-center">{stars}</div>;
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -316,7 +353,23 @@ const RoomDetails = ({ room }) => {
   return (
     <>
       <div className="w-256 mx-auto pt-16">
-        <h1 className="text-2xl font-bold my-5">{room.name}</h1>
+        <div className="flex items-center justify-between my-5">
+          <h1 className="text-2xl font-bold">{room.name}</h1>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              {renderStars(Math.round(averageRating))}
+              <span className="text-gray-700">{roundedAvg || 0}/5</span>
+              <span className="text-gray-500">({reviews.length})</span>
+            </div>
+            <div
+              className="flex items-center gap-1 text-gray-600 text-sm"
+              title="Views"
+            >
+              <VisibilityIcon fontSize="small" />
+              <span>{views || 0}</span>
+            </div>
+          </div>
+        </div>
         <div className="flex flex-row">
           <div className={`${styles.gallery} ${styles.lightbox}`}>
             <div
@@ -400,7 +453,7 @@ const RoomDetails = ({ room }) => {
                 <span className="text-sm font-medium">(Inclusive taxes)</span>
               </p>
             </div>
-            {room.ownerId !== user.uid ? (
+            {user && room.ownerId !== user.uid ? (
               <>
                 <div className="grid grid-cols-12 w-100  gap-2 my-2">
                   <Button
@@ -466,8 +519,8 @@ const RoomDetails = ({ room }) => {
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-rose-800">
             <WeekendOutlinedIcon fontSize="small" />
             <p className="text-black">
-              {room.furnishedStatus[0].toUpperCase() +
-                room.furnishedStatus.slice(1)}
+              {(room.furnishedStatus || "").slice(0, 1).toUpperCase() +
+                (room.furnishedStatus || "").slice(1)}
             </p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-cyan-800">
@@ -487,7 +540,9 @@ const RoomDetails = ({ room }) => {
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-amber-500">
             <BedOutlinedIcon fontSize="small" />
             <p className="text-black">
-              {room.bedType[0].toUpperCase() + room.bedType.slice(1)} Bed
+              {(room.bedType || "").slice(0, 1).toUpperCase() +
+                (room.bedType || "").slice(1)}{" "}
+              Bed
             </p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-orange-700">
@@ -497,15 +552,16 @@ const RoomDetails = ({ room }) => {
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-green-800">
             <BathtubOutlinedIcon fontSize="small" />
             <p className="text-black">
-              {room.washrooms[0].toUpperCase() + room.washrooms.slice(1)}{" "}
+              {(room.washrooms || "").slice(0, 1).toUpperCase() +
+                (room.washrooms || "").slice(1)}{" "}
               washroom
             </p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-pink-800">
             <BikeScooterOutlinedIcon fontSize="small" />
             <p className="text-black">
-              {room.publicTransportAccess[0].toUpperCase() +
-                room.publicTransportAccess.slice(1)}
+              {(room.publicTransportAccess || "").slice(0, 1).toUpperCase() +
+                (room.publicTransportAccess || "").slice(1)}
             </p>
           </div>
         </div>
@@ -645,13 +701,17 @@ const RoomDetails = ({ room }) => {
 
         <div className="p-4 py-6 rounded-md border my-3">
           <h2 className="text-base font-medium my-3">Location</h2>
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15531.517911782868!2d77.5963265!3d13.2954684!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae3df04c9efe91%3A0x74ef0f7e2f81d564!2sGitam%20University%20Bengaluru!5e0!3m2!1sen!2sin!4v1718653227233!5m2!1sen!2sin"
-            className="w-full h-60"
-            allowfullscreen=""
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-          ></iframe>
+          <div className="w-full">
+            <MapComponent
+              latitude={
+                typeof room.latitude === "number" ? room.latitude : undefined
+              }
+              longitude={
+                typeof room.longitude === "number" ? room.longitude : undefined
+              }
+              address={room.location}
+            />
+          </div>
         </div>
 
         <div className="p-4 py-6 rounded-md border my-3">
@@ -686,14 +746,56 @@ const RoomDetails = ({ room }) => {
                   </div>
                   <div className="w-40">
                     <p className="text-sm font-semibold mb-1">{review.name}</p>
+                    <div className="mb-1">
+                      {renderStars(Number(review.rating) || 0)}
+                    </div>
                     <p className="text-sm">{review.review}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Add Review */}
+          <div className="mt-4 border-t pt-4">
+            <h3 className="text-sm font-medium mb-2">Add your review</h3>
+            <div className="flex items-center gap-2 mb-2">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setRating(i)}
+                  className="p-0.5"
+                  aria-label={`Rate ${i} star${i > 1 ? "s" : ""}`}
+                >
+                  {i <= rating ? (
+                    <StarIcon className="text-yellow-500" />
+                  ) : (
+                    <StarBorderIcon className="text-yellow-500" />
+                  )}
+                </button>
+              ))}
+              <span className="text-sm text-gray-600">{rating || 0}/5</span>
+            </div>
+            <textarea
+              className="w-full border rounded-md p-2 text-sm"
+              placeholder="Share your experience..."
+              value={newReview}
+              onChange={(e) => setNewReview(e.target.value)}
+              rows={3}
+            />
+            <div className="mt-2">
+              <Button
+                variant="contained"
+                onClick={handleAddReview}
+                disabled={!newReview.trim() || rating <= 0}
+                style={{ backgroundColor: "black" }}
+              >
+                Submit Review
+              </Button>
+            </div>
+          </div>
         </div>
-        
       </div>
 
       <CustomModal

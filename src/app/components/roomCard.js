@@ -8,6 +8,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 const RoomCardNew = (props) => {
   const navigation = useRouter();
+  const imgSrc =
+    props?.room?.images && props.room.images.length > 0
+      ? props.room.images[0]
+      : require("../assets/a1.png");
+  const amenities = Array.isArray(props?.room?.amenities)
+    ? props.room.amenities
+    : [];
+  const capacity = props?.room?.capacity || "-";
+  const roomSize = props?.room?.roomSize || "-";
+  const location = props?.room?.location || "";
+  const name = props?.room?.name || "Room";
+  const price = props?.room?.price || 0;
+  const currency = props?.room?.currency || "XAF";
   return (
     <div
       className="w-64 rounded-xl p-4 gap-4 relative"
@@ -29,14 +42,14 @@ const RoomCardNew = (props) => {
             width: "100%",
             height: "100%",
           }}
-          src={props.room.images[0]}
-          alt={props.room.name}
+          src={imgSrc}
+          alt={name}
           width={500}
           height={500}
         />
       </div>
       <div>
-        <h2 className="my-2 font-medium">{props.room.name}</h2>
+        <h2 className="my-2 font-medium">{name}</h2>
         <div className="overflow-scroll no-scrollbar">
           <div
             className="flex flex-row"
@@ -44,8 +57,11 @@ const RoomCardNew = (props) => {
               width: "max-content",
             }}
           >
-            {props.room.amenities.map((amenity,index) => (
-              <p className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm" key={index}>
+            {amenities.map((amenity, index) => (
+              <p
+                className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm"
+                key={index}
+              >
                 {amenity}
               </p>
             ))}
@@ -56,23 +72,22 @@ const RoomCardNew = (props) => {
             <HotelIcon fontSize="16" /> Semi
           </p>
           <p className="text-sm pr-1">
-            <PersonIcon fontSize="16" /> {props.room.capacity}
+            <PersonIcon fontSize="16" /> {capacity}
           </p>
           <p className="text-sm pr-1">
-            <HouseIcon fontSize="16" /> {props.room.roomSize}m2
+            <HouseIcon fontSize="16" /> {roomSize}m2
           </p>
         </div>
         <div className="my-2">
           <p className="text-xs pr-1">
             <LocationOnIcon fontSize="16" />
-            {props.room.location}
+            {location}
           </p>
         </div>
         {/* <div>{props.room.description.slice(0,50)+"..."}</div> */}
         <div className="flex flex-row justify-between items-center absolute bottom-2 w-56">
           <p className="font-bold">
-            {props.room.price}{" "}
-            <span className="font-medium text-xs">{props.room.currency}</span>
+            {price} <span className="font-medium text-xs">{currency}</span>
           </p>
           <Button
             variant="contained"

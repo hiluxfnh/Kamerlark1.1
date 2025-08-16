@@ -1,5 +1,4 @@
 "use client";
-import Footer from "../components/Footer";
 import Header from "../components/Header";
 import SortIcon from "@mui/icons-material/Sort";
 import SchoolIcon from "@mui/icons-material/School";
@@ -54,6 +53,7 @@ const SearchPage = () => {
   //universities
   const [universityModal, setUniversityModal] = useState(false);
   const [university, setUniversity] = useState(params.get("uni") ||"");
+  const [universityOther, setUniversityOther] = useState("");
 
   //budget
   const [budgetModal, setBudgetModal] = useState(false);
@@ -67,50 +67,113 @@ const SearchPage = () => {
     const [bedType, setBedType] = useState(params.get("bedType") ||"all");
     const [furnishedStatus, setFurnishedStatus] = useState(params.get("furnishedStatus")||"all");
     const [washroomStatus, setWashroomStatus] = useState(params.get("washroomType")||"all");
+  const [bedTypeOther, setBedTypeOther] = useState("");
+  const [washroomOther, setWashroomOther] = useState("");
 
   //location
   const [locationModal, setLocationModal] = useState(false);
   const [location, setLocation] = useState( params.get("search")||"");
 
+  const closeAllFilters = () => {
+    setSortByModal(false);
+    setUniversityModal(false);
+    setBudgetModal(false);
+    setLocationModal(false);
+    setBedTypeModal(false);
+    setBackground(false);
+  };
+
+  useEffect(() => {
+    const onScroll = () => closeAllFilters();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeAllFilters();
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', onScroll, { passive: true } as any);
+      window.addEventListener('keydown', onKeyDown);
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('scroll', onScroll as any);
+        window.removeEventListener('keydown', onKeyDown);
+      }
+    };
+  }, []);
+
 
   const fetchRooms = async () => {
     const roomCollection = collection(db, "roomdetails");
-    let q= query(roomCollection, orderBy("timestamp", "desc"));
-    if (sortBy === "lowToHigh") {
-      q = query(roomCollection, orderBy("price", "asc"));
-    }
-    if (sortBy === "highToLow") {
-      q = query(roomCollection, orderBy("price", "desc"));
-    }
-    if (university !== "") {
-      q = query(roomCollection, where("uni", "==", university));
-    }
+    // Compose constraints consistently instead of resetting the query each time
+    const constraints: any[] = [];
+    if (sortBy === "lowToHigh") constraints.push(orderBy("price", "asc"));
+    else if (sortBy === "highToLow") constraints.push(orderBy("price", "desc"));
+    else constraints.push(orderBy("createdAt", "desc"));
+
+    if (university !== "") constraints.push(where("uni", "==", university));
     if (value[0] !== 1000 || value[1] !== 1000000) {
-      q = query(roomCollection, where("price", ">=", value[0]));
-      q = query(q, where("price", "<=", value[1]));
+      constraints.push(where("price", ">=", value[0]));
+      constraints.push(where("price", "<=", value[1]));
     }
-    if (bedType !== "all") {
-      q = query(q, where("bedType", "==", bedType));
-    }
-    if (furnishedStatus !== "all") {
-      q = query(q, where("furnishedStatus", "==", furnishedStatus));
-    }
-    if (washroomStatus !== "all") {
-      q = query(q, where("washrooms", "==", washroomStatus));
-    }
-    const roomSnapshot = await getDocs(q);
-    const roomList = roomSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    if(location===""){
-        setRooms(roomList);
-    }
-    else{
-        let newRooms=roomList.filter((room:any) => {
-            return room.location.toLowerCase().includes(location.toLowerCase());
+    if (bedType !== "all") constraints.push(where("bedType", "==", bedType));
+    if (furnishedStatus !== "all") constraints.push(where("furnishedStatus", "==", furnishedStatus));
+    if (washroomStatus !== "all") constraints.push(where("washrooms", "==", washroomStatus));
+
+    try {
+      const q = query(roomCollection, ...constraints);
+      const roomSnapshot = await getDocs(q);
+      let roomList: any[] = roomSnapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as any) }));
+      // Optional client-side location filter
+      if (location && location.trim()) {
+        const loc = location.trim().toLowerCase();
+        roomList = roomList.filter((room: any) => String(room.location || "").toLowerCase().includes(loc));
+      }
+      // If nothing returned (e.g., index missing or field inconsistencies), do a broad fallback fetch
+      if (!roomList.length) {
+        const broadSnap = await getDocs(roomCollection);
+        let broadList: any[] = broadSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        // Apply client-side filters as fallback
+        if (university) broadList = broadList.filter((r) => r.uni === university);
+        const [minP, maxP] = value;
+        broadList = broadList.filter((r) => {
+          const p = Number(r.price);
+          return isFinite(p) ? p >= minP && p <= maxP : true;
         });
-        setRooms(newRooms);
+        if (bedType !== "all") broadList = broadList.filter((r) => r.bedType === bedType);
+        if (furnishedStatus !== "all") broadList = broadList.filter((r) => r.furnishedStatus === furnishedStatus);
+        if (washroomStatus !== "all") broadList = broadList.filter((r) => r.washrooms === washroomStatus);
+        if (location && location.trim()) {
+          const loc2 = location.trim().toLowerCase();
+          broadList = broadList.filter((r) => String(r.location || "").toLowerCase().includes(loc2));
+        }
+        // Sort client-side
+        if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
+        else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
+        else broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+        setRooms(broadList);
+        return;
+      }
+      setRooms(roomList);
+    } catch (e) {
+      // On any error (e.g., missing index), fallback to broad client-side filtering
+      const broadSnap = await getDocs(roomCollection);
+      let broadList: any[] = broadSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+      if (university) broadList = broadList.filter((r) => r.uni === university);
+      const [minP, maxP] = value;
+      broadList = broadList.filter((r) => {
+        const p = Number(r.price);
+        return isFinite(p) ? p >= minP && p <= maxP : true;
+      });
+      if (bedType !== "all") broadList = broadList.filter((r) => r.bedType === bedType);
+      if (furnishedStatus !== "all") broadList = broadList.filter((r) => r.furnishedStatus === furnishedStatus);
+      if (washroomStatus !== "all") broadList = broadList.filter((r) => r.washrooms === washroomStatus);
+      if (location && location.trim()) {
+        const loc = location.trim().toLowerCase();
+        broadList = broadList.filter((r) => String(r.location || "").toLowerCase().includes(loc));
+      }
+      if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
+      else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
+      else broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      setRooms(broadList);
     }
   };
 
@@ -171,6 +234,7 @@ const SearchPage = () => {
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
+                onMouseLeave={() => { setSortByModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-3">Sort by</h1>
                 <form>
@@ -246,6 +310,7 @@ const SearchPage = () => {
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
+                onMouseLeave={() => { setUniversityModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-3">University</h1>
                 <form className="grid grid-cols-2">
@@ -259,6 +324,7 @@ const SearchPage = () => {
                         className="mr-2"
                         onChange={(e) => {
                           setUniversity(e.target.value);
+                          if (e.target.value !== 'other') setUniversityOther('');
                         }}
                         checked={university === uni.value}
                       />
@@ -269,6 +335,21 @@ const SearchPage = () => {
                     </div>
                   ))}
                 </form>
+                {university === 'other' && (
+                  <div className="mt-2">
+                    <p className="text-xs mb-1">Specify other university</p>
+                    <input
+                      type="text"
+                      className="border p-2 px-3 outline-none rounded-md w-full"
+                      placeholder="Enter university name"
+                      value={universityOther}
+                      onChange={(e: any) => {
+                        setUniversityOther(e.target.value);
+                        setUniversity(e.target.value);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -295,6 +376,7 @@ const SearchPage = () => {
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
+                onMouseLeave={() => { setBudgetModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-3">Budget</h1>
                 <div className="max-w-fit mx-auto">
@@ -400,6 +482,7 @@ const SearchPage = () => {
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
+                onMouseLeave={() => { setBedTypeModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-1">Room Type</h1>
                 <form className="mb-3">
@@ -485,7 +568,8 @@ const SearchPage = () => {
                     value="other"
                     className="mr-2"
                     onChange={(e) => {
-                      setBedType(e.target.value);
+                    setBedType(e.target.value);
+                    if (e.target.value !== 'other') setBedTypeOther('');
                     }}
                     checked={bedType === "other"}
                     />
@@ -493,6 +577,21 @@ const SearchPage = () => {
                         Other
                     </label>
                 </form>
+                {bedType === 'other' && (
+                  <div className="mb-3">
+                    <p className="text-xs mb-1">Specify other room type</p>
+                    <input
+                      type="text"
+                      className="border p-2 px-3 outline-none rounded-md w-full"
+                      placeholder="Enter room type"
+                      value={bedTypeOther}
+                      onChange={(e: any) => {
+                        setBedTypeOther(e.target.value);
+                        setBedType(e.target.value || 'other');
+                      }}
+                    />
+                  </div>
+                )}
                 <h1 className="text-base font-medium mb-1">Furnished</h1>
                 <form className="mb-3">
                 <input
@@ -610,7 +709,8 @@ const SearchPage = () => {
                         value="other"
                         className="mr-2"
                         onChange={(e) => {
-                        setWashroomStatus(e.target.value);
+                          setWashroomStatus(e.target.value);
+                          if (e.target.value !== 'other') setWashroomOther('');
                         }}
                         checked={washroomStatus === "other"}
                     />
@@ -619,6 +719,21 @@ const SearchPage = () => {
                     </label>
                     <br />
                 </form>
+                  {washroomStatus === 'other' && (
+                    <div className="mb-1">
+                      <p className="text-xs mb-1">Specify other washroom type</p>
+                      <input
+                        type="text"
+                        className="border p-2 px-3 outline-none rounded-md w-full"
+                        placeholder="Enter washroom type"
+                        value={washroomOther}
+                        onChange={(e: any) => {
+                          setWashroomOther(e.target.value);
+                          setWashroomStatus(e.target.value || 'other');
+                        }}
+                      />
+                    </div>
+                  )}
               </div>
             )
           }
@@ -640,13 +755,14 @@ const SearchPage = () => {
           >
             <MapIcon fontSize="small" /> Location
           </p>
-          {
+            {
             locationModal && (
               <div
                 className="bg-white p-3 absolute rounded-md m-1 w-70 z-50"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
+                onMouseLeave={() => { setLocationModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-3">Location</h1>
                 <input type="text" placeholder="Enter location" className="border p-2 px-3 outline-none rounded-md" value={location} onChange={(e: any) => {
@@ -659,22 +775,48 @@ const SearchPage = () => {
           <p className="text-sm flex flex-row items-center text-gray-600 cursor-pointer" onClick={()=>{
             setSortBy("newest");
             setUniversity("");
+            setUniversityOther("");
             setValue([1000, 1000000]);
             setBedType("all");
+            setBedTypeOther("");
             setFurnishedStatus("all");
             setWashroomStatus("all");
+            setWashroomOther("");
             setLocation("");
           }}><DeleteSweepIcon fontSize="small"/>Clear all</p>
         </div>
       </div>
       <div className="w-256 mx-auto">
-        <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
-          {[...rooms].map((room) => (
-            <RoomCardNew room={room} key={room.id} />
-          ))}
-        </div>
+  {rooms.length ? (
+          <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
+            {rooms.map((room) => (
+              <RoomCardNew room={room} key={room.id} />
+            ))}
+          </div>
+        ) : (
+          <div className="w-full flex flex-col items-center justify-center py-16 text-center">
+            <p className="text-gray-600 mb-3">No accommodations found for the selected filters.</p>
+            <button
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
+              onClick={() => {
+                setSortBy("newest");
+                setUniversity("");
+    setUniversityOther("");
+                setValue([1000, 1000000]);
+                setBedType("all");
+    setBedTypeOther("");
+                setFurnishedStatus("all");
+                setWashroomStatus("all");
+    setWashroomOther("");
+                setLocation("");
+              }}
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
       </div>
-      <Footer />
+  {/* Footer is included globally via RootLayout */}
     </div>
   );
 };

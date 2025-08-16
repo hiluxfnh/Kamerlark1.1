@@ -9,9 +9,11 @@ const InputFieldCustom = ({
   rows = 1,
   colStart,
   colEnd,
-  disabled=false,
-  size="medium",
-  my=2
+  disabled = false,
+  size = "medium",
+  my = 2,
+  error = false,
+  helperText = "",
 }) => {
   return (
     <div className={`col-start-${colStart} col-end-${colEnd} my-${my}`}>
@@ -27,8 +29,10 @@ const InputFieldCustom = ({
         rows={rows}
         fullWidth
         size={size}
-        inputProps={{style: {fontSize: 14}}} // font size of input text
-      InputLabelProps={{style: {fontSize: 14}}} 
+        inputProps={{ style: { fontSize: 14 } }} // font size of input text
+        InputLabelProps={{ style: { fontSize: 14 } }}
+        error={error}
+        helperText={helperText}
       />
     </div>
   );
