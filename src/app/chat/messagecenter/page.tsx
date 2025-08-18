@@ -55,9 +55,9 @@ const Messages: React.FC<MessagesProps> = ({ roomId }) => {
   } as any);
 
   const [lastSeen, setLastSeen] = useState<any>(null);
-  const [hasMore, setHasMore] = useState<boolean>(false);
   const [older, setOlder] = useState<any[]>([]);
   const [earliestAbsolute, setEarliestAbsolute] = useState<any>(null);
+  const [hasMore, setHasMore] = useState<boolean>(false);
   useEffect(() => {
     const loadMapping = async () => {
       try {
@@ -252,11 +252,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
         const chatRoomMappingSnapshot = await getDocs(chatRoomMappingQuery);
         chatRoomMappingSnapshot.forEach((doc) => {
           setChatRoomMappingId(doc.id);
-          console.log(doc.data().userIds);
           const oppositeUserId: any = doc
             .data()
             .userIds.filter((id) => id !== user.uid)[0];
-          console.log("oppsoUser", oppositeUserId);
           setOppUserId(oppositeUserId);
         });
       };
@@ -324,6 +322,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
       photoURL: user.photoURL,
       timestamp: serverTimestamp(),
     });
+    // update lastMessageTs on mapping for unread counts
+    try {
+      const q = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
+      const snap = await getDocs(q);
+      await Promise.all(snap.docs.map(d => setDoc(doc(db, 'chatRoomMapping', d.id), { lastMessageTs: serverTimestamp() }, { merge: true })));
+    } catch {}
     setNewMessage("");
     // scrollRef.current.scrollIntoView({ behavior: "smooth" });
   };
@@ -335,13 +339,16 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
     }
     try {
       const downloadURLs = await uploadImages();
-      await addDoc(collection(roomRef, "messages"), {
+  const m = await addDoc(collection(roomRef, "messages"), {
         message: downloadURLs,
         userId: user.uid,
         type: "image",
         photoURL: user.photoURL,
         timestamp: serverTimestamp(),
       });
+  const mappingQ2 = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
+  const mapSnap2 = await getDocs(mappingQ2);
+  await Promise.all(mapSnap2.docs.map(d => setDoc(doc(db, 'chatRoomMapping', d.id), { lastMessageTs: serverTimestamp() }, { merge: true })));
       await setDoc(doc(db, "chatRoomMapping", chatRoomMappingId), {
         timestamp: serverTimestamp(),
         lastRead: { [user.uid]: serverTimestamp() },

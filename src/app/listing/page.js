@@ -79,18 +79,43 @@ const AddListing = () => {
     leaseTerms: "",
     accessibilityFeatures: [],
     ownerId: "",
+    locationSource: "",
   });
   const [files, setFiles] = useState([]);
   const [previews, setPreviews] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Lazy load map only on client
-  const MapComponent = dynamic(() => import("../components/MapComponent"), {
+  // Use the new MapPicker for search + pick UX
+  const MapPicker = dynamic(() => import("../components/MapPicker"), {
     ssr: false,
   });
 
   const roomRef = collection(db, "roomdetails");
+
+  // Reverse geocode helper: prefer MapTiler if key present, else OSM Nominatim
+  const reverseGeocode = async (lat, lng) => {
+    try {
+      const mapTilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+      if (mapTilerKey) {
+        const r = await fetch(
+          `https://api.maptiler.com/geocoding/${lng},${lat}.json?key=${mapTilerKey}&limit=1`
+        );
+        const j = await r.json();
+        const f = j?.features?.[0];
+        const label = f?.place_name || f?.text;
+        if (label) return label;
+      }
+      const resp = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`,
+        { headers: { "Accept-Language": "en" } }
+      );
+      const d = await resp.json();
+      return d.display_name || "";
+    } catch {
+      return "";
+    }
+  };
 
   const handleFileChange = (event) => {
     const selected = Array.from(event.target.files || []);
@@ -133,7 +158,11 @@ const AddListing = () => {
     if (loading) return;
     const newErrors = {};
     if (!roomDetails.name) newErrors.name = "Name is required";
-    if (!roomDetails.location) newErrors.location = "Location is required";
+    // Accept either typed address or picked map coordinates; coordinates are the source of truth
+    if (!roomDetails.latitude || !roomDetails.longitude) {
+      newErrors.location =
+        'Select a point on the map or use "Use my location".';
+    }
     if (!roomDetails.price || isNaN(Number(roomDetails.price)))
       newErrors.price = "Valid price is required";
     setErrors(newErrors);
@@ -146,9 +175,21 @@ const AddListing = () => {
     setLoading(true);
     try {
       const imageUrls = await uploadImages(user.uid);
+      // Ensure address is populated if missing by reverse geocoding picked coordinates
+      let addressToSave = (roomDetails.location || "").trim();
+      if (
+        (!addressToSave || addressToSave.length < 3) &&
+        roomDetails.latitude &&
+        roomDetails.longitude
+      ) {
+        addressToSave = await reverseGeocode(
+          Number(roomDetails.latitude),
+          Number(roomDetails.longitude)
+        );
+      }
       await addDoc(roomRef, {
         name: roomDetails.name,
-        price: Number(roomDetails.price),
+        price: roomDetails.price,
         currency: roomDetails.currency,
         capacity: roomDetails.capacity,
         description: roomDetails.description,
@@ -160,7 +201,7 @@ const AddListing = () => {
         ownerLastName: roomDetails.ownerLastName,
         ownerEmail: roomDetails.ownerEmail,
         amenities: roomDetails.amenities,
-        location: roomDetails.location,
+        location: addressToSave || "",
         rules: roomDetails.rules,
         images: imageUrls,
         roomSize: roomDetails.roomSize,
@@ -172,18 +213,9 @@ const AddListing = () => {
         energyEfficiencyRating: roomDetails.energyEfficiencyRating,
         leaseTerms: roomDetails.leaseTerms,
         accessibilityFeatures: roomDetails.accessibilityFeatures,
-        latitude:
-          typeof roomDetails.latitude === "number"
-            ? roomDetails.latitude
-            : roomDetails.latitude
-            ? Number(roomDetails.latitude)
-            : null,
-        longitude:
-          typeof roomDetails.longitude === "number"
-            ? roomDetails.longitude
-            : roomDetails.longitude
-            ? Number(roomDetails.longitude)
-            : null,
+        latitude: roomDetails.latitude ? Number(roomDetails.latitude) : null,
+        longitude: roomDetails.longitude ? Number(roomDetails.longitude) : null,
+        locationSource: roomDetails.locationSource || "",
         ownerId: user.uid,
         createdAt: serverTimestamp(),
         roomId: `${user.uid}-${Date.now()}`,
@@ -337,8 +369,64 @@ const AddListing = () => {
               error={Boolean(errors.name)}
               helperText={errors.name}
             />
-            {/* Location is handled by the map widget below (single place to enter/search/select). */}
-            <div className="col-start-1 col-end-13" />
+            <div className="col-start-1 col-end-13">
+              <p className="text-sm font-medium mb-1">Location</p>
+              <MapPicker
+                value={{
+                  address: roomDetails.location,
+                  location:
+                    roomDetails.latitude && roomDetails.longitude
+                      ? {
+                          lat: Number(roomDetails.latitude),
+                          lng: Number(roomDetails.longitude),
+                        }
+                      : undefined,
+                }}
+                onChange={({ address, location, source }) => {
+                  setRoomDetails((prev) => ({
+                    ...prev,
+                    location: address,
+                    latitude: location.lat,
+                    longitude: location.lng,
+                    locationSource: source || prev.locationSource || "",
+                  }));
+                }}
+              />
+              {roomDetails.latitude && roomDetails.longitude ? (
+                <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-700 bg-gray-50 border rounded-full px-3 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                  <span>
+                    {roomDetails.location?.trim()
+                      ? roomDetails.location
+                      : "Location selected"}
+                  </span>
+                  <span className="text-gray-500">
+                    ({Number(roomDetails.latitude).toFixed(5)},{" "}
+                    {Number(roomDetails.longitude).toFixed(5)})
+                  </span>
+                  {roomDetails.locationSource === "gps" && (
+                    <span className="ml-1 inline-flex items-center gap-1 text-green-700 border border-green-600/30 bg-green-50 px-2 py-0.5 rounded-full">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-3 h-3"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-12.5a.75.75 0 00-1.5 0v2.25H7a.75.75 0 000 1.5h2.25V11a.75.75 0 001.5 0V9.25H13a.75.75 0 000-1.5h-2.25V5.5z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      GPS
+                    </span>
+                  )}
+                </div>
+              ) : null}
+              {errors.location ? (
+                <p className="text-xs text-red-600 mt-1">{errors.location}</p>
+              ) : null}
+            </div>
             <InputFieldCustom
               name={"ownerFirstName"}
               label={"Owner's First Name"}
@@ -392,7 +480,6 @@ const AddListing = () => {
                 onChange={handleChange}
               >
                 <MenuItem value={"XAF"}>XAF</MenuItem>
-                <MenuItem value={"EUR"}>EUR</MenuItem>
               </Select>
             </FormControl>
             <InputFieldCustom
@@ -523,6 +610,33 @@ const AddListing = () => {
                   ))}
                 </Select>
               </FormControl>
+              {roomDetails.utilitiesIncluded?.length ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {roomDetails.utilitiesIncluded.map((u, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                    >
+                      {u}
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() =>
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            utilitiesIncluded: prev.utilitiesIncluded.filter(
+                              (_, i) => i !== idx
+                            ),
+                          }))
+                        }
+                        aria-label={`Remove utility ${u}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div className="col-start-6 col-end-13">
               <FormControl fullWidth>
@@ -559,6 +673,33 @@ const AddListing = () => {
                   ))}
                 </Select>
               </FormControl>
+              {roomDetails.amenities?.length ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {roomDetails.amenities.map((a, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                    >
+                      {a}
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() =>
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            amenities: prev.amenities.filter(
+                              (_, i) => i !== idx
+                            ),
+                          }))
+                        }
+                        aria-label={`Remove amenity ${a}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
             </div>
             <InputFieldCustom
               name="publicTransportAccess"
@@ -626,13 +767,29 @@ const AddListing = () => {
                 <h3 className="text-lg font-medium my-3">Rules</h3>
               ) : null}
               {roomDetails.rules.length > 0 ? (
-                <ul className="ml-10 mb-3">
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
                   {roomDetails.rules.map((r, index) => (
-                    <li className="w-full list-disc" key={index}>
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                    >
                       {r}
-                    </li>
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            rules: prev.rules.filter((_, i) => i !== index),
+                          }));
+                        }}
+                        aria-label={`Remove rule ${r}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <OutlinedInput
@@ -668,13 +825,31 @@ const AddListing = () => {
                 <h3 className="text-lg font-medium my-3">Safety Features</h3>
               ) : null}
               {roomDetails.safetyFeatures.length > 0 ? (
-                <ul className="ml-10 mb-3">
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
                   {roomDetails.safetyFeatures.map((feature, index) => (
-                    <li className="w-full list-disc" key={index}>
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                    >
                       {feature}
-                    </li>
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            safetyFeatures: prev.safetyFeatures.filter(
+                              (_, i) => i !== index
+                            ),
+                          }));
+                        }}
+                        aria-label={`Remove safety feature ${feature}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <OutlinedInput
@@ -712,13 +887,32 @@ const AddListing = () => {
                 </h3>
               ) : null}
               {roomDetails.accessibilityFeatures.length > 0 ? (
-                <ul className="ml-10 mb-3">
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
                   {roomDetails.accessibilityFeatures.map((feature, index) => (
-                    <li className="w-full list-disc" key={index}>
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                    >
                       {feature}
-                    </li>
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            accessibilityFeatures:
+                              prev.accessibilityFeatures.filter(
+                                (_, i) => i !== index
+                              ),
+                          }));
+                        }}
+                        aria-label={`Remove accessibility feature ${feature}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <InputFieldCustom
@@ -755,46 +949,7 @@ const AddListing = () => {
               </p>
             </div>
           </div>
-          {/* Location (single entry point) */}
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <div className="col-start-1 col-end-13">
-              <h2 className="text-base font-medium mb-2">Location</h2>
-              {errors.location ? (
-                <p className="text-xs text-red-600 mb-1">{errors.location}</p>
-              ) : null}
-              {/* Read-only field mirroring the selected address from the map */}
-              <InputFieldCustom
-                name={"location"}
-                label={"Location (selected)"}
-                value={roomDetails.location}
-                onChange={handleChange}
-                colStart={1}
-                colEnd={13}
-                disabled={true}
-              />
-              <MapComponent
-                address={roomDetails.location}
-                latitude={
-                  roomDetails.latitude
-                    ? Number(roomDetails.latitude)
-                    : undefined
-                }
-                longitude={
-                  roomDetails.longitude
-                    ? Number(roomDetails.longitude)
-                    : undefined
-                }
-                onLocationChange={({ lat, lng, address }) => {
-                  setRoomDetails((prev) => ({
-                    ...prev,
-                    latitude: lat,
-                    longitude: lng,
-                    location: address || prev.location,
-                  }));
-                }}
-              />
-            </div>
-          </div>
+          {/* Map is embedded above with search + click-to-pick */}
           <div className="flex flex-row flex-wrap">
             {previews.length > 0
               ? previews.map((src, index) => (

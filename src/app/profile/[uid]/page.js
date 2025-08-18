@@ -103,6 +103,7 @@ export default function PublicProfilePage() {
     } else {
       const room = await addDoc(collection(db, "chatRoom"), {
         createdAt: serverTimestamp(),
+        userIds: [self.uid, uid],
       });
       await setDoc(doc(collection(db, "chatRoomMapping")), {
         roomId: room.id,

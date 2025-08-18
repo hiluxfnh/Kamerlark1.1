@@ -4,50 +4,41 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isUser(uid) { return isSignedIn() && request.auth.uid == uid; }
 
-    // Users: readable to signed-in users; users can write their own document only.
+    // Users: public read, user can write own doc only
     match /Users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow create: if isUser(userId);
       allow update, delete: if isUser(userId);
     }
 
-    // Chat room metadata: require auth for reads; restrict writes to participants when possible.
-    match /chatRoom/{roomId} {
-      allow read: if isSignedIn();
-      allow create, update, delete: if isSignedIn(); // TODO: tighten to participants when data model supports it via rules
+    // Listings: public read; only owner can create/update/delete
+    match /roomdetails/{roomId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
 
-      // Messages in a room
-      match /messages/{messageId} {
-        allow read, create: if isSignedIn(); // TODO: restrict to participants
-        allow update, delete: if false; // messages are immutable; adjust if needed
+    // Chat room mapping: visible/editable only to participants (userIds contains requester)
+    match /chatRoomMapping/{mappingId} {
+      allow read: if isSignedIn() && (resource.data.userIds has request.auth.uid);
+      allow create: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
+      allow update, delete: if isSignedIn() && (resource.data.userIds has request.auth.uid);
+    }
+
+    // Chat room: visible/editable only to participants; messages readable/creatable only by participants
+    match /chatRoom/{roomId} {
+      allow read, update, delete: if isSignedIn() && (resource.data.userIds has request.auth.uid);
+      allow create: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
+      match /messages/{msgId} {
+        allow read, create: if isSignedIn() && (get(/databases/$(database)/documents/chatRoom/$(roomId)).data.userIds has request.auth.uid);
+        allow update, delete: if false;
       }
     }
 
-    // Chat room mapping: contains userIds and roomId mapping
-    match /chatRoomMapping/{mappingId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
-      allow update, delete: if isSignedIn() && (request.resource.data.userIds has request.auth.uid);
-    }
-
-    // Listings and public data
-    match /roomdetails/{roomId} {
-      allow read: if true; // public listings
-      allow create, update, delete: if isSignedIn(); // TODO: restrict to ownerId == request.auth.uid
-    }
-
-    // Follows: follower can write their own follow docs
-    match /Follows/{followId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.followerId == request.auth.uid;
-      allow delete: if isSignedIn() && resource.data.followerId == request.auth.uid;
-      allow update: if false;
-    }
-
-    // Bookings (if used)
+    // Bookings: user can read/create; only the creator can update/delete
     match /bookings/{bookingId} {
       allow read, create: if isSignedIn();
-      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid);
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     // Default deny

@@ -129,6 +129,7 @@ export default function CommunityPage() {
     // Create new room
     const room = await addDoc(collection(db, "chatRoom"), {
       createdAt: serverTimestamp(),
+      userIds: [user.uid, otherUserId],
     });
     await setDoc(doc(collection(db, "chatRoomMapping")), {
       roomId: room.id,

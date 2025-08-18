@@ -1,14 +1,16 @@
-import { Button } from "@mui/material";
+import { Button, Snackbar, Alert, CircularProgress } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, IconButton } from "@mui/material";
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, IconButton, Rating } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import InputFieldCustom from "../../components/InputField";
-import { doc, setDoc } from "firebase/firestore";
+import { arrayUnion, doc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../../firebase/Config";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
 import { useRouter } from "next/navigation";
 
@@ -16,7 +18,13 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
   const router = useRouter();
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false); // State for modal
-  const [reviewText, setReviewText] = useState(""); // State for review text
+  const [reviewText, setReviewText] = useState("");
+  const [rating, setRating] = useState<number | null>(0);
+  const [user] = useAuthState(auth as any);
+  const [snack, setSnack] = useState<{open: boolean; message: string; severity: 'success'|'error'|'warning'|'info'}>({ open: false, message: '', severity: 'success' });
+  const openSnack = (message: string, severity: 'success'|'error'|'warning'|'info' = 'success') => setSnack({ open: true, message, severity });
+  const closeSnack = () => setSnack(s => ({ ...s, open: false }));
+  const [submitting, setSubmitting] = useState(false);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -28,18 +36,30 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
 
   const handleReviewSubmit = async () => {
     try {
-      // Assuming 'reviews' collection exists in your Firestore
-      await setDoc(doc(db, "reviews", listing.id), {
-        userId: listing.userId,
-        ownerId: listing.ownerId,
-        reviewText: reviewText,
-        timestamp: new Date(),
-      });
+      if (!user) return openSnack('You must be signed in to submit a review', 'warning');
+      if (!reviewText.trim() || !rating) return openSnack('Rating and review are required', 'warning');
+      setSubmitting(true);
+      const review = {
+        name: user.displayName || "Anonymous",
+        review: reviewText.trim(),
+        image: user.photoURL || "https://via.placeholder.com/150",
+        rating: Number(rating || 0),
+        userId: user.uid,
+        createdAtMs: Date.now(),
+      };
+      const targetRoomId = listing.roomDetails?.id || listing.roomId || listing.id;
+      const roomRef = doc(db, "roomdetails", targetRoomId);
+      await updateDoc(roomRef, { reviews: arrayUnion(review) });
       setReviewText("");
+      setRating(0);
       setOpen(false);
-      refresher(); // Optional: refresh the listing or reviews after submission
+      openSnack('Review submitted');
+      refresher();
     } catch (error) {
       console.error("Error submitting review: ", error);
+      openSnack('Failed to submit review', 'error');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -267,6 +287,9 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
+          <div className="mb-4">
+            <Rating name="rating" value={rating} onChange={(_, v) => setRating(v)} />
+          </div>
           <TextField
             autoFocus
             margin="dense"
@@ -284,11 +307,16 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
           <Button onClick={handleClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleReviewSubmit} color="primary">
-            Submit
+          <Button onClick={handleReviewSubmit} color="primary" disabled={submitting}>
+            {submitting ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'Submit'}
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar open={snack.open} autoHideDuration={3000} onClose={closeSnack} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={closeSnack} severity={snack.severity} sx={{ width: '100%' }}>
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

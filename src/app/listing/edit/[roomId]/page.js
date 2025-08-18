@@ -1,11 +1,17 @@
 "use client";
 import React, { useState, useCallback, useEffect } from "react";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 import Header from "../../../components/Header";
+import dynamic from "next/dynamic";
 import { db, storage, auth } from "../../../firebase/Config";
-import { addDoc, collection, doc, getDoc, setDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import Spinner from "../../../components/Spinner"; // Import Spinner
 import TextField from "@mui/material/TextField";
@@ -50,13 +56,6 @@ const VisuallyHiddenInput = styled("input")({
 const EditIdPage = ({ params }) => {
   const { roomId } = params;
   const roomDocRef = doc(db, "roomdetails", roomId);
-  const router = useRouter();
-  const MapComponent = dynamic(
-    () => import("../../../components/MapComponent"),
-    { ssr: false }
-  );
-  const [authorized, setAuthorized] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
   useEffect(() => {
     const getPersonalInfo = async () => {
       const personalInfoDoc = await getDoc(roomDocRef);
@@ -64,30 +63,16 @@ const EditIdPage = ({ params }) => {
         const personalInfoData = personalInfoDoc.data();
         setRoomDetails(personalInfoData);
         setFiles(personalInfoData.images);
-        // enforce owner-only edit
-        const uid = auth.currentUser?.uid;
-        if (!uid) {
-          setAuthorized(false);
-          setAuthChecked(true);
-          return;
-        }
-        if (personalInfoData.ownerId && personalInfoData.ownerId === uid) {
-          setAuthorized(true);
-        } else {
-          setAuthorized(false);
-        }
-        setAuthChecked(true);
+        try {
+          const uid = auth.currentUser?.uid;
+          if (uid && personalInfoData?.ownerId)
+            setIsOwner(uid === personalInfoData.ownerId);
+        } catch {}
       }
     };
     getPersonalInfo();
   }, []);
   const [safetyFeature, setSafetyFeature] = useState("");
-  // Redirect non-owners away once check completes
-  useEffect(() => {
-    if (authChecked && !authorized) {
-      router.replace("/mylisting");
-    }
-  }, [authChecked, authorized, router]);
   const [rule, setRule] = useState("");
   const [accessibilityFeature, setAccessibilityFeature] = useState("");
   const [roomDetails, setRoomDetails] = useState({
@@ -106,8 +91,6 @@ const EditIdPage = ({ params }) => {
     ownerEmail: "", // Add owner's email field
     amenities: [],
     location: "",
-    latitude: null,
-    longitude: null,
     rules: [],
     images: [],
     roomSize: "",
@@ -119,11 +102,14 @@ const EditIdPage = ({ params }) => {
     energyEfficiencyRating: "",
     leaseTerms: "",
     accessibilityFeatures: [],
+    latitude: null,
+    longitude: null,
+    ownerId: "",
   });
-  const [files, setFiles] = useState([]);
-
+  const [files, setFiles] = useState([]); // can be strings (existing URLs) and File objects (new uploads)
+  const [showLocationEditor, setShowLocationEditor] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const handleFileChange = (event) => {
-    console.log(event.target.files[0].lastModified);
     setFiles([...files, ...event.target.files]);
   };
   const [loading, setLoading] = useState(false); // Loading state
@@ -138,63 +124,46 @@ const EditIdPage = ({ params }) => {
     }));
   };
 
-  const uploadImages = async () => {
-    // const uploadPromises = files.map((image) => {
-    //   const storageRef = ref(storage, `images/${image.lastModified}-${image.name}`);
-    //   const uploadTask = uploadBytesResumable(storageRef, image);
-    //   return new Promise((resolve, reject) => {
-    //     uploadTask.on(
-    //       "state_changed",
-    //       (snapshot) => {
-    //        Progress function (optional)
-    //       },
-    //       (error) => {
-    //         console.error("Error uploading image:", error);
-    //         reject(error);
-    //       },
-    //       () => {
-    //         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-    //           resolve(downloadURL);
-    //         });
-    //       }
-    //     );
-    //   });
-    // });
-    // return Promise.all(uploadPromises);
+  const uploadImages = async (ownerId) => {
+    const toUpload = files.filter((f) => typeof f !== "string");
+    if (!toUpload.length) return [];
+    const uploadPromises = toUpload.map((image) => {
+      const storageRef = ref(
+        storage,
+        `images/rooms/${ownerId}/${image.lastModified}-${image.name}`
+      );
+      const uploadTask = uploadBytesResumable(storageRef, image);
+      return new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          undefined,
+          (error) => reject(error),
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
+          }
+        );
+      });
+    });
+    return Promise.all(uploadPromises);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!authorized) {
-      alert("You are not authorized to edit this listing.");
-      router.push("/mylisting");
-      return;
-    }
-    const imageUrls = await uploadImages();
-    console.log(imageUrls);
     setLoading(true);
     try {
       const user = auth.currentUser;
-      const imageUrls = await uploadImages();
-      const payload = {
-        ...roomDetails,
-        price: roomDetails.price
-          ? Number(roomDetails.price)
-          : roomDetails.price,
-        latitude:
-          typeof roomDetails.latitude === "number"
-            ? roomDetails.latitude
-            : roomDetails.latitude
-            ? Number(roomDetails.latitude)
-            : null,
-        longitude:
-          typeof roomDetails.longitude === "number"
-            ? roomDetails.longitude
-            : roomDetails.longitude
-            ? Number(roomDetails.longitude)
-            : null,
-      };
-      await setDoc(roomDocRef, payload, { merge: true });
+      const uploaded = await uploadImages(user?.uid || "anon");
+      const existingUrls = files.filter((f) => typeof f === "string");
+      const newImages = [...existingUrls, ...uploaded];
+      await setDoc(
+        roomDocRef,
+        {
+          ...roomDetails,
+          images: newImages.length ? newImages : roomDetails.images,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
       alert("Room details added successfully");
     } catch (error) {
       console.error("Error adding room details: ", error);
@@ -206,23 +175,9 @@ const EditIdPage = ({ params }) => {
   if (loading) {
     return <Spinner />; // Show spinner when loading
   }
-  if (!authChecked) {
-    return <Spinner />;
-  }
-  if (authChecked && !authorized) {
-    return (
-      <>
-        <Header />
-        <div className="w-screen bg-white">
-          <div className="w-256 mx-auto pt-16 mb-5 text-center">
-            <p className="text-sm">
-              You are not authorized to edit this listing.
-            </p>
-          </div>
-        </div>
-      </>
-    );
-  }
+  const MapPicker = dynamic(() => import("../../../components/MapPicker"), {
+    ssr: false,
+  });
   const universities = [
     { label: "University of Dschang", value: "University of Dschang" },
     { label: "University of Douala", value: "University of Douala" },
@@ -269,10 +224,7 @@ const EditIdPage = ({ params }) => {
           <h1 className="text-2xl font-medium text-left mb-2">Edit Listing</h1>
           <div
             className="bg-black mb-3"
-            style={{
-              height: "3px",
-              width: "80px",
-            }}
+            style={{ height: "3px", width: "80px" }}
           ></div>
           <div className="grid grid-cols-12 gap-2 my-4">
             <InputFieldCustom
@@ -283,16 +235,25 @@ const EditIdPage = ({ params }) => {
               colStart={1}
               colEnd={13}
             />
-            {/* Location: selected via map; display read-only field for clarity */}
             <InputFieldCustom
               name={"location"}
-              label={"Location (selected)"}
+              label={"Location"}
               value={roomDetails.location}
               onChange={handleChange}
               colStart={1}
               colEnd={13}
-              disabled={true}
             />
+            {isOwner && (
+              <div className="col-start-1 col-end-13 -mt-2 mb-1">
+                <button
+                  type="button"
+                  className="text-xs px-3 py-1 rounded-full border border-gray-300 hover:bg-gray-50"
+                  onClick={() => setShowLocationEditor(true)}
+                >
+                  Change location on map
+                </button>
+              </div>
+            )}
             <InputFieldCustom
               name={"ownerFirstName"}
               label={"Owner's First Name"}
@@ -343,9 +304,7 @@ const EditIdPage = ({ params }) => {
                 name="currency"
                 onChange={handleChange}
               >
-                <MenuItem defaultValue={"XAF"}>XAF</MenuItem>
-                <MenuItem value={"USD"}>USD</MenuItem>
-                <MenuItem value={"EUR"}>EUR</MenuItem>
+                <MenuItem value={"XAF"}>XAF</MenuItem>
               </Select>
             </FormControl>
             <InputFieldCustom
@@ -686,15 +645,29 @@ const EditIdPage = ({ params }) => {
           </div>
           <div className="flex flex-row flex-wrap">
             {files.length > 0
-              ? files.map((file) => (
-                  <div className="w-40 h-40 my-2 mx-2 overflow-hidden">
-                    <Image
-                      src={file}
-                      alt="Uploaded file"
-                      width={200}
-                      height={200}
-                      className="w-40 object-contain"
-                    />
+              ? files.map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="w-40 h-40 my-2 mx-2 overflow-hidden"
+                  >
+                    {typeof file === "string" ? (
+                      <Image
+                        src={file}
+                        alt="Uploaded file"
+                        width={200}
+                        height={200}
+                        className="w-40 h-40 object-cover"
+                      />
+                    ) : (
+                      <Image
+                        src={URL.createObjectURL(file)}
+                        alt="New file"
+                        width={200}
+                        height={200}
+                        className="w-40 h-40 object-cover"
+                        onLoad={(e) => URL.revokeObjectURL(e.target.src)}
+                      />
+                    )}
                   </div>
                 ))
               : null}
@@ -705,35 +678,88 @@ const EditIdPage = ({ params }) => {
             colStart={1}
             colEnd={13}
           />
-          {/* Map selection */}
-          <div className="grid grid-cols-12 gap-2 my-4">
-            <div className="col-start-1 col-end-13">
-              <h2 className="text-base font-medium mb-2">Location</h2>
-              <MapComponent
-                address={roomDetails.location}
-                latitude={
-                  roomDetails.latitude
-                    ? Number(roomDetails.latitude)
-                    : undefined
-                }
-                longitude={
-                  roomDetails.longitude
-                    ? Number(roomDetails.longitude)
-                    : undefined
-                }
-                onLocationChange={({ lat, lng, address }) => {
-                  setRoomDetails((prev) => ({
-                    ...prev,
-                    latitude: lat,
-                    longitude: lng,
-                    location: address || prev.location,
-                  }));
+        </div>
+      </div>
+      {showLocationEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowLocationEditor(false)}
+          />
+          <div className="relative bg-white rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 p-4">
+            <h2 className="text-lg font-semibold mb-2">Update location</h2>
+            <MapPicker
+              value={{
+                address: roomDetails.location,
+                location:
+                  roomDetails.latitude && roomDetails.longitude
+                    ? {
+                        lat: Number(roomDetails.latitude),
+                        lng: Number(roomDetails.longitude),
+                      }
+                    : undefined,
+              }}
+              onChange={({ address, location }) => {
+                setRoomDetails((prev) => ({
+                  ...prev,
+                  location: address,
+                  latitude: location.lat,
+                  longitude: location.lng,
+                }));
+              }}
+            />
+            {roomDetails.latitude && roomDetails.longitude ? (
+              <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-700 bg-gray-50 border rounded-full px-3 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span>
+                  {roomDetails.location?.trim()
+                    ? roomDetails.location
+                    : "Location selected"}
+                </span>
+                <span className="text-gray-500">
+                  ({Number(roomDetails.latitude).toFixed(5)},{" "}
+                  {Number(roomDetails.longitude).toFixed(5)})
+                </span>
+              </div>
+            ) : null}
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded-md border"
+                onClick={() => setShowLocationEditor(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-md bg-black text-white"
+                onClick={async () => {
+                  try {
+                    await setDoc(
+                      roomDocRef,
+                      {
+                        location: roomDetails.location || "",
+                        latitude: roomDetails.latitude
+                          ? Number(roomDetails.latitude)
+                          : null,
+                        longitude: roomDetails.longitude
+                          ? Number(roomDetails.longitude)
+                          : null,
+                      },
+                      { merge: true }
+                    );
+                    setShowLocationEditor(false);
+                    alert("Location updated");
+                  } catch (e) {
+                    console.error(e);
+                    alert("Failed to update location");
+                  }
                 }}
-              />
+              >
+                Save location
+              </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

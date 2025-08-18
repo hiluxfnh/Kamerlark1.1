@@ -1,0 +1,40 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "roomdetails",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" },
+        { "fieldPath": "uni", "order": "ASCENDING" },
+        { "fieldPath": "price", "order": "ASCENDING" },
+        { "fieldPath": "bedType", "order": "ASCENDING" },
+        { "fieldPath": "furnishedStatus", "order": "ASCENDING" },
+        { "fieldPath": "washrooms", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "roomdetails",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "price", "order": "ASCENDING" },
+        { "fieldPath": "uni", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chatRoom",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "chatRoomMapping",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

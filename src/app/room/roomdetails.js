@@ -11,6 +11,7 @@ import {
   updateDoc,
   arrayUnion,
   increment,
+  serverTimestamp,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
 import dynamic from "next/dynamic";
@@ -271,7 +272,8 @@ const RoomDetails = ({ room }) => {
         userEmail: bookingDetails.email,
         userPhone: bookingDetails.phone,
         userAddress: bookingDetails.address,
-        moveInDate: `${bookingDetails.moveInDate.$D}-${bookingDetails.moveInDate.$M}-${bookingDetails.moveInDate.$y}`,
+        // Format using dayjs for correct month handling
+        moveInDate: dayjs(bookingDetails.moveInDate).format("DD-MM-YYYY"),
         notes: bookingDetails.notes,
         roomId: room.id,
         ownerId: room.ownerId,
@@ -289,15 +291,30 @@ const RoomDetails = ({ room }) => {
         userId1: auth.currentUser.uid,
         userId2: room.ownerId,
       });
-      console.log("roomId", { roomId });
       const roomRef = doc(db, "chatRoom", roomId);
       await addDoc(collection(roomRef, "messages"), {
         bookingId: bookingId,
         userId: user.uid,
         type: "booking",
         photoURL: user.photoURL,
-        timestamp: new Date().getTime(),
+        timestamp: serverTimestamp(),
       });
+      try {
+        const mQ = query(
+          collection(db, "chatRoomMapping"),
+          where("roomId", "==", roomId)
+        );
+        const mSnap = await getDocs(mQ);
+        await Promise.all(
+          mSnap.docs.map((d) =>
+            setDoc(
+              doc(db, "chatRoomMapping", d.id),
+              { lastMessageTs: serverTimestamp() },
+              { merge: true }
+            )
+          )
+        );
+      } catch {}
       alert("Booking successful!");
       setIsBookNowOpen(false);
       setAddBookingSuccess(true);
@@ -310,12 +327,21 @@ const RoomDetails = ({ room }) => {
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Combine date and time for calendar-friendly values
+      const apptDate = dayjs(appointmentDetails.date);
+      const apptTime = dayjs(appointmentDetails.time);
+      const combinedStart = apptDate
+        .hour(apptTime.hour())
+        .minute(apptTime.minute())
+        .second(0)
+        .millisecond(0);
+      const combinedTimeStr = combinedStart.format("HH:mm");
       const appointmentDetailsModified = {
         userName: appointmentDetails.name,
         userEmail: appointmentDetails.email,
         userPhone: appointmentDetails.phone,
-        appointmentDate: `${appointmentDetails.date.$D}-${appointmentDetails.date.$M}-${appointmentDetails.date.$y}`,
-        appointmentTime: `${appointmentDetails.time.$H}:${appointmentDetails.time.$m}`,
+        appointmentDate: apptDate.format("DD-MM-YYYY"),
+        appointmentTime: combinedTimeStr,
         message: appointmentDetails.message,
         roomId: room.id,
         ownerId: room.ownerId,
@@ -333,15 +359,30 @@ const RoomDetails = ({ room }) => {
         userId1: auth.currentUser.uid,
         userId2: room.ownerId,
       });
-      console.log("roomId", { roomId });
       const roomRef = doc(db, "chatRoom", roomId);
       await addDoc(collection(roomRef, "messages"), {
         appointmentId: appointmentId,
         userId: user.uid,
         type: "appointment",
         photoURL: user.photoURL,
-        timestamp: new Date().getTime(),
+        timestamp: serverTimestamp(),
       });
+      try {
+        const mQ = query(
+          collection(db, "chatRoomMapping"),
+          where("roomId", "==", roomId)
+        );
+        const mSnap = await getDocs(mQ);
+        await Promise.all(
+          mSnap.docs.map((d) =>
+            setDoc(
+              doc(db, "chatRoomMapping", d.id),
+              { lastMessageTs: serverTimestamp() },
+              { merge: true }
+            )
+          )
+        );
+      } catch {}
       alert("Appointment successful!");
       setIsAppointmentOpen(false);
       setAddAppointmentSuccess(true);
@@ -349,6 +390,57 @@ const RoomDetails = ({ room }) => {
       console.error("Error adding booking: ", error);
       alert("Failed to book the room");
     }
+  };
+
+  // Calendar helpers
+  const toGCalDate = (d) => dayjs(d).format("YYYYMMDDTHHmmss");
+  const getGoogleCalendarUrl = ({
+    title,
+    start,
+    end,
+    details,
+    location,
+    timezone = "Africa/Douala",
+  }) => {
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: title || "Kamerlark Event",
+      dates: `${toGCalDate(start)}/${toGCalDate(end)}`,
+      details: details || "",
+      location: location || "",
+      ctz: timezone,
+    }).toString();
+    return `https://calendar.google.com/calendar/render?${params}`;
+  };
+  const downloadICS = ({ title, description, start, end, location }) => {
+    try {
+      const dtStart = dayjs(start).format("YYYYMMDDTHHmmss");
+      const dtEnd = dayjs(end).format("YYYYMMDDTHHmmss");
+      const ics = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Kamerlark//EN",
+        "BEGIN:VEVENT",
+        `UID:${Math.random().toString(36).slice(2)}@kamerlark`,
+        `DTSTAMP:${dayjs().format("YYYYMMDDTHHmmss")}`,
+        `DTSTART:${dtStart}`,
+        `DTEND:${dtEnd}`,
+        `SUMMARY:${(title || "").replace(/\n/g, " ")}`,
+        `DESCRIPTION:${(description || "").replace(/\n/g, " ")}`,
+        `LOCATION:${(location || "").replace(/\n/g, " ")}`,
+        "END:VEVENT",
+        "END:VCALENDAR",
+      ].join("\r\n");
+      const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "event.ics";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {}
   };
   return (
     <>
@@ -449,7 +541,8 @@ const RoomDetails = ({ room }) => {
             <div>
               <h2 className="text-base font-medium">Price</h2>
               <p className="text-2xl font-bold mt-2 mb-3">
-                $ {room.price}{" "}
+                {room.currency === "XAF" ? "XAF" : room.currency || "XAF"}{" "}
+                {room.price}{" "}
                 <span className="text-sm font-medium">(Inclusive taxes)</span>
               </p>
             </div>
@@ -788,8 +881,7 @@ const RoomDetails = ({ room }) => {
               <Button
                 variant="contained"
                 onClick={handleAddReview}
-                disabled={!newReview.trim() || rating <= 0}
-                style={{ backgroundColor: "black" }}
+                style={{ backgroundColor: "black", color: "white" }}
               >
                 Submit Review
               </Button>
@@ -806,6 +898,49 @@ const RoomDetails = ({ room }) => {
         <p>
           Your booking has submitted for approval. Wait for the owners response.
         </p>
+        {/* Offer calendar options for planned move-in date */}
+        {bookingDetails?.moveInDate ? (
+          <div className="mt-3 flex gap-2">
+            <a
+              className="px-3 py-1 rounded-md border"
+              href={(() => {
+                const start = dayjs(bookingDetails.moveInDate)
+                  .hour(9)
+                  .minute(0);
+                const end = start.add(1, "hour");
+                return getGoogleCalendarUrl({
+                  title: `Move-in: ${room.name}`,
+                  start,
+                  end,
+                  details: `Move-in for ${room.name}.`,
+                  location: room.location,
+                });
+              })()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Add to Google Calendar
+            </a>
+            <button
+              className="px-3 py-1 rounded-md border"
+              onClick={() => {
+                const start = dayjs(bookingDetails.moveInDate)
+                  .hour(9)
+                  .minute(0);
+                const end = start.add(1, "hour");
+                downloadICS({
+                  title: `Move-in: ${room.name}`,
+                  description: `Move-in for ${room.name}.`,
+                  start,
+                  end,
+                  location: room.location,
+                });
+              }}
+            >
+              Download .ics
+            </button>
+          </div>
+        ) : null}
         <button
           onClick={() => {
             router.push("/chat/messagecenter");
@@ -824,6 +959,50 @@ const RoomDetails = ({ room }) => {
           Your appointment has submitted for approval. Wait for the owners
           response.
         </p>
+        {/* Offer calendar options for appointment */}
+        {appointmentDetails?.date && appointmentDetails?.time ? (
+          <div className="mt-3 flex gap-2">
+            <a
+              className="px-3 py-1 rounded-md border"
+              href={(() => {
+                const d = dayjs(appointmentDetails.date);
+                const t = dayjs(appointmentDetails.time);
+                const start = d.hour(t.hour()).minute(t.minute()).second(0);
+                const end = start.add(1, "hour");
+                return getGoogleCalendarUrl({
+                  title: `Viewing: ${room.name}`,
+                  start,
+                  end,
+                  details: appointmentDetails.message || "Viewing appointment",
+                  location: room.location,
+                });
+              })()}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Add to Google Calendar
+            </a>
+            <button
+              className="px-3 py-1 rounded-md border"
+              onClick={() => {
+                const d = dayjs(appointmentDetails.date);
+                const t = dayjs(appointmentDetails.time);
+                const start = d.hour(t.hour()).minute(t.minute()).second(0);
+                const end = start.add(1, "hour");
+                downloadICS({
+                  title: `Viewing: ${room.name}`,
+                  description:
+                    appointmentDetails.message || "Viewing appointment",
+                  start,
+                  end,
+                  location: room.location,
+                });
+              }}
+            >
+              Download .ics
+            </button>
+          </div>
+        ) : null}
         <button
           onClick={() => {
             router.push("/chat/messagecenter");
