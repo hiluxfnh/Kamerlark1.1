@@ -3,6 +3,7 @@ import "./globals.css";
 import FooterGuard from "./components/FooterGuard";
 import RouteProgress from "./components/RouteProgress";
 import AuthGate from "./components/AuthGate";
+import GlobalNavSpinner from "./components/GlobalNavSpinner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }) {
         <AuthGate>
           <>
             <RouteProgress />
+            <GlobalNavSpinner />
             {children}
             <FooterGuard />
           </>

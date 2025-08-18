@@ -3,15 +3,22 @@ import React, { useEffect, useState } from "react";
 import Header from "./components/Header";
 import { db } from "./firebase/Config";
 import { collection, getDocs } from "firebase/firestore";
-import ImageSlider from "./components/Imageslider";
+import dynamic from "next/dynamic";
+const ImageSlider = dynamic(() => import("./components/Imageslider"), {
+  ssr: false,
+});
 import RoomCardNew from "./components/roomCard"; // Import RoomCardNew
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Spinner from "./components/Spinner";
 
 export default function Home() {
+  const router = useRouter();
   const [rooms, setRooms] = useState([]);
   const [visibleCount, setVisibleCount] = useState(4); // Start with 4 items visible (2 rows)
   const [loading, setLoading] = useState(true); // Loading state
+  const [navigating, setNavigating] = useState(false);
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -22,12 +29,25 @@ export default function Home() {
         id: doc.id,
         ...doc.data(),
       }));
+      // Sort client-side to keep order consistent with Search page default (newest first)
+      roomList.sort(
+        (a, b) =>
+          (b?.createdAt?.toMillis?.() || 0) - (a?.createdAt?.toMillis?.() || 0)
+      );
       setRooms(roomList);
       setLoading(false); // Hide spinner
     };
 
     fetchRooms();
   }, []);
+
+  // Prefetch common routes to speed up transitions
+  useEffect(() => {
+    try {
+      router.prefetch?.("/search");
+      router.prefetch?.("/profile");
+    } catch {}
+  }, [router]);
 
   return (
     <>
@@ -41,14 +61,20 @@ export default function Home() {
         <h1 className="text-xl font-semibold my-3">Popular Accommodations</h1>
         <p>Here are most rated Accommodations you can view.</p>
         <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
-          {[...rooms, ...rooms].slice(0, visibleCount).map((room) => (
+          {rooms.slice(0, visibleCount).map((room) => (
             <RoomCardNew room={room} key={room.id} />
           ))}
         </div>
         <div className="w-full flex items-center justify-center mt-6">
           <Link
-            href="/search"
-            className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
+            href="/search?view=all"
+            prefetch
+            onClick={(e) => {
+              setNavigating(true);
+            }}
+            className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors ${
+              navigating ? "pointer-events-none opacity-80" : ""
+            }`}
             aria-label="See more accommodations"
           >
             See more accommodations
@@ -108,6 +134,7 @@ export default function Home() {
           }}
         ></div>
       </div>
+      {navigating ? <Spinner /> : null}
       {/* Footer is included globally via RootLayout */}
     </>
   );

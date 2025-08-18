@@ -219,7 +219,7 @@ const EditIdPage = ({ params }) => {
   return (
     <>
       <Header />
-      <div className="w-screen bg-white">
+      <div className="w-screen theme-surface min-h-screen">
         <div className="w-256 mx-auto pt-10 mb-5">
           <h1 className="text-2xl font-medium text-left mb-2">Edit Listing</h1>
           <div
@@ -524,11 +524,29 @@ const EditIdPage = ({ params }) => {
                 <h3 className="text-lg font-medium my-3">Rules</h3>
               ) : null}
               {roomDetails.rules.length > 0 ? (
-                <ul className="ml-10 mb-3">
-                  {roomDetails.rules.map((rule) => (
-                    <li className="w-full list-disc">{rule}</li>
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
+                  {roomDetails.rules.map((r, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
+                    >
+                      {r}
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            rules: prev.rules.filter((_, i) => i !== index),
+                          }));
+                        }}
+                        aria-label={`Remove rule ${r}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <OutlinedInput
@@ -566,12 +584,32 @@ const EditIdPage = ({ params }) => {
               {roomDetails.safetyFeatures.length > 0 ? (
                 <h3 className="text-lg font-medium my-3">Safety Features</h3>
               ) : null}
-              {roomDetails.rules.length > 0 ? (
-                <ul className="ml-10 mb-3">
-                  {roomDetails.safetyFeatures.map((feature) => (
-                    <li className="w-full list-disc">{feature}</li>
+              {roomDetails.safetyFeatures.length > 0 ? (
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
+                  {roomDetails.safetyFeatures.map((feature, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
+                    >
+                      {feature}
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            safetyFeatures: prev.safetyFeatures.filter(
+                              (_, i) => i !== index
+                            ),
+                          }));
+                        }}
+                        aria-label={`Remove safety feature ${feature}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <OutlinedInput
@@ -611,12 +649,33 @@ const EditIdPage = ({ params }) => {
                   Accessibility Features
                 </h3>
               ) : null}
-              {roomDetails.rules.length > 0 ? (
-                <ul className="ml-10 mb-3">
-                  {roomDetails.accessibilityFeatures.map((feature) => (
-                    <li className="w-full list-disc">{feature}</li>
+              {roomDetails.accessibilityFeatures.length > 0 ? (
+                <div className="ml-2 mb-3 flex flex-wrap gap-2">
+                  {roomDetails.accessibilityFeatures.map((feature, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
+                    >
+                      {feature}
+                      <button
+                        type="button"
+                        className="text-gray-500 hover:text-black"
+                        onClick={() => {
+                          setRoomDetails((prev) => ({
+                            ...prev,
+                            accessibilityFeatures:
+                              prev.accessibilityFeatures.filter(
+                                (_, i) => i !== index
+                              ),
+                          }));
+                        }}
+                        aria-label={`Remove accessibility feature ${feature}`}
+                      >
+                        ✕
+                      </button>
+                    </span>
                   ))}
-                </ul>
+                </div>
               ) : null}
             </div>
             <InputFieldCustom
@@ -686,7 +745,7 @@ const EditIdPage = ({ params }) => {
             className="absolute inset-0 bg-black/40"
             onClick={() => setShowLocationEditor(false)}
           />
-          <div className="relative bg-white rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 p-4">
+          <div className="relative rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 p-4 border theme-card">
             <h2 className="text-lg font-semibold mb-2">Update location</h2>
             <MapPicker
               value={{
@@ -709,7 +768,7 @@ const EditIdPage = ({ params }) => {
               }}
             />
             {roomDetails.latitude && roomDetails.longitude ? (
-              <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-700 bg-gray-50 border rounded-full px-3 py-1">
+              <div className="mt-2 inline-flex items-center gap-2 text-xs border rounded-full px-3 py-1 theme-card">
                 <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                 <span>
                   {roomDetails.location?.trim()

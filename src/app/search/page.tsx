@@ -5,7 +5,7 @@ import SchoolIcon from "@mui/icons-material/School";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SingleBedIcon from "@mui/icons-material/SingleBed";
 import MapIcon from "@mui/icons-material/Map";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../firebase/Config";
 import React from "react";
@@ -31,10 +31,10 @@ const universities = [
 ];
 
 const funishedStatus = [
-    { label: "Furnished", value: "Furnished" },
-    { label: "Unfurnished", value: "Unfurnished" },
-    { label: "Semi-Furnished", value: "Semi-Furnished" },
-  ];
+  { label: "Furnished", value: "furnished" },
+  { label: "Unfurnished", value: "unfurnished" },
+  { label: "Semi-Furnished", value: "semiFurnished" },
+];
 
 const washroomTypes = [
     {label:"Attached", value:"Attached"},
@@ -45,10 +45,16 @@ const washroomTypes = [
 const SearchPage = () => {
   const params = useSearchParams();
   const [rooms, setRooms] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(24);
   const [loading, setLoading] = useState(true); // Loading state
   const [background, setBackground] = useState(false); // Background state
   const [sortByModal, setSortByModal] = useState(false);
-  const [sortBy, setSortBy] = useState("newest");
+  const sortParam = (params.get("sort") || "none").toString();
+  const [sortBy, setSortBy] = useState(
+    sortParam === "lowToHigh" || sortParam === "highToLow" || sortParam === "newest" || sortParam === "none"
+      ? sortParam
+      : "none"
+  );
 
   //universities
   const [universityModal, setUniversityModal] = useState(false);
@@ -63,16 +69,27 @@ const SearchPage = () => {
   };
 
   //bedType
-    const [bedTypeModal, setBedTypeModal] = useState(false);
-    const [bedType, setBedType] = useState(params.get("bedType") ||"all");
-    const [furnishedStatus, setFurnishedStatus] = useState(params.get("furnishedStatus")||"all");
-    const [washroomStatus, setWashroomStatus] = useState(params.get("washroomType")||"all");
+  const [bedTypeModal, setBedTypeModal] = useState(false);
+  const [bedType, setBedType] = useState(params.get("bedType") ||"all");
+  const [furnishedStatus, setFurnishedStatus] = useState((params.get("furnishedStatus")||"all").toString());
+  const [washroomStatus, setWashroomStatus] = useState(params.get("washroomType")||"all");
   const [bedTypeOther, setBedTypeOther] = useState("");
   const [washroomOther, setWashroomOther] = useState("");
 
   //location
   const [locationModal, setLocationModal] = useState(false);
-  const [location, setLocation] = useState( params.get("search")||"");
+  const viewParam = params.get("view");
+  const [location, setLocation] = useState(viewParam === "all" ? "" : params.get("search") || "");
+
+  // Reset pagination when filters change
+  const filtersKeyRef = useRef("");
+  useEffect(() => {
+    const key = JSON.stringify({ sortBy, university, value, bedType, furnishedStatus, washroomStatus, location });
+    if (filtersKeyRef.current !== key) {
+      filtersKeyRef.current = key;
+      setVisibleCount(24);
+    }
+  }, [sortBy, university, value, bedType, furnishedStatus, washroomStatus, location]);
 
   const closeAllFilters = () => {
     setSortByModal(false);
@@ -105,50 +122,101 @@ const SearchPage = () => {
     const roomCollection = collection(db, "roomdetails");
     // Compose constraints consistently instead of resetting the query each time
     const constraints: any[] = [];
-    if (sortBy === "lowToHigh") constraints.push(orderBy("price", "asc"));
-    else if (sortBy === "highToLow") constraints.push(orderBy("price", "desc"));
-    else constraints.push(orderBy("createdAt", "desc"));
+  if (sortBy === "lowToHigh") constraints.push(orderBy("price", "asc"));
+  else if (sortBy === "highToLow") constraints.push(orderBy("price", "desc"));
+  else if (sortBy === "newest") constraints.push(orderBy("createdAt", "desc"));
 
-    if (university !== "") constraints.push(where("uni", "==", university));
+  // University: ignore when 'other' placeholder is selected with no typed value
+  if (university && university !== "other") constraints.push(where("uni", "==", university));
     if (value[0] !== 1000 || value[1] !== 1000000) {
       constraints.push(where("price", ">=", value[0]));
       constraints.push(where("price", "<=", value[1]));
     }
-    if (bedType !== "all") constraints.push(where("bedType", "==", bedType));
-    if (furnishedStatus !== "all") constraints.push(where("furnishedStatus", "==", furnishedStatus));
-    if (washroomStatus !== "all") constraints.push(where("washrooms", "==", washroomStatus));
+  if (bedType !== "all" && bedType !== "other") constraints.push(where("bedType", "==", bedType));
+  if (furnishedStatus !== "all") constraints.push(where("furnishedStatus", "==", furnishedStatus));
+  if (washroomStatus !== "all" && washroomStatus !== "other") constraints.push(where("washrooms", "==", washroomStatus));
 
     try {
       const q = query(roomCollection, ...constraints);
       const roomSnapshot = await getDocs(q);
       let roomList: any[] = roomSnapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as any) }));
-      // Optional client-side location filter
+      // Optional client-side search filter (location, uni, and name) + annotate match origin
       if (location && location.trim()) {
-        const loc = location.trim().toLowerCase();
-        roomList = roomList.filter((room: any) => String(room.location || "").toLowerCase().includes(loc));
+        const q = location.trim().toLowerCase();
+        roomList = roomList
+          .filter((room: any) => {
+            const loc = String(room.location || "").toLowerCase();
+            const uni = String(room.uni || "").toLowerCase();
+            const name = String(room.name || "").toLowerCase();
+            return loc.includes(q) || uni.includes(q) || name.includes(q);
+          })
+          .map((room: any) => {
+            const loc = String(room.location || "").toLowerCase();
+            const uni = String(room.uni || "").toLowerCase();
+            const name = String(room.name || "").toLowerCase();
+            const origin = loc.includes(q)
+              ? "Location"
+              : uni.includes(q)
+              ? "University"
+              : name.includes(q)
+              ? "Property"
+              : undefined;
+            return { ...room, origin };
+          });
       }
       // If nothing returned (e.g., index missing or field inconsistencies), do a broad fallback fetch
       if (!roomList.length) {
         const broadSnap = await getDocs(roomCollection);
         let broadList: any[] = broadSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
         // Apply client-side filters as fallback
-        if (university) broadList = broadList.filter((r) => r.uni === university);
+        if (university && university !== 'other') {
+          const u = String(university).toLowerCase();
+          broadList = broadList.filter((r) => String(r.uni || '').toLowerCase() === u);
+        }
         const [minP, maxP] = value;
         broadList = broadList.filter((r) => {
           const p = Number(r.price);
           return isFinite(p) ? p >= minP && p <= maxP : true;
         });
-        if (bedType !== "all") broadList = broadList.filter((r) => r.bedType === bedType);
-        if (furnishedStatus !== "all") broadList = broadList.filter((r) => r.furnishedStatus === furnishedStatus);
-        if (washroomStatus !== "all") broadList = broadList.filter((r) => r.washrooms === washroomStatus);
+        if (bedType !== "all" && bedType !== 'other') {
+          const bt = String(bedType).toLowerCase();
+          broadList = broadList.filter((r) => String(r.bedType || '').toLowerCase() === bt);
+        }
+        if (furnishedStatus !== "all") {
+          const fs = String(furnishedStatus).toLowerCase();
+          broadList = broadList.filter((r) => String(r.furnishedStatus || '').toLowerCase() === fs);
+        }
+        if (washroomStatus !== "all" && washroomStatus !== 'other') {
+          const ws = String(washroomStatus).toLowerCase();
+          broadList = broadList.filter((r) => String(r.washrooms || '').toLowerCase() === ws);
+        }
         if (location && location.trim()) {
-          const loc2 = location.trim().toLowerCase();
-          broadList = broadList.filter((r) => String(r.location || "").toLowerCase().includes(loc2));
+          const q2 = location.trim().toLowerCase();
+          broadList = broadList
+            .filter((r) => {
+              const loc = String(r.location || "").toLowerCase();
+              const uni = String(r.uni || "").toLowerCase();
+              const name = String(r.name || "").toLowerCase();
+              return loc.includes(q2) || uni.includes(q2) || name.includes(q2);
+            })
+            .map((r) => {
+              const loc = String(r.location || "").toLowerCase();
+              const uni = String(r.uni || "").toLowerCase();
+              const name = String(r.name || "").toLowerCase();
+              const origin = loc.includes(q2)
+                ? "Location"
+                : uni.includes(q2)
+                ? "University"
+                : name.includes(q2)
+                ? "Property"
+                : undefined;
+              return { ...r, origin };
+            });
         }
         // Sort client-side
-        if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
-        else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
-        else broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+  if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
+  else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
+  else if (sortBy === "newest") broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
         setRooms(broadList);
         return;
       }
@@ -157,22 +225,53 @@ const SearchPage = () => {
       // On any error (e.g., missing index), fallback to broad client-side filtering
       const broadSnap = await getDocs(roomCollection);
       let broadList: any[] = broadSnap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
-      if (university) broadList = broadList.filter((r) => r.uni === university);
+      if (university && university !== 'other') {
+        const u = String(university).toLowerCase();
+        broadList = broadList.filter((r) => String(r.uni || '').toLowerCase() === u);
+      }
       const [minP, maxP] = value;
       broadList = broadList.filter((r) => {
         const p = Number(r.price);
         return isFinite(p) ? p >= minP && p <= maxP : true;
       });
-      if (bedType !== "all") broadList = broadList.filter((r) => r.bedType === bedType);
-      if (furnishedStatus !== "all") broadList = broadList.filter((r) => r.furnishedStatus === furnishedStatus);
-      if (washroomStatus !== "all") broadList = broadList.filter((r) => r.washrooms === washroomStatus);
-      if (location && location.trim()) {
-        const loc = location.trim().toLowerCase();
-        broadList = broadList.filter((r) => String(r.location || "").toLowerCase().includes(loc));
+      if (bedType !== "all" && bedType !== 'other') {
+        const bt = String(bedType).toLowerCase();
+        broadList = broadList.filter((r) => String(r.bedType || '').toLowerCase() === bt);
       }
-      if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
-      else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
-      else broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      if (furnishedStatus !== "all") {
+        const fs = String(furnishedStatus).toLowerCase();
+        broadList = broadList.filter((r) => String(r.furnishedStatus || '').toLowerCase() === fs);
+      }
+      if (washroomStatus !== "all" && washroomStatus !== 'other') {
+        const ws = String(washroomStatus).toLowerCase();
+        broadList = broadList.filter((r) => String(r.washrooms || '').toLowerCase() === ws);
+      }
+      if (location && location.trim()) {
+        const q = location.trim().toLowerCase();
+        broadList = broadList
+          .filter((r) => {
+            const loc = String(r.location || "").toLowerCase();
+            const uni = String(r.uni || "").toLowerCase();
+            const name = String(r.name || "").toLowerCase();
+            return loc.includes(q) || uni.includes(q) || name.includes(q);
+          })
+          .map((r) => {
+            const loc = String(r.location || "").toLowerCase();
+            const uni = String(r.uni || "").toLowerCase();
+            const name = String(r.name || "").toLowerCase();
+            const origin = loc.includes(q)
+              ? "Location"
+              : uni.includes(q)
+              ? "University"
+              : name.includes(q)
+              ? "Property"
+              : undefined;
+            return { ...r, origin };
+          });
+      }
+  if (sortBy === "lowToHigh") broadList.sort((a, b) => Number(a.price) - Number(b.price));
+  else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
+  else if (sortBy === "newest") broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
       setRooms(broadList);
     }
   };
@@ -185,7 +284,7 @@ const SearchPage = () => {
     fetchRooms();
   }, [sortBy, university, value, value[0], value[1], bedType, furnishedStatus, washroomStatus, location]);
   return (
-    <div>
+  <div className="theme-surface min-h-screen">
       {background && (
         <div
           style={{
@@ -205,12 +304,12 @@ const SearchPage = () => {
       )}
       <Header />
       <div
-        className="pt-16 sticky top-0 bg-white z-10 w-full"
+        className="pt-16 sticky top-0 z-10 w-full theme-surface"
         style={{
           boxShadow: "0px 0px 5px 0px lightgrey",
         }}
       >
-        <div className="flex flex-row gap-2 py-2 w-256 mx-auto items-center">
+  <div className="flex flex-row gap-2 py-2 w-256 mx-auto items-center">
           <div className="relative">
             <p
               className="p-2 px-3 rounded-2xl text-sm flex flex-row items-center gap-1 cursor-pointer "
@@ -230,7 +329,7 @@ const SearchPage = () => {
             </p>
             {sortByModal && (
               <div
-                className="bg-white p-3 absolute rounded-md m-1 w-40 h-58 z-50"
+                className="p-3 absolute rounded-md m-1 w-40 h-58 z-50 border theme-card"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -238,6 +337,21 @@ const SearchPage = () => {
               >
                 <h1 className="text-base font-medium mb-3">Sort by</h1>
                 <form>
+                  <input
+                    type="radio"
+                    id="none"
+                    name="sort"
+                    value="none"
+                    className="mr-2"
+                    onChange={(e) => {
+                      setSortBy(e.target.value);
+                    }}
+                    checked={sortBy === "none"}
+                  />
+                  <label className="text-sm" htmlFor="none">
+                    Default
+                  </label>
+                  <br />
                   <input
                     type="radio"
                     id="lowToHigh"
@@ -306,7 +420,7 @@ const SearchPage = () => {
             </p>
             {universityModal && (
               <div
-                className="bg-white p-3 absolute rounded-md m-1 w-110 h-58 z-50"
+                className="p-3 absolute rounded-md m-1 w-110 h-58 z-50 border theme-card"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -335,7 +449,7 @@ const SearchPage = () => {
                     </div>
                   ))}
                 </form>
-                {university === 'other' && (
+    {university === 'other' && (
                   <div className="mt-2">
                     <p className="text-xs mb-1">Specify other university</p>
                     <input
@@ -344,8 +458,9 @@ const SearchPage = () => {
                       placeholder="Enter university name"
                       value={universityOther}
                       onChange={(e: any) => {
-                        setUniversityOther(e.target.value);
-                        setUniversity(e.target.value);
+      const val = e.target.value;
+      setUniversityOther(val);
+      setUniversity(val || 'other');
                       }}
                     />
                   </div>
@@ -372,7 +487,7 @@ const SearchPage = () => {
             </p>
             {budgetModal && (
               <div
-                className="bg-white p-3 absolute rounded-md m-1 w-110 z-50"
+                className="p-3 absolute rounded-md m-1 w-110 z-50 border theme-card"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -478,7 +593,7 @@ const SearchPage = () => {
           {
             bedTypeModal && (
               <div
-                className="bg-white p-3 absolute rounded-md m-1 w-64 z-50"
+                className="p-3 absolute rounded-md m-1 w-64 z-50 border theme-card"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -577,7 +692,7 @@ const SearchPage = () => {
                         Other
                     </label>
                 </form>
-                {bedType === 'other' && (
+    {bedType === 'other' && (
                   <div className="mb-3">
                     <p className="text-xs mb-1">Specify other room type</p>
                     <input
@@ -586,8 +701,9 @@ const SearchPage = () => {
                       placeholder="Enter room type"
                       value={bedTypeOther}
                       onChange={(e: any) => {
-                        setBedTypeOther(e.target.value);
-                        setBedType(e.target.value || 'other');
+      const val = e.target.value;
+      setBedTypeOther(val);
+      setBedType(val || 'other');
                       }}
                     />
                   </div>
@@ -719,7 +835,7 @@ const SearchPage = () => {
                     </label>
                     <br />
                 </form>
-                  {washroomStatus === 'other' && (
+      {washroomStatus === 'other' && (
                     <div className="mb-1">
                       <p className="text-xs mb-1">Specify other washroom type</p>
                       <input
@@ -728,8 +844,9 @@ const SearchPage = () => {
                         placeholder="Enter washroom type"
                         value={washroomOther}
                         onChange={(e: any) => {
-                          setWashroomOther(e.target.value);
-                          setWashroomStatus(e.target.value || 'other');
+        const val = e.target.value;
+        setWashroomOther(val);
+        setWashroomStatus(val || 'other');
                         }}
                       />
                     </div>
@@ -758,7 +875,7 @@ const SearchPage = () => {
             {
             locationModal && (
               <div
-                className="bg-white p-3 absolute rounded-md m-1 w-70 z-50"
+                className="p-3 absolute rounded-md m-1 w-70 z-50 border theme-card"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -773,7 +890,7 @@ const SearchPage = () => {
           }
           </div>
           <p className="text-sm flex flex-row items-center text-gray-600 cursor-pointer" onClick={()=>{
-            setSortBy("newest");
+            setSortBy("none");
             setUniversity("");
             setUniversityOther("");
             setValue([1000, 1000000]);
@@ -784,16 +901,40 @@ const SearchPage = () => {
             setWashroomOther("");
             setLocation("");
           }}><DeleteSweepIcon fontSize="small"/>Clear all</p>
+          {viewParam === 'all' && !(location && location.trim()) && (
+            <span className="ml-auto inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 border">
+              All listings
+            </span>
+          )}
         </div>
       </div>
       <div className="w-256 mx-auto">
   {rooms.length ? (
           <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
-            {rooms.map((room) => (
-              <RoomCardNew room={room} key={room.id} />
-            ))}
+            {rooms.slice(0, visibleCount).map((room) => {
+              const badgeClass =
+                room.origin === "Location"
+                  ? "bg-green-600"
+                  : room.origin === "University"
+                  ? "bg-blue-600"
+                  : room.origin === "Property"
+                  ? "bg-purple-600"
+                  : "bg-gray-900";
+              return (
+                <div key={room.id} className="relative">
+                  <RoomCardNew room={room} />
+                  {room.origin && (
+                    <span
+                      className={`absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full text-white ${badgeClass}`}
+                    >
+                      {room.origin}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        ) : (
+          ) : (
           <div className="w-full flex flex-col items-center justify-center py-16 text-center">
             <p className="text-gray-600 mb-3">No accommodations found for the selected filters.</p>
             <button
@@ -801,13 +942,13 @@ const SearchPage = () => {
               onClick={() => {
                 setSortBy("newest");
                 setUniversity("");
-    setUniversityOther("");
+                setUniversityOther("");
                 setValue([1000, 1000000]);
                 setBedType("all");
-    setBedTypeOther("");
+                setBedTypeOther("");
                 setFurnishedStatus("all");
                 setWashroomStatus("all");
-    setWashroomOther("");
+                setWashroomOther("");
                 setLocation("");
               }}
             >
@@ -815,6 +956,16 @@ const SearchPage = () => {
             </button>
           </div>
         )}
+  {rooms.length > visibleCount && (
+          <div className="flex justify-center my-6">
+            <button
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
+              onClick={() => setVisibleCount((v) => v + 24)}
+            >
+              Load more
+            </button>
+          </div>
+  )}
       </div>
   {/* Footer is included globally via RootLayout */}
     </div>

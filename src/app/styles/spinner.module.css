@@ -1,7 +1,43 @@
-.spinner {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh; /* Full height of the viewport */
-    width: 100vw; /* Full width of the viewport */
+/* Full-screen branded loading overlay */
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in oklab, var(--bg, #ffffff) 70%, #000 30%);
+    display: grid;
+    place-items: center;
+    z-index: 10050;
+}
+
+.spinnerBox {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 6px solid transparent;
+    border-top-color: #0ea5e9; /* sky-500 */
+    border-right-color: #0ea5e9;
+    animation: spin 1s linear infinite;
+    filter: drop-shadow(0 2px 6px rgba(14,165,233,0.5));
+}
+
+.logoWrap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+}
+
+.logo {
+    width: 58px;
+    height: 58px;
+    object-fit: contain;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }

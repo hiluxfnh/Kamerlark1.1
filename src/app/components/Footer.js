@@ -11,12 +11,22 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-gray-300 text-sm">
+    <footer
+      className="bg-black text-gray-300 text-sm"
+      aria-labelledby="footer-heading"
+    >
+      <h2 id="footer-heading" className="sr-only">
+        Footer
+      </h2>
       <div className="w-256 max-w-[90vw] mx-auto px-4 py-8 md:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-3">
+            <Link
+              href="/"
+              className="flex items-center gap-3 mb-3"
+              aria-label="Go to home"
+            >
               <Image
                 src={kl}
                 alt="KamerLark"
@@ -24,27 +34,48 @@ const Footer = () => {
                 height={36}
                 className="rounded"
               />
-              <span className="text-xl font-semibold text-white">
+              <span
+                id="footer-brand"
+                className="text-xl font-semibold text-white"
+              >
                 KAMERLARK
               </span>
-            </div>
-            <p className="text-gray-400 leading-relaxed">
+            </Link>
+            <p className="text-gray-400">
               Your trusted accommodation platform for students and young
               professionals.
             </p>
             <div className="mt-4 space-y-2 text-gray-300">
               <div className="flex items-center gap-2">
-                <EmailIcon fontSize="small" /> info@kamerlark.com
+                <EmailIcon fontSize="small" />
+                <a
+                  href="mailto:info.kamerlark@gmail.com"
+                  className="hover:text-white transition-colors"
+                >
+                  info.kamerlark@gmail.com
+                </a>
               </div>
               <div className="flex items-center gap-2">
-                <LocalPhoneIcon fontSize="small" /> +123 456 7890
+                <LocalPhoneIcon fontSize="small" />
+                <a
+                  href="https://wa.me/919108553983"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  +919108553983
+                </a>
               </div>
             </div>
           </div>
 
           {/* Company */}
-          <div>
-            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+          <nav aria-labelledby="footer-company">
+            <h4
+              id="footer-company"
+              className="text-white text-xs font-semibold uppercase tracking-wider mb-3"
+            >
               Company
             </h4>
             <ul className="space-y-2">
@@ -81,11 +112,14 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Explore */}
-          <div>
-            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+          <nav aria-labelledby="footer-explore">
+            <h4
+              id="footer-explore"
+              className="text-white text-xs font-semibold uppercase tracking-wider mb-3"
+            >
               Explore
             </h4>
             <ul className="space-y-2">
@@ -122,11 +156,14 @@ const Footer = () => {
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           {/* Social */}
-          <div>
-            <h4 className="text-white text-xs font-semibold uppercase tracking-wider mb-3">
+          <div aria-labelledby="footer-social">
+            <h4
+              id="footer-social"
+              className="text-white text-xs font-semibold uppercase tracking-wider mb-3"
+            >
               Follow Us
             </h4>
             <div className="flex items-center gap-3">
@@ -160,7 +197,19 @@ const Footer = () => {
           <p>
             &copy; {new Date().getFullYear()} KamerLark. All rights reserved.
           </p>
-          <p>Built for comfortable living and smarter renting.</p>
+          <div className="flex items-center gap-3">
+            <p>Built for comfortable living and smarter renting.</p>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="text-white/80 hover:text-white"
+            >
+              Back to top
+            </a>
+          </div>
         </div>
       </div>
     </footer>

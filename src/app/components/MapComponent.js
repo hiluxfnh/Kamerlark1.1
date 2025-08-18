@@ -41,7 +41,7 @@ const MapComponent = ({
     lng: longitude || 151.2093,
   });
   const mapContainerStyle = useMemo(
-    () => ({ height: "300px", width: "100%" }),
+    () => ({ height: "300px", width: "100%", position: "relative", zIndex: 1 }),
     []
   );
   const center = markerPosition;
@@ -148,7 +148,14 @@ const MapComponent = ({
   }
 
   return (
-    <div style={{ width: "100%", height: "300px" }}>
+    <div
+      style={{
+        width: "100%",
+        height: "300px",
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
       <LeafletMap
         center={[center.lat, center.lng]}
         zoom={13}

@@ -442,6 +442,24 @@ const RoomDetails = ({ room }) => {
       URL.revokeObjectURL(url);
     } catch {}
   };
+  // Derived display values for contract signature (owner-only)
+  const ownerFullName =
+    `${(room?.ownerFirstName || "").trim()} ${(
+      room?.ownerLastName || ""
+    ).trim()}`.trim() ||
+    (ownerDetails?.userName || "").trim() ||
+    "Owner";
+  // Use the uploaded date (createdAt) as requested
+  const uploadedDate = (() => {
+    const ts = room?.createdAt; // prefer createdAt only (upload time)
+    if (!ts) return null;
+    const d = ts?.toDate ? ts.toDate() : ts;
+    try {
+      return dayjs(d).format("DD MMM YYYY");
+    } catch {
+      return null;
+    }
+  })();
   return (
     <>
       <div className="w-256 mx-auto pt-16">
@@ -659,7 +677,7 @@ const RoomDetails = ({ room }) => {
           </div>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-md border theme-card">
           <div className="p-3 border-b text-sm">
             <div
               className="flex flex-row justify-between items-center cursor-pointer"
@@ -792,7 +810,7 @@ const RoomDetails = ({ room }) => {
           </div>
         </div>
 
-        <div className="p-4 py-6 rounded-md border my-3">
+        <div className="p-4 py-6 rounded-md border my-3 theme-card">
           <h2 className="text-base font-medium my-3">Location</h2>
           <div className="w-full">
             <MapComponent
@@ -807,7 +825,7 @@ const RoomDetails = ({ room }) => {
           </div>
         </div>
 
-        <div className="p-4 py-6 rounded-md border my-3">
+        <div className="p-4 py-6 rounded-md border my-3 theme-card">
           <h2 className="text-base font-medium my-3">
             Reviews ({reviews.length})
           </h2>
@@ -1305,8 +1323,61 @@ const RoomDetails = ({ room }) => {
         onClose={() => setIsContractTermsOpen(false)}
         title="View Contract Terms"
       >
-        <p>Here are the contract terms:</p>
-        <p>[Insert detailed contract terms here...]</p>
+        <div className="space-y-5">
+          <div className="border rounded-lg p-4 theme-card">
+            <h3 className="text-lg font-semibold">Leasing Contract Terms</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              for {room?.name} • {room?.location}
+            </p>
+            <div className="mt-3 text-sm leading-6 whitespace-pre-wrap">
+              {room?.leaseTerms && room.leaseTerms.trim().length > 0 ? (
+                room.leaseTerms
+              ) : (
+                <span className="text-gray-500">
+                  No lease terms provided by the owner.
+                </span>
+              )}
+            </div>
+            {Array.isArray(room?.rules) && room.rules.length > 0 ? (
+              <div className="mt-4">
+                <h4 className="text-base font-medium">House Rules</h4>
+                <ul className="list-disc pl-5 mt-2 text-sm space-y-1">
+                  {room.rules.map((r, i) => (
+                    <li key={i}>{r}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+
+          {/* Signature Section */}
+          <div className="border rounded-lg p-4 theme-card">
+            <h4 className="text-base font-semibold mb-3">Signature</h4>
+            <div className="space-y-3">
+              <div className="relative h-16 border-b">
+                <span
+                  className="absolute bottom-2 left-2 text-3xl text-blue-700 select-none"
+                  style={{
+                    fontFamily:
+                      'Segoe Script, "Lucida Handwriting", "Brush Script MT", Pacifico, "Dancing Script", cursive',
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {ownerFullName}
+                </span>
+              </div>
+              <div>
+                <p className="text-sm font-medium">Owner</p>
+                {room?.ownerEmail ? (
+                  <p className="text-xs text-gray-500">{room.ownerEmail}</p>
+                ) : null}
+                <p className="text-xs text-gray-500 mt-1">
+                  Date: {uploadedDate || "—"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </CustomModal>
     </>
   );

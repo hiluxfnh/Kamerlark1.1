@@ -1,3 +1,356 @@
+"use client";
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import Header from "../components/Header";
+import EmailIcon from "@mui/icons-material/Email";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import LockIcon from "@mui/icons-material/Lock";
+import GppGoodIcon from "@mui/icons-material/GppGood";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../firebase/Config";
+import { useAuthState } from "react-firebase-hooks/auth";
+
+const SUPPORT_EMAIL = "info.kamerlark@gmail.com";
+const WHATSAPP_E164 = "+919108553983"; // international format without spaces
+
+export default function HelpPage() {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(null);
+  const [user] = useAuthState(auth);
+  const [subj, setSubj] = useState("");
+  const [desc, setDesc] = useState("");
+  const [pref, setPref] = useState("email");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const faqs = useMemo(() => FAQ_ITEMS, []);
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return faqs;
+    return faqs.filter(
+      (f) =>
+        f.question.toLowerCase().includes(q) ||
+        (typeof f.answer === "string"
+          ? f.answer.toLowerCase().includes(q)
+          : false)
+    );
+  }, [faqs, query]);
+
+  // mailto and WhatsApp links are constructed directly in JSX below
+
+  const submitTicket = async (e) => {
+    e?.preventDefault?.();
+    setErr("");
+    setSent(false);
+    if (!subj.trim() || !desc.trim()) {
+      setErr("Please provide a subject and description.");
+      return;
+    }
+    try {
+      setSending(true);
+      await addDoc(collection(db, "supportTickets"), {
+        createdAt: serverTimestamp(),
+        userId: user?.uid || null,
+        userEmail: user?.email || null,
+        preferredContact: pref,
+        subject: subj.trim(),
+        description: desc.trim(),
+        status: "open",
+        page: typeof window !== "undefined" ? window.location.href : "/help",
+      });
+      setSent(true);
+      setSubj("");
+      setDesc("");
+    } catch (e) {
+      setErr(e?.message || "Failed to submit. Try again.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <>
+      <Header />
+      <main className="w-full max-w-5xl mx-auto px-4 md:px-6 py-10 md:py-14 theme-surface">
+        <section className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold">Help Center</h1>
+          <p className="text-sm text-gray-600 mt-2">
+            Quick answers, how-tos, and ways to reach us.
+          </p>
+          <div className="mt-4 flex gap-2">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search FAQs (e.g., bookings, payments, profile)"
+              className="w-full rounded-md border px-3 py-2 text-sm theme-card"
+            />
+          </div>
+        </section>
+
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          <div className="rounded-md border p-4 theme-card">
+            <div className="flex items-center gap-2 font-semibold text-sm">
+              <EmailIcon fontSize="small" /> Email us
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              We reply within 1 business day.
+            </p>
+            <div className="inline-flex items-center gap-2 mt-3">
+              <span className="text-sm font-mono">{SUPPORT_EMAIL}</span>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(SUPPORT_EMAIL);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 1500);
+                  } catch {}
+                }}
+                className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
+                aria-live="polite"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+          <div className="rounded-md border p-4 theme-card">
+            <div className="flex items-center gap-2 font-semibold text-sm">
+              <WhatsAppIcon fontSize="small" /> WhatsApp
+            </div>
+            <p className="text-sm text-gray-600 mt-2">Chat with support.</p>
+            <a
+              href={`https://wa.me/${WHATSAPP_E164.replace("+", "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
+            >
+              {WHATSAPP_E164}
+            </a>
+          </div>
+          <div className="rounded-md border p-4 theme-card">
+            <div className="flex items-center gap-2 font-semibold text-sm">
+              <GppGoodIcon fontSize="small" /> Safety & Policies
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              Learn how we keep the community safe.
+            </p>
+            <div className="mt-3 flex gap-2 text-sm flex-wrap">
+              <Link href="/privacy" className="underline hover:opacity-80">
+                Privacy Policy
+              </Link>
+              <span className="text-gray-400">•</span>
+              <Link href="/terms" className="underline hover:opacity-80">
+                Terms of Service
+              </Link>
+              <span className="text-gray-400">•</span>
+              <a
+                href="#safety"
+                className="underline hover:opacity-80"
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById("safety");
+                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                Safety tips
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
+            <HelpOutlineIcon fontSize="small" /> Frequently Asked Questions
+          </h2>
+          <div className="rounded-md border theme-card">
+            {filtered.length === 0 ? (
+              <p className="p-4 text-sm text-gray-600">No matches.</p>
+            ) : (
+              filtered.map((item, idx) => (
+                <div key={idx} className="border-b last:border-b-0">
+                  <button
+                    className="w-full text-left px-4 py-3 flex items-center justify-between"
+                    onClick={() => setOpen(open === idx ? null : idx)}
+                    aria-expanded={open === idx}
+                  >
+                    <span className="font-medium text-sm">{item.question}</span>
+                    <span aria-hidden className="ml-3 text-gray-500">
+                      {open === idx ? "−" : "+"}
+                    </span>
+                  </button>
+                  {open === idx ? (
+                    <div className="px-4 pb-4 text-sm text-gray-700 whitespace-pre-wrap">
+                      {item.answer}
+                    </div>
+                  ) : null}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <section id="safety" className="mb-10">
+          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
+            <LockIcon fontSize="small" /> Safety tips
+          </h2>
+          <ul className="rounded-md border theme-card list-disc pl-6 py-4 text-sm space-y-2">
+            <li>Communicate and pay only on KamerLark channels.</li>
+            <li>Never share passwords or one-time codes.</li>
+            <li>Verify property details and owner identity before payments.</li>
+            <li>Report suspicious behavior using the form below.</li>
+          </ul>
+        </section>
+
+        <section className="mb-6">
+          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
+            <ReportProblemIcon fontSize="small" /> Report an issue
+          </h2>
+          <div className="rounded-md border theme-card p-4">
+            <p className="text-sm text-gray-700">
+              Send us details and we’ll investigate.
+            </p>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <form onSubmit={submitTicket} className="space-y-3">
+                {err ? <p className="text-xs text-red-600">{err}</p> : null}
+                {sent ? (
+                  <p className="text-xs text-green-700">
+                    Ticket submitted. We'll reply by{" "}
+                    {pref === "email" ? "email" : "WhatsApp"}.
+                  </p>
+                ) : null}
+                <label className="block text-sm">
+                  Subject
+                  <input
+                    type="text"
+                    value={subj}
+                    onChange={(e) => setSubj(e.target.value)}
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                    placeholder="Short summary"
+                  />
+                </label>
+                <label className="block text-sm">
+                  Description
+                  <textarea
+                    value={desc}
+                    onChange={(e) => setDesc(e.target.value)}
+                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
+                    rows={5}
+                    placeholder="What happened, steps to reproduce, expected vs actual"
+                  />
+                </label>
+                <div className="flex items-center gap-4 text-sm">
+                  <label className="inline-flex items-center gap-1">
+                    <input
+                      type="radio"
+                      name="pref"
+                      value="email"
+                      checked={pref === "email"}
+                      onChange={() => setPref("email")}
+                    />
+                    Email
+                  </label>
+                  <label className="inline-flex items-center gap-1">
+                    <input
+                      type="radio"
+                      name="pref"
+                      value="whatsapp"
+                      checked={pref === "whatsapp"}
+                      onChange={() => setPref("whatsapp")}
+                    />
+                    WhatsApp
+                  </label>
+                </div>
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+                >
+                  {sending ? "Submitting..." : "Submit ticket"}
+                </button>
+              </form>
+
+              <div className="space-y-2">
+                <p className="text-sm text-gray-700">Or contact us directly:</p>
+                <div className="flex flex-wrap gap-2">
+                  <a
+                    className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                      SUPPORT_EMAIL
+                    )}&su=${encodeURIComponent(
+                      "Issue Report - KamerLark"
+                    )}&body=${encodeURIComponent(
+                      `Describe the issue here (steps, expected vs actual):\n\n- Page or feature:\n- Your account email (optional):\n- Screenshots/recording link (optional):\n\nThanks!`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Open Gmail compose with prefilled support email"
+                  >
+                    Open in Gmail
+                  </a>
+                  <a
+                    className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
+                    href={`https://wa.me/${WHATSAPP_E164.replace(
+                      "+",
+                      ""
+                    )}?text=${encodeURIComponent(
+                      "Hi KamerLark Support, I want to report an issue:"
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Message on WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
+  );
+}
+
+const FAQ_ITEMS = [
+  {
+    question: "How do I book a room?",
+    answer:
+      "Go to Search, open a listing, then use Book Now or Book Appointment. You’ll also open a chat with the owner.",
+  },
+  {
+    question: "How do appointments work?",
+    answer:
+      "Pick a date/time and appointment type (in-person or virtual). We send you calendar links and notify the owner.",
+  },
+  {
+    question: "What is your cancellation policy?",
+    answer:
+      "Most bookings can be canceled up to 24 hours before move‑in. Some listings may have custom terms in Lease Terms.",
+  },
+  {
+    question: "Payments and security",
+    answer:
+      "Only pay through official channels. Avoid sharing sensitive info. Contact support if something looks off.",
+  },
+  {
+    question: "How do I contact support?",
+    answer: `Email: ${SUPPORT_EMAIL}  |  WhatsApp: ${WHATSAPP_E164}`,
+  },
+  {
+    question: "Can I edit my profile details?",
+    answer:
+      "Yes. Go to Profile to update name, contact, and preferences. Email changes may require re-authentication.",
+  },
+  {
+    question: "Where are Terms and Privacy?",
+    answer: "See links at the top of this page or the site footer.",
+  },
+];
+
 // 'use client';
 // import { useState, useEffect } from "react";
 // import Link from "next/link";
@@ -30,7 +383,7 @@
 //     <Header />
 
 //     <main className="w-full max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-20">
-      
+
 //       <div className="space-y-8">
 //         <div className="space-y-4">
 //           <p className="text-gray-500 dark:text-gray-400 max-w-[700px]">

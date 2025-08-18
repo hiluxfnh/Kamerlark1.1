@@ -348,7 +348,7 @@ const AddListing = () => {
   return (
     <>
       <Header />
-      <div className="w-screen bg-white pt-16">
+      <div className="w-screen theme-surface min-h-screen pt-16">
         <div className="w-256 mx-auto pt-10 mb-5">
           <h1 className="text-2xl font-medium text-left mb-2">Add Listing</h1>
           <div
@@ -393,7 +393,7 @@ const AddListing = () => {
                 }}
               />
               {roomDetails.latitude && roomDetails.longitude ? (
-                <div className="mt-2 inline-flex items-center gap-2 text-xs text-gray-700 bg-gray-50 border rounded-full px-3 py-1">
+                <div className="mt-2 inline-flex items-center gap-2 text-xs border rounded-full px-3 py-1 theme-card">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                   <span>
                     {roomDetails.location?.trim()
@@ -615,7 +615,7 @@ const AddListing = () => {
                   {roomDetails.utilitiesIncluded.map((u, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
                     >
                       {u}
                       <button
@@ -678,7 +678,7 @@ const AddListing = () => {
                   {roomDetails.amenities.map((a, idx) => (
                     <span
                       key={idx}
-                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
                     >
                       {a}
                       <button
@@ -771,7 +771,7 @@ const AddListing = () => {
                   {roomDetails.rules.map((r, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
                     >
                       {r}
                       <button
@@ -829,7 +829,7 @@ const AddListing = () => {
                   {roomDetails.safetyFeatures.map((feature, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
                     >
                       {feature}
                       <button
@@ -891,7 +891,7 @@ const AddListing = () => {
                   {roomDetails.accessibilityFeatures.map((feature, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-2 bg-gray-100 border rounded-full px-3 py-1 text-sm"
+                      className="inline-flex items-center gap-2 border rounded-full px-3 py-1 text-sm theme-card"
                     >
                       {feature}
                       <button

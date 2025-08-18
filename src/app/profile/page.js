@@ -61,6 +61,13 @@ import RentedPropertiesCard from "./Components/RentedPropertiesCard";
 import CustomerBookings from "./Components/CustomerBookings";
 import Appointments from "./Components/Appointments";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  collection as fsCollection,
+  getDocs as fsGetDocs,
+  limit as fsLimit,
+  orderBy as fsOrderBy,
+  query as fsQuery,
+} from "firebase/firestore";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -102,6 +109,7 @@ export default function UserProfile() {
   const [user] = useAuthState(auth);
   const [personalInfo, setPersonalInfo] = useState(null);
   const [loading, setLoading] = useState(true); // Loading state
+  const [statsLoading, setStatsLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
   // quick stats for overview + badges
@@ -117,6 +125,7 @@ export default function UserProfile() {
     const prime = async () => {
       if (!user) {
         setLoading(false);
+        setStatsLoading(false);
         return;
       }
       try {
@@ -129,6 +138,7 @@ export default function UserProfile() {
       }
       // defer expensive stats/fetches to next tick to keep UI responsive
       setTimeout(async () => {
+        setStatsLoading(true);
         try {
           const [listingsQ, bookingsQ, adminBookingsQ, apptQ1, apptQ2] = [
             query(
@@ -179,7 +189,10 @@ export default function UserProfile() {
             });
             if (!canceled) setUnreadChats(count);
           } catch {}
-        } catch {}
+        } catch {
+        } finally {
+          if (!canceled) setStatsLoading(false);
+        }
       }, 0);
     };
     prime();
@@ -217,10 +230,10 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex flex-col h-screen">
       <Header />
       <div className="flex flex-1 pt-16">
-        <nav className="w-[250px] bg-white border-r">
+        <nav className="w-[250px] bg-white border-r theme-card">
           <ul className="flex flex-col">
             <li
               className={`p-4 cursor-pointer flex flex-row items-center ${
@@ -299,19 +312,108 @@ export default function UserProfile() {
             </li>
           </ul>
         </nav>
-        <main className="flex-1 p-6 bg-white">
+        <main className="flex-1 p-6 bg-white theme-surface">
           {tab === "overview" ? (
             <Overview
               personalInfo={personalInfo}
               stats={stats}
+              statsLoading={statsLoading}
               onGo={(t) => setTab(t)}
               router={router}
             />
           ) : (
             renderTabContent()
           )}
+          <AdminTicketsWidget />
         </main>
       </div>
+    </div>
+  );
+}
+
+function AdminTicketsWidget() {
+  const [user] = useAuthState(auth);
+  const [allowed, setAllowed] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      const uid = user?.uid;
+      if (!uid) {
+        if (active) setAllowed(false);
+        return;
+      }
+      try {
+        const token = await user.getIdTokenResult(true);
+        const isAdminClaim = !!(token?.claims || {}).admin;
+        const isAllowlist = uid === "lylD7vRHkUX55xP4ofqJA9yDqFF3";
+        if (active) setAllowed(isAdminClaim || isAllowlist);
+      } catch (e) {
+        const isAllowlist = uid === "lylD7vRHkUX55xP4ofqJA9yDqFF3";
+        if (active) setAllowed(isAllowlist);
+      }
+    };
+    run();
+    return () => {
+      active = false;
+    };
+  }, [user?.uid]);
+  useEffect(() => {
+    const load = async () => {
+      if (!allowed) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const base = fsCollection(db, "supportTickets");
+        const q = fsQuery(base, fsOrderBy("createdAt", "desc"), fsLimit(5));
+        const snap = await fsGetDocs(q);
+        const items = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) }));
+        setTickets(items);
+      } catch (e) {
+        // noop
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [allowed]);
+
+  if (!allowed) return null;
+  return (
+    <div className="mt-8 p-4 border rounded theme-card">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold">Recent Support Tickets</h3>
+        <a href="/admin/tickets" className="text-xs text-blue-600">
+          Open admin
+        </a>
+      </div>
+      {loading ? (
+        <p className="text-xs mt-2">Loading…</p>
+      ) : tickets.length === 0 ? (
+        <p className="text-xs mt-2 text-gray-600">No tickets.</p>
+      ) : (
+        <div className="mt-2 space-y-2">
+          {tickets.map((t) => (
+            <div key={t.id} className="text-xs p-2 rounded border">
+              <div className="flex items-center justify-between">
+                <p className="font-medium truncate mr-2">
+                  {t.subject || "(no subject)"}
+                </p>
+                <span className="text-[10px] text-gray-600">
+                  {t.status || "open"}
+                </span>
+              </div>
+              {t.description ? (
+                <p className="text-[12px] text-gray-700 mt-1 line-clamp-2">
+                  {t.description}
+                </p>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -847,7 +949,27 @@ function Notifications() {
     };
     load();
   }, [user?.uid]);
-  if (loading) return <Spinner />;
+  if (loading)
+    return (
+      <div>
+        <h2 className="text-xl font-bold mb-4">Notifications</h2>
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div
+              key={i}
+              className="p-4 rounded-lg border theme-card animate-pulse"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 w-full">
+                  <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                  <div className="h-3 bg-gray-100 rounded w-3/4"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Notifications</h2>
@@ -859,7 +981,7 @@ function Notifications() {
             <a
               key={n.id}
               href={n.link}
-              className="block p-4 rounded-lg border hover:bg-gray-50"
+              className="block p-4 rounded-lg border hover:bg-gray-50 theme-card"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -896,7 +1018,7 @@ function Notifications() {
   );
 }
 
-function Overview({ personalInfo, stats, onGo, router }) {
+function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
   const [user] = useAuthState(auth);
   const [nextItem, setNextItem] = useState(null);
 
@@ -1015,7 +1137,13 @@ function Overview({ personalInfo, stats, onGo, router }) {
           Edit profile
         </button>
       </div>
-      {nextItem ? (
+      {statsLoading ? (
+        <div className="p-4 rounded-lg border theme-card animate-pulse">
+          <div className="h-3 w-20 bg-gray-200 rounded mb-3"></div>
+          <div className="h-4 w-1/2 bg-gray-200 rounded mb-2"></div>
+          <div className="h-3 w-1/3 bg-gray-100 rounded"></div>
+        </div>
+      ) : nextItem ? (
         <div className="p-4 rounded-lg border bg-gray-50">
           <p className="text-xs uppercase text-gray-600">Next up</p>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -1043,9 +1171,13 @@ function Overview({ personalInfo, stats, onGo, router }) {
         </div>
       ) : null}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg border">
+        <div className="p-4 rounded-lg border theme-card">
           <p className="text-sm text-gray-600">My bookings</p>
-          <p className="text-2xl font-bold">{stats.bookings}</p>
+          {statsLoading ? (
+            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
+          ) : (
+            <p className="text-2xl font-bold">{stats.bookings}</p>
+          )}
           <button
             className="mt-2 text-sm text-blue-600"
             onClick={() => onGo("properties")}
@@ -1053,9 +1185,13 @@ function Overview({ personalInfo, stats, onGo, router }) {
             View
           </button>
         </div>
-        <div className="p-4 rounded-lg border">
+        <div className="p-4 rounded-lg border theme-card">
           <p className="text-sm text-gray-600">Customer bookings</p>
-          <p className="text-2xl font-bold">{stats.customerBookings}</p>
+          {statsLoading ? (
+            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
+          ) : (
+            <p className="text-2xl font-bold">{stats.customerBookings}</p>
+          )}
           <button
             className="mt-2 text-sm text-blue-600"
             onClick={() => onGo("properties")}
@@ -1063,9 +1199,13 @@ function Overview({ personalInfo, stats, onGo, router }) {
             Manage
           </button>
         </div>
-        <div className="p-4 rounded-lg border">
+        <div className="p-4 rounded-lg border theme-card">
           <p className="text-sm text-gray-600">My listings</p>
-          <p className="text-2xl font-bold">{stats.listings}</p>
+          {statsLoading ? (
+            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
+          ) : (
+            <p className="text-2xl font-bold">{stats.listings}</p>
+          )}
           <button
             className="mt-2 text-sm text-blue-600"
             onClick={() => onGo("properties")}
@@ -1073,9 +1213,13 @@ function Overview({ personalInfo, stats, onGo, router }) {
             Open
           </button>
         </div>
-        <div className="p-4 rounded-lg border">
+        <div className="p-4 rounded-lg border theme-card">
           <p className="text-sm text-gray-600">Appointments</p>
-          <p className="text-2xl font-bold">{stats.appointments}</p>
+          {statsLoading ? (
+            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
+          ) : (
+            <p className="text-2xl font-bold">{stats.appointments}</p>
+          )}
           <button
             className="mt-2 text-sm text-blue-600"
             onClick={() => onGo("calendar")}

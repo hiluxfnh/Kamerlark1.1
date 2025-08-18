@@ -3,11 +3,11 @@ import PersonIcon from "@mui/icons-material/Person";
 import HotelIcon from "@mui/icons-material/Hotel";
 import HouseIcon from "@mui/icons-material/House";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import { Button } from "@mui/material";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 const RoomCardNew = (props) => {
-  const navigation = useRouter();
+  const router = useRouter();
   const imgSrc =
     props?.room?.images && props.room.images.length > 0
       ? props.room.images[0]
@@ -21,9 +21,18 @@ const RoomCardNew = (props) => {
   const name = props?.room?.name || "Room";
   const price = props?.room?.price || 0;
   const currency = props?.room?.currency || "XAF";
+  // Prefetch the room route when this card mounts for snappy navigation
+  useEffect(() => {
+    const id = props?.room?.id;
+    if (id) {
+      try {
+        router.prefetch?.(`/room/${id}`);
+      } catch {}
+    }
+  }, [props?.room?.id, router]);
   return (
     <div
-      className="w-64 rounded-xl p-4 gap-4 relative"
+      className="w-64 rounded-xl p-4 gap-4 relative border theme-card"
       style={{
         boxShadow: "0 0 10px 0 lightgrey",
         height: "350px",
@@ -89,19 +98,14 @@ const RoomCardNew = (props) => {
           <p className="font-bold">
             {price} <span className="font-medium text-xs">{currency}</span>
           </p>
-          <Button
-            variant="contained"
-            color="primary"
-            style={{
-              fontSize: "12px",
-              backgroundColor: "#082e4d",
-            }}
-            onClick={() => {
-              navigation.push("/room/" + props.room.id);
-            }}
+          <Link
+            href={`/room/${props.room?.id}`}
+            prefetch
+            className="inline-flex items-center justify-center rounded-md bg-[#082e4d] px-3 py-2 text-[12px] font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#082e4d] transition"
+            aria-label={`Open ${name}`}
           >
             More details
-          </Button>
+          </Link>
         </div>
       </div>
     </div>

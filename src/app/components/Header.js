@@ -16,6 +16,8 @@ import PeopleIcon from "@mui/icons-material/People";
 import HelpIcon from "@mui/icons-material/Help";
 import ForumIcon from "@mui/icons-material/Forum";
 import LoginIcon from "@mui/icons-material/Login";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -31,11 +33,11 @@ const Header = () => {
       setUnreadCount(0);
       return;
     }
-    const q = query(
+    const qRef = query(
       collection(db, "chatRoomMapping"),
       where("userIds", "array-contains", user.uid)
     );
-    const unsub = onSnapshot(q, (snap) => {
+    const unsub = onSnapshot(qRef, (snap) => {
       let count = 0;
       snap.forEach((doc) => {
         const d = doc.data();
@@ -58,108 +60,177 @@ const Header = () => {
     return () => unsub();
   }, [user?.uid]);
 
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-
+  const handleModalClose = () => setShowModal(false);
   const handleModalLogin = () => {
     setShowModal(false);
     router.push("/login");
   };
 
   return (
-    <div
-      className="bg-black fixed z-50"
-      style={{
-        width: "100vw",
-      }}
-    >
-      <header className="w-256 mx-auto flex flex-row justify-between p-2 relative">
-        <div className="flex flex-row items-center">
-          <Image src={kl} alt="Logo" className={styles.logoImage} />
-          <span className="text-lg text-white">KAMERLARK</span>
-        </div>
-        <ul
-          className="flex flex-row gap-6 absolute top-1/2 left-1/2"
-          style={{
-            transform: "translate(-50%,-50%)",
-          }}
-        >
+    <div className="bg-black fixed z-[9999] w-full">
+      {/* Skip link for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:text-black focus:px-3 focus:py-1 focus:rounded"
+      >
+        Skip to content
+      </a>
+      <header className="w-256 max-w-[90vw] mx-auto flex items-center justify-between p-2">
+        <Link href="/" className="flex items-center" aria-label="Go to home">
+          <Image src={kl} alt="KamerLark Logo" className={styles.logoImage} />
+          <span className="ml-1 text-lg text-white">KAMERLARK</span>
+        </Link>
+
+        {/* Primary nav (desktop) */}
+        <nav aria-label="Primary" className="hidden md:flex items-center gap-6">
           <Link
             href="/"
-            className="text-white flex flex-row items-center text-sm font-sans"
+            aria-current={pathname === "/" ? "page" : undefined}
+            className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
+              pathname === "/" ? "underline underline-offset-4" : ""
+            }`}
           >
             <HomeIcon fontSize="18" className="mr-1" />
             Home
           </Link>
           <Link
             href="/profile?redirect=properties"
-            className="text-white flex flex-row items-center text-sm font-sans"
+            aria-current={pathname?.startsWith("/profile") ? "page" : undefined}
+            className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
+              pathname?.startsWith("/profile")
+                ? "underline underline-offset-4"
+                : ""
+            }`}
           >
             <FormatListBulletedIcon fontSize="18" className="mr-1" />
             Listing
           </Link>
           <Link
             href="/community"
-            className="text-white flex flex-row items-center text-sm font-sans"
+            aria-current={pathname === "/community" ? "page" : undefined}
+            className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
+              pathname === "/community" ? "underline underline-offset-4" : ""
+            }`}
           >
             <PeopleIcon fontSize="18" className="mr-1" />
             Community
           </Link>
           <Link
             href="/help"
-            className="text-white flex flex-row items-center text-sm font-sans"
+            aria-current={pathname === "/help" ? "page" : undefined}
+            className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
+              pathname === "/help" ? "underline underline-offset-4" : ""
+            }`}
           >
             <HelpIcon fontSize="18" className="mr-1" />
             Help
           </Link>
-        </ul>
-        {!user ? (
-          <Link
-            href={"/login"}
-            className="text-white flex flex-row items-center text-sm font-sans"
-          >
-            <LoginIcon fontSize="24" className="mr-1" />
-            LOGIN
-          </Link>
-        ) : (
-          <div className="flex flex-row gap-4 items-center">
+        </nav>
+
+        {/* Right side (desktop) */}
+        <div className="hidden md:flex items-center gap-4">
+          {!user ? (
             <Link
-              href="/profile"
-              className="text-white flex flex-row items-center text-sm font-sans"
+              href="/login"
+              className="text-white flex items-center text-sm font-sans"
             >
-              <PermIdentityIcon fontSize="24" className="mr-1" />
-              PROFILE
+              <LoginIcon fontSize="24" className="mr-1" /> LOGIN
             </Link>
-            <Link
-              href={!user ? "/login" : "/listing"}
-              className="text-white flex flex-row items-center text-sm font-sans"
-            >
-              <PlaylistAddCircleIcon fontSize="24" className="mr-1" />
-              ADD LISTING
-            </Link>
-            <Link
-              href={"/chat/messagecenter"}
-              className="text-white flex flex-row items-center text-sm font-sans"
-            >
-              <span className="relative mr-1 inline-block">
-                <ForumIcon fontSize="24" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] leading-none">
-                    {unreadCount}
-                  </span>
-                )}
-              </span>
-              CHAT
-            </Link>
-          </div>
-        )}
-        <LoginPromptModal
-          show={showModal}
-          handleClose={handleModalClose}
-          handleLogin={handleModalLogin}
-        />
+          ) : (
+            <>
+              <Link
+                href="/profile"
+                className="text-white flex items-center text-sm font-sans"
+              >
+                <PermIdentityIcon fontSize="24" className="mr-1" /> PROFILE
+              </Link>
+              <Link
+                href="/listing"
+                className="text-white flex items-center text-sm font-sans"
+              >
+                <PlaylistAddCircleIcon fontSize="24" className="mr-1" /> ADD
+                LISTING
+              </Link>
+              <Link
+                href="/chat/messagecenter"
+                className="text-white flex items-center text-sm font-sans"
+              >
+                <span className="relative mr-1 inline-block">
+                  <ForumIcon fontSize="24" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] leading-none">
+                      {unreadCount}
+                    </span>
+                  )}
+                </span>
+                CHAT
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Mobile menu toggle */}
+        <button
+          className="md:hidden text-white p-2"
+          aria-label="Toggle menu"
+          aria-expanded={isNavOpen}
+          onClick={() => setIsNavOpen((s) => !s)}
+        >
+          {isNavOpen ? <CloseIcon /> : <MenuIcon />}
+        </button>
       </header>
+
+      {/* Mobile menu */}
+      {isNavOpen && (
+        <nav
+          aria-label="Mobile"
+          className="md:hidden w-256 max-w-[90vw] mx-auto px-2 pb-3"
+        >
+          <div className="flex flex-col gap-2">
+            <Link href="/" className="text-white py-2 border-b border-white/10">
+              Home
+            </Link>
+            <Link
+              href="/profile?redirect=properties"
+              className="text-white py-2 border-b border-white/10"
+            >
+              Listing
+            </Link>
+            <Link
+              href="/community"
+              className="text-white py-2 border-b border-white/10"
+            >
+              Community
+            </Link>
+            <Link href="/help" className="text-white py-2">
+              Help
+            </Link>
+            <div className="h-px bg-white/10 my-2" />
+            {!user ? (
+              <Link href="/login" className="text-white py-2">
+                Login
+              </Link>
+            ) : (
+              <>
+                <Link href="/profile" className="text-white py-2">
+                  Profile
+                </Link>
+                <Link href="/listing" className="text-white py-2">
+                  Add listing
+                </Link>
+                <Link href="/chat/messagecenter" className="text-white py-2">
+                  Chat {unreadCount > 0 ? `(${unreadCount})` : ""}
+                </Link>
+              </>
+            )}
+          </div>
+        </nav>
+      )}
+      <LoginPromptModal
+        show={showModal}
+        handleClose={handleModalClose}
+        handleLogin={handleModalLogin}
+      />
     </div>
   );
 };

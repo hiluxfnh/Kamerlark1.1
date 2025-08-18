@@ -14,19 +14,57 @@
         scrollbar-width: none;  /* Firefox */
   }
 }
+/* Theme tokens */
+:root {
+    --bg: #f3f4f6;            /* base background */
+    --surface: #ffffff;        /* main content surface */
+    --card: #ffffff;           /* card background */
+    --card-hover: #f9fafb;     /* hover for cards */
+    --border: #e5e7eb;         /* border color */
+    --text: #111827;           /* primary text */
+    --muted: #6b7280;          /* secondary text */
+}
+
+body[data-theme="dark"] {
+    --bg: #0b0e14;
+    --surface: #0f141b;
+    --card: #121723;
+    --card-hover: #171d2a;
+    --border: #273247;
+    --text: #ecedf1;
+    --muted: #94a3b8;
+}
+
+/* Light/system use root defaults */
+
+/* Base typography and colors use theme tokens */
 body{
-    background-color: #ffffff;
-    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #212529;
-    text-align: left;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale
+        background-color: var(--bg);
+        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--text);
+        text-align: left;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale
+}
+
+/* Helpers to apply themed surfaces without reworking Tailwind config */
+.theme-surface {
+    background-color: var(--surface) !important;
+    color: var(--text) !important;
+}
+.theme-card {
+    background-color: var(--card) !important;
+    color: var(--text) !important;
+    border-color: var(--border) !important;
+}
+.theme-card:hover {
+    background-color: var(--card-hover) !important;
 }
 
 /* Top progress bar */
@@ -34,7 +72,7 @@ body{
     pointer-events: none;
 }
 #nprogress .bar {
-    background: #111827;
+    background: var(--text);
     position: fixed;
     z-index: 1031;
     top: 0;
