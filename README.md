@@ -1,4 +1,53 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# KamerLark
+
+## Deploy to Vercel (fast + free subdomain)
+
+1. Push to GitHub (public or private)
+
+- Ensure the repo contains this project (Next.js App Router).
+
+2. Create a Vercel project
+
+- Import from GitHub.
+- Framework preset: Next.js (auto-detected).
+- Root directory: repository root.
+
+3. Configure environment variables (Project → Settings → Environment Variables)
+
+- Add the Firebase envs using the keys from `.env.local.example`:
+  - `NEXT_PUBLIC_FIREBASE_API_KEY`
+  - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
+  - `NEXT_PUBLIC_FIREBASE_DB_URL` (optional if unused)
+  - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
+  - `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`
+  - `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID`
+  - `NEXT_PUBLIC_FIREBASE_APP_ID`
+  - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` (optional)
+
+4. Firebase console updates
+
+- Auth → Settings → Authorized domains: add your `<project>.vercel.app` domain and any custom domain.
+- Firestore → Indexes: create any required composite indexes (e.g., supportTickets: status asc + createdAt desc).
+- Rules: deploy production Firestore Rules.
+
+5. Deploy
+
+- Vercel will build and deploy; you’ll get `https://<project>.vercel.app`.
+
+## Image domains
+
+If using Firebase Storage or external images, ensure `next.config.js` includes the domains under `images.domains`.
+
+## Local development
+
+- Create `.env.local` from `.env.local.example` and fill values.
+- Run `npm run dev`.
+
+## Notes
+
+- Search page defaults to no sort/filters unless you pass query params.
+- Home “See more accommodations” links to `/search?view=all`.
+  This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
 
