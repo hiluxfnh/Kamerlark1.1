@@ -187,15 +187,15 @@ const RoomDetails = ({ room }) => {
       fetchOwnerDetails();
     }
   }, [room]);
+  if (!room) {
+    return <Spinner />; // Show spinner while loading room data
+  }
+  
   const images = room.images.slice(0, 4); // Only take the first 4 images
 
   useEffect(() => {
     if (images && images.length > 0) setSelectedImage(images[0]);
   }, [room]);
-
-  if (!room) {
-    return <Spinner />; // Show spinner while loading room data
-  }
 
   // Increment view counter on mount
   useEffect(() => {

@@ -329,7 +329,7 @@ const FAQ_ITEMS = [
   {
     question: "What is your cancellation policy?",
     answer:
-      "Most bookings can be canceled up to 24 hours before move‑in. Some listings may have custom terms in Lease Terms.",
+      "Most bookings can be canceled up to 24 hours before move-in. Some listings may have custom terms in Lease Terms.",
   },
   {
     question: "Payments and security",
