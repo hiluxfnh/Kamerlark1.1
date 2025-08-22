@@ -17,11 +17,17 @@ const nextConfig = {
     // Disable TypeScript errors during production builds
     ignoreBuildErrors: true,
   },
-  output: 'standalone',
+  output: "standalone",
+  // Use this environment variable to conditionally disable static generation
+  // for the entire app when deploying to Vercel
+  staticPageGenerationTimeout: 120,
   experimental: {
     // This will force all pages to be rendered at request time
     // which will solve serialization issues
-    serverComponentsExternalPackages: ['firebase'],
+    serverComponentsExternalPackages: ["firebase"],
+    // Workaround for Firebase serialization issues
+    appDir: true,
+    serverActions: true,
   },
 };
 

@@ -1,14 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "next build --no-lint",
+  "buildCommand": "NEXT_PUBLIC_SKIP_STATIC_GENERATION=true next build --no-lint",
   "devCommand": "next dev",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/"
-    }
-  ]
+  "framework": "nextjs"
 }
