@@ -190,7 +190,7 @@ const RoomDetails = ({ room }) => {
   if (!room) {
     return <Spinner />; // Show spinner while loading room data
   }
-  
+
   const images = room.images.slice(0, 4); // Only take the first 4 images
 
   useEffect(() => {

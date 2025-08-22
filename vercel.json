@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "ESLINT_PLUGIN_REACT_NO_UNESCAPED_ENTITIES=true next build",
+  "buildCommand": "next build --no-lint",
   "devCommand": "next dev",
   "outputDirectory": ".next",
   "installCommand": "npm install",

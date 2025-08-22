@@ -18,9 +18,10 @@ export default function TermsPage() {
 
         <section className="mt-6 space-y-4 text-sm leading-6">
           <p>
-            These Terms of Service (&quot;Terms&quot;) govern your use of KamerLark (the
-            &quot;Service&quot;). By accessing or using the Service you agree to these
-            Terms. If you do not agree, do not use the Service.
+            These Terms of Service (&quot;Terms&quot;) govern your use of
+            KamerLark (the &quot;Service&quot;). By accessing or using the
+            Service you agree to these Terms. If you do not agree, do not use
+            the Service.
           </p>
 
           <h2 className="text-lg font-semibold mt-6">1. Eligibility</h2>
@@ -83,8 +84,9 @@ export default function TermsPage() {
 
           <h2 className="text-lg font-semibold mt-6">7. Disclaimers</h2>
           <p>
-            KamerLark is provided &quot;as is&quot; without warranties of any kind. We do
-            not guarantee uninterrupted or error-free operation of the Service.
+            KamerLark is provided &quot;as is&quot; without warranties of any
+            kind. We do not guarantee uninterrupted or error-free operation of
+            the Service.
           </p>
 
           <h2 className="text-lg font-semibold mt-6">

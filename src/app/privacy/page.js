@@ -17,10 +17,10 @@ export default function PrivacyPage() {
 
         <section className="mt-6 space-y-4 text-sm leading-6">
           <p>
-            KamerLark (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) provides an online platform for
-            discovering, listing, and booking accommodation. This Privacy Policy
-            explains what information we collect, how we use it, and your
-            choices.
+            KamerLark (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;)
+            provides an online platform for discovering, listing, and booking
+            accommodation. This Privacy Policy explains what information we
+            collect, how we use it, and your choices.
           </p>
 
           <h2 className="text-lg font-semibold mt-6">
