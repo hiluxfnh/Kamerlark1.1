@@ -8,6 +8,7 @@ const nextConfig = {
       "picsum.photos",
       "lh3.googleusercontent.com",
     ],
+    unoptimized: true,
   },
   eslint: {
     // Disable ESLint during production builds
@@ -17,34 +18,29 @@ const nextConfig = {
     // Disable TypeScript errors during production builds
     ignoreBuildErrors: true,
   },
-  output: "standalone",
-  // Completely disable static generation for the app
-  staticPageGenerationTimeout: 0,
-  generateBuildId: () => "build",
-  generateEtags: false,
-  // Disable static exports
-  trailingSlash: false,
-  poweredByHeader: false,
-  productionBrowserSourceMaps: false,
-  // Disable static optimization for all pages to force server-rendering
+  // Changed to export for Firebase Hosting
+  output: "export",
+  // Configure for dynamic paths in exported static files
+  trailingSlash: true,
+  // Disable static optimization for all pages
   optimizeFonts: false,
+  // Remove experimental features that cause issues with static export
   experimental: {
-    // Packages that should not be bundled and should remain external
-    serverComponentsExternalPackages: [
+    // Still keep external packages configuration
+    esmExternals: true,
+    // Allow certain packages to remain external
+    transpilePackages: [
       "firebase",
       "firebase-admin",
       "@firebase/firestore",
       "@firebase/auth",
-      "firebase/app",
-      "firebase/auth",
-      "firebase/firestore",
-      "firebase/storage",
-      "react-firebase-hooks",
     ],
-    // Workaround for Firebase serialization issues
-    appDir: true,
-    serverActions: true,
-    esmExternals: "loose",
+  },
+  // Disable strict mode for production
+  reactStrictMode: false,
+  // Add this to handle Firebase objects in static export
+  env: {
+    NEXT_PUBLIC_SKIP_SERIALIZABLE_VALIDATION: "1",
   },
 };
 
