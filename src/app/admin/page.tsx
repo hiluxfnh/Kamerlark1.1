@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase/Config";
 import { doc, getDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import "../config.js"; // Import global dynamic rendering config
 
 export default function AdminPage() {
   const [user] = useAuthState(auth);

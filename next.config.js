@@ -18,17 +18,28 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   output: "standalone",
-  // Use this environment variable to conditionally disable static generation
-  // for the entire app when deploying to Vercel
-  staticPageGenerationTimeout: 120,
+  // Completely disable static generation for the app
+  staticPageGenerationTimeout: 0,
+  generateBuildId: () => "build",
+  generateEtags: false,
+  // Disable static exports
+  trailingSlash: false,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
+  // Disable static optimization for all pages to force server-rendering
+  optimizeFonts: false,
   experimental: {
-    // This will force all pages to be rendered at request time
-    // which will solve serialization issues
+    // Packages that should not be bundled and should remain external
     serverComponentsExternalPackages: [
       "firebase",
       "firebase-admin",
       "@firebase/firestore",
       "@firebase/auth",
+      "firebase/app",
+      "firebase/auth",
+      "firebase/firestore",
+      "firebase/storage",
+      "react-firebase-hooks",
     ],
     // Workaround for Firebase serialization issues
     appDir: true,

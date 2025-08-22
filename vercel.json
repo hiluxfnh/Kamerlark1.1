@@ -4,7 +4,10 @@
   "devCommand": "next dev",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs",
+  "framework": {
+    "name": "nextjs",
+    "version": "14.2.3"
+  },
   "regions": ["iad1"],
   "functions": {
     "src/app/api/**/*": {
@@ -15,5 +18,21 @@
       "runtime": "nodejs18.x",
       "memory": 1024
     }
-  }
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SKIP_STATIC_GENERATION": "true"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    }
+  ]
 }

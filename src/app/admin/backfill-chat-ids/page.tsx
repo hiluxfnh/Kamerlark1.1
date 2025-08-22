@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../../app/firebase/Config";
 import { collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import "../../../config.js"; // Import global dynamic rendering config
 
 export default function BackfillChatIds() {
   const [user] = useAuthState(auth);
