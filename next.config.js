@@ -24,10 +24,16 @@ const nextConfig = {
   experimental: {
     // This will force all pages to be rendered at request time
     // which will solve serialization issues
-    serverComponentsExternalPackages: ["firebase"],
+    serverComponentsExternalPackages: [
+      "firebase",
+      "firebase-admin",
+      "@firebase/firestore",
+      "@firebase/auth",
+    ],
     // Workaround for Firebase serialization issues
     appDir: true,
     serverActions: true,
+    esmExternals: "loose",
   },
 };
 

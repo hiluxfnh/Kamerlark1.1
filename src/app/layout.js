@@ -6,6 +6,10 @@ import AuthGate from "./components/AuthGate";
 import GlobalNavSpinner from "./components/GlobalNavSpinner";
 const inter = Inter({ subsets: ["latin"] });
 
+// Force dynamic rendering for all routes to avoid serialization issues with Firebase
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export const metadata = {
   title: "KamerLark",
   description: "KamerLark helps students find housing and roommates.",

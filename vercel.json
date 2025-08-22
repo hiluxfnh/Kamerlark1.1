@@ -4,5 +4,16 @@
   "devCommand": "next dev",
   "outputDirectory": ".next",
   "installCommand": "npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "src/app/api/**/*": {
+      "runtime": "nodejs18.x",
+      "memory": 1024
+    },
+    "src/app/admin/**/*": {
+      "runtime": "nodejs18.x",
+      "memory": 1024
+    }
+  }
 }
