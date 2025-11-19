@@ -8,6 +8,7 @@ const nextConfig = {
       "picsum.photos",
       "lh3.googleusercontent.com",
     ],
+    // Add unoptimized setting for Netlify
     unoptimized: true,
   },
   eslint: {
@@ -18,29 +19,32 @@ const nextConfig = {
     // Disable TypeScript errors during production builds
     ignoreBuildErrors: true,
   },
-  // Changed to export for Firebase Hosting
+  // Change from standalone to serverless for Netlify compatibility
   output: "export",
-  // Configure for dynamic paths in exported static files
+  distDir: ".next",
+  // These settings work better with Netlify
   trailingSlash: true,
+  poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   // Disable static optimization for all pages
   optimizeFonts: false,
-  // Remove experimental features that cause issues with static export
   experimental: {
-    // Still keep external packages configuration
-    esmExternals: true,
-    // Allow certain packages to remain external
-    transpilePackages: [
+    // Packages that should not be bundled and should remain external
+    serverComponentsExternalPackages: [
       "firebase",
       "firebase-admin",
       "@firebase/firestore",
       "@firebase/auth",
+      "firebase/app",
+      "firebase/auth",
+      "firebase/firestore",
+      "firebase/storage",
+      "react-firebase-hooks",
     ],
-  },
-  // Disable strict mode for production
-  reactStrictMode: false,
-  // Add this to handle Firebase objects in static export
-  env: {
-    NEXT_PUBLIC_SKIP_SERIALIZABLE_VALIDATION: "1",
+    // Workaround for Firebase serialization issues
+    appDir: true,
+    serverActions: true,
+    esmExternals: "loose",
   },
 };
 
