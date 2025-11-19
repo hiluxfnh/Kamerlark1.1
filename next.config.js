@@ -42,8 +42,6 @@ const nextConfig = {
       "react-firebase-hooks",
     ],
     // Workaround for Firebase serialization issues
-    appDir: true,
-    serverActions: true,
     esmExternals: "loose",
   },
 };

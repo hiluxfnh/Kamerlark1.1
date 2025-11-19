@@ -1,3 +1,5 @@
-// This file ensures that the admin routes are dynamically rendered
+// Route segment config to ensure admin pages are always dynamic
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const fetchCache = "force-no-store";
+export const revalidate = 0;
