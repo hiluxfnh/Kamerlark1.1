@@ -24,6 +24,10 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+firebase-debug.log
+
+# accidental build artifacts
+/npm run build/
 
 # local env files
 .env*.local
