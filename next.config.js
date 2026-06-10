@@ -19,10 +19,9 @@ const nextConfig = {
     // Disable TypeScript errors during production builds
     ignoreBuildErrors: true,
   },
-  // Change from standalone to serverless for Netlify compatibility
-  output: "export",
-  distDir: ".next",
-  // These settings work better with Netlify
+  // NOTE: do not use `output: "export"` — this app has dynamic routes
+  // (/room/[roomid], /profile/[uid]) and force-dynamic pages, which require
+  // a server runtime (Vercel/Netlify). Static export breaks the build.
   trailingSlash: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
