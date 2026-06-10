@@ -29,8 +29,11 @@ firebase-debug.log
 # accidental build artifacts
 /npm run build/
 
-# local env files
-.env*.local
+# local env files — never commit secrets
+.env
+.env.*
+!.env.local.example
+server/.env
 
 # vercel
 .vercel
