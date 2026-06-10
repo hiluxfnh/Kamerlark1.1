@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth, db } from "../firebase/Config";
-import { doc, getDoc } from "firebase/firestore";
+import { auth } from "../firebase/Config";
 import { useRouter } from "next/navigation";
 import "../config.js"; // Import global dynamic rendering config
 
@@ -18,12 +17,13 @@ export default function AdminPage() {
       if (!user) {
         return;
       }
-      
+
       try {
-        const userRef = doc(db, "Users", user.uid);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists() && userSnap.data().isAdmin) {
+        // Authorization comes from the Firebase Auth custom claim, set
+        // server-side via the Admin SDK. A user-writable Firestore field
+        // must never be used for this.
+        const token = await user.getIdTokenResult(true);
+        if (token.claims.admin === true) {
           setIsAdmin(true);
         } else {
           router.push("/");
@@ -35,7 +35,7 @@ export default function AdminPage() {
         setLoading(false);
       }
     }
-    
+
     checkAdmin();
   }, [user, router]);
 
@@ -66,17 +66,11 @@ export default function AdminPage() {
         <div className="border rounded-lg p-6 hover:shadow-lg transition-shadow">
           <h2 className="text-xl font-semibold mb-2">Data Migrations</h2>
           <p className="text-gray-600 mb-4">Run data migrations and fixes</p>
-          <button 
+          <button
             onClick={() => router.push("/admin/migrations/backfill-chat-userids")}
             className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 mr-2 mb-2"
           >
             Backfill Chat User IDs
-          </button>
-          <button 
-            onClick={() => router.push("/admin/backfill-chat-ids")}
-            className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 mb-2"
-          >
-            Backfill Chat IDs
           </button>
         </div>
       </div>

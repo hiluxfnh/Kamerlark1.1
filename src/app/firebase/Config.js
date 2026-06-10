@@ -28,6 +28,23 @@ const firebaseConfig = {
 };
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// App Check (anti-abuse): activates only when a reCAPTCHA v3 site key is
+// configured, so local dev keeps working without one. Register the site in
+// Firebase Console -> App Check, then set NEXT_PUBLIC_RECAPTCHA_SITE_KEY.
+// Do NOT enforce App Check in the console until this is live and the
+// console metrics show verified traffic, or every client gets blocked.
+if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+  import("firebase/app-check")
+    .then(({ initializeAppCheck, ReCaptchaV3Provider }) => {
+      initializeAppCheck(app, {
+        provider: new ReCaptchaV3Provider(process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY),
+        isTokenAutoRefreshEnabled: true,
+      });
+    })
+    .catch((e) => console.warn("App Check init failed:", e));
+}
+
 const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);

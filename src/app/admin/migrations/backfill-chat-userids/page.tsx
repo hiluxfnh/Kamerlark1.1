@@ -3,11 +3,6 @@ import { useEffect, useState } from 'react';
 import { auth, db } from '../../../firebase/Config';
 import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
 
-// Simple allowlist to protect this page; replace with your admin UID(s)
-const ADMIN_UIDS = new Set<string>([
-  // "your-admin-uid-here"
-]);
-
 export default function BackfillChatUserIds() {
   const [status, setStatus] = useState<string>('Idle');
   const [logs, setLogs] = useState<string[]>([]);
@@ -16,9 +11,10 @@ export default function BackfillChatUserIds() {
     const run = async () => {
       try {
         setStatus('Checking admin...');
-        const uid = auth.currentUser?.uid;
-  // Require explicit allowlist match; if allowlist empty, deny
-  if (!uid || (ADMIN_UIDS.size === 0 || !ADMIN_UIDS.has(uid))) {
+        // Admin status via Firebase Auth custom claim (server-enforced).
+        const current = auth.currentUser;
+        const token = current ? await current.getIdTokenResult(true) : null;
+        if (token?.claims?.admin !== true) {
           setStatus('Forbidden: sign in as admin to run this migration.');
           return;
         }

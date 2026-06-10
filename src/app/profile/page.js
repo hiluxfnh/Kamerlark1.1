@@ -345,13 +345,12 @@ function AdminTicketsWidget() {
         return;
       }
       try {
+        // Admin status comes only from the Firebase Auth custom claim
+        // (grant via scripts/set-admin-claim.js).
         const token = await user.getIdTokenResult(true);
-        const isAdminClaim = !!(token?.claims || {}).admin;
-        const isAllowlist = uid === "lylD7vRHkUX55xP4ofqJA9yDqFF3";
-        if (active) setAllowed(isAdminClaim || isAllowlist);
+        if (active) setAllowed(token?.claims?.admin === true);
       } catch (e) {
-        const isAllowlist = uid === "lylD7vRHkUX55xP4ofqJA9yDqFF3";
-        if (active) setAllowed(isAllowlist);
+        if (active) setAllowed(false);
       }
     };
     run();
