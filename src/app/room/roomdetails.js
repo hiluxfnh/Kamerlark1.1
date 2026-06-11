@@ -462,9 +462,16 @@ const RoomDetails = ({ room }) => {
   })();
   return (
     <>
-      <div className="w-256 mx-auto pt-16">
-        <div className="flex items-center justify-between my-5">
-          <h1 className="text-2xl font-bold">{room.name}</h1>
+      <div className="mx-auto w-full max-w-6xl px-4 pt-16 sm:px-6">
+        <div className="my-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{room.name}</h1>
+            {room.location ? (
+              <p className="mt-1 flex items-center gap-1 text-sm text-gray-500">
+                <LocationOnIcon fontSize="small" /> {room.location}
+              </p>
+            ) : null}
+          </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm">
               {renderStars(Math.round(averageRating))}
@@ -480,145 +487,149 @@ const RoomDetails = ({ room }) => {
             </div>
           </div>
         </div>
-        <div className="flex flex-row">
-          <div className={`${styles.gallery} ${styles.lightbox}`}>
-            <div
-              className="w-148 overflow-hidden mb-4 rounded-xl mr-5"
-              style={{
-                height: "350px",
-              }}
-            >
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="w-full lg:w-3/5">
+            <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100 sm:aspect-[16/10]">
               <Image
                 src={selectedImage}
                 alt={room.name}
-                width={450}
-                height={350}
-                layout="responsive"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  objectFit: "cover",
-                }}
+                width={900}
+                height={620}
+                className="h-full w-full object-cover"
+                priority
               />
             </div>
-            <div className="grid grid-cols-4 gap-4 w-148">
+            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
               {images.map((image, index) => (
-                <div
+                <button
                   key={index}
-                  className="w-1/4 rounded-md overflow-hidden cursor-pointer"
-                  style={{
-                    height: "80px",
-                  }}
+                  type="button"
+                  className={`aspect-[4/3] overflow-hidden rounded-lg transition-all ${
+                    selectedImage === image
+                      ? "ring-2 ring-[#082e4d] ring-offset-2"
+                      : "opacity-80 hover:opacity-100"
+                  }`}
                   onClick={() => setSelectedImage(image)}
+                  aria-label={`Show photo ${index + 1}`}
                 >
                   <Image
                     src={image}
-                    alt={`Image ${index}`}
-                    width={100}
-                    height={100}
-                    layout="responsive"
-                    style={{
-                      width: "auto",
-                      height: "100px",
-                      objectFit: "cover",
-                    }}
+                    alt={`Photo ${index + 1}`}
+                    width={200}
+                    height={150}
+                    className="h-full w-full object-cover"
                   />
-                </div>
+                </button>
               ))}
             </div>
           </div>
 
-          <div className={styles.info}>
-            <h1 className="text-base font-semibold my-2">Amenties</h1>
-            <div className="flex flex-row flex-wrap gap-2 text-sm">
-              {room.amenities.map((amenity, index) => (
-                <div
-                  className="p-1 px-2 bg-gray-500 text-white rounded-md"
-                  key={index}
-                >
-                  <span className="">{amenity}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-row flex-wrap gap-2 text-sm mt-2">
-              {room.utilitiesIncluded.map((utility, index) => (
-                <div className="p-1 px-2 border rounded-md" key={index}>
-                  <span className="">{utility}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5">
-              <h2 className="text-base font-medium">Description</h2>
-              <p className="text-sm mt-3 mb-5">{room.description}</p>
-            </div>
-            <div className="mb-2">
-              <p className="text-sm flex flex-row items-center">
-                <LocationOnIcon fontSize="small" /> {room.location}
+          <div className="w-full lg:w-2/5">
+            {/* Booking panel: price + actions first — that's what visitors came for */}
+            <div className="rounded-2xl border border-gray-200 p-5 shadow-sm">
+              <p className="text-2xl font-bold">
+                {new Intl.NumberFormat("fr-FR").format(Number(room.price) || 0)}{" "}
+                <span className="text-sm font-medium text-gray-500">
+                  {room.currency || "XAF"}/month · taxes included
+                </span>
               </p>
-            </div>
-            <div>
-              <h2 className="text-base font-medium">Price</h2>
-              <p className="text-2xl font-bold mt-2 mb-3">
-                {room.currency === "XAF" ? "XAF" : room.currency || "XAF"}{" "}
-                {room.price}{" "}
-                <span className="text-sm font-medium">(Inclusive taxes)</span>
-              </p>
-            </div>
-            {user && room.ownerId !== user.uid ? (
-              <>
-                <div className="grid grid-cols-12 w-100  gap-2 my-2">
+
+              {user && room.ownerId !== user.uid ? (
+                <div className="mt-4 flex flex-col gap-2">
                   <Button
                     onClick={() => setIsBookNowOpen(true)}
                     variant="contained"
-                    className="col-start-1 col-end-5 bg-black"
                     fullWidth
-                    style={{
-                      backgroundColor: "black",
-                    }}
+                    style={{ backgroundColor: "black", padding: "10px 0" }}
                   >
-                    Book Now
+                    Book now
                   </Button>
-                  <Button
-                    onClick={() => setIsAppointmentOpen(true)}
-                    variant="contained"
-                    className="col-start-5 col-end-13 bg-black"
-                    fullWidth
-                    style={{
-                      backgroundColor: "black",
-                    }}
-                  >
-                    Book Appointment
-                  </Button>
-                </div>
-                <div className="grid grid-cols-12 w-100 gap-2 my-2">
-                  <Button
-                    onClick={() => setIsChatOpen(true)}
-                    variant="contained"
-                    className="col-start-1 col-end-7 bg-black"
-                    fullWidth
-                    style={{
-                      backgroundColor: "black",
-                    }}
-                  >
-                    Chat
-                  </Button>
-                  <Button
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button
+                      onClick={() => setIsAppointmentOpen(true)}
+                      variant="outlined"
+                      fullWidth
+                      style={{ borderColor: "black", color: "black" }}
+                    >
+                      Visit first
+                    </Button>
+                    <Button
+                      onClick={() => setIsChatOpen(true)}
+                      variant="outlined"
+                      fullWidth
+                      style={{ borderColor: "black", color: "black" }}
+                    >
+                      Chat
+                    </Button>
+                  </div>
+                  <button
                     onClick={() => setIsContractTermsOpen(true)}
-                    variant="contained"
-                    className="col-start-7 col-end-13 bg-black"
-                    fullWidth
-                    style={{
-                      backgroundColor: "black",
-                    }}
+                    className="mt-1 text-sm text-gray-600 underline underline-offset-2 hover:text-black"
+                    type="button"
                   >
-                    View Contract Terms
-                  </Button>
+                    View contract terms
+                  </button>
                 </div>
-              </>
-            ) : null}
+              ) : null}
+
+              {!user ? (
+                <div className="mt-4">
+                  <Button
+                    href={`/login?next=${encodeURIComponent(`/room/${room.id}`)}`}
+                    variant="contained"
+                    fullWidth
+                    style={{ backgroundColor: "black", padding: "10px 0" }}
+                  >
+                    Sign in to book or chat
+                  </Button>
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    Free account — book, visit, or message the owner directly.
+                  </p>
+                </div>
+              ) : null}
+
+              {user && room.ownerId === user.uid ? (
+                <p className="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+                  This is your listing. Manage it from{" "}
+                  <a href="/mylisting" className="font-semibold underline">
+                    My Listings
+                  </a>
+                  .
+                </p>
+              ) : null}
+            </div>
+
+            <div className="mt-6">
+              <h2 className="text-base font-semibold">Amenities</h2>
+              <div className="mt-2 flex flex-row flex-wrap gap-2 text-sm">
+                {room.amenities.map((amenity, index) => (
+                  <span
+                    className="rounded-full bg-gray-100 px-3 py-1 text-gray-700"
+                    key={index}
+                  >
+                    {amenity}
+                  </span>
+                ))}
+                {room.utilitiesIncluded.map((utility, index) => (
+                  <span
+                    className="rounded-full border border-gray-200 px-3 py-1 text-gray-600"
+                    key={`u-${index}`}
+                  >
+                    {utility} included
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <h2 className="text-base font-semibold">Description</h2>
+              <p className="mt-2 text-sm leading-relaxed text-gray-700">
+                {room.description}
+              </p>
+            </div>
           </div>
         </div>
-        <div className="flex flex-row flex-wrap w-256 my-2 gap-2">
+        <div className="my-6 flex w-full flex-row flex-wrap gap-2">
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-blue-900">
             <SchoolOutlinedIcon fontSize="small" />
             <p className="text-black">{room.uni}</p>

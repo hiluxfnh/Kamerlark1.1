@@ -75,7 +75,7 @@ const Header = () => {
       >
         Skip to content
       </a>
-      <header className="w-256 max-w-[90vw] mx-auto flex items-center justify-between p-2">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between p-2 px-4 sm:px-6">
         <Link href="/" className="flex items-center" aria-label="Go to home">
           <Image src={kl} alt="KamerLark Logo" className={styles.logoImage} />
           <span className="ml-1 text-lg text-white">KAMERLARK</span>
@@ -94,16 +94,14 @@ const Header = () => {
             Home
           </Link>
           <Link
-            href="/profile?redirect=properties"
-            aria-current={pathname?.startsWith("/profile") ? "page" : undefined}
+            href="/search?view=all"
+            aria-current={pathname === "/search" ? "page" : undefined}
             className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
-              pathname?.startsWith("/profile")
-                ? "underline underline-offset-4"
-                : ""
+              pathname === "/search" ? "underline underline-offset-4" : ""
             }`}
           >
             <FormatListBulletedIcon fontSize="18" className="mr-1" />
-            Listing
+            Explore
           </Link>
           <Link
             href="/community"
@@ -130,12 +128,20 @@ const Header = () => {
         {/* Right side (desktop) */}
         <div className="hidden md:flex items-center gap-4">
           {!user ? (
-            <Link
-              href="/login"
-              className="text-white flex items-center text-sm font-sans"
-            >
-              <LoginIcon fontSize="24" className="mr-1" /> LOGIN
-            </Link>
+            <>
+              <Link
+                href="/login"
+                className="text-white flex items-center text-sm font-sans hover:opacity-90"
+              >
+                <LoginIcon fontSize="24" className="mr-1" /> LOGIN
+              </Link>
+              <Link
+                href="/listing"
+                className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gray-200"
+              >
+                Post a listing
+              </Link>
+            </>
           ) : (
             <>
               <Link
@@ -191,10 +197,10 @@ const Header = () => {
               Home
             </Link>
             <Link
-              href="/profile?redirect=properties"
+              href="/search?view=all"
               className="text-white py-2 border-b border-white/10"
             >
-              Listing
+              Explore
             </Link>
             <Link
               href="/community"
@@ -207,9 +213,14 @@ const Header = () => {
             </Link>
             <div className="h-px bg-white/10 my-2" />
             {!user ? (
-              <Link href="/login" className="text-white py-2">
-                Login
-              </Link>
+              <>
+                <Link href="/login" className="text-white py-2">
+                  Login
+                </Link>
+                <Link href="/listing" className="text-white py-2">
+                  Post a listing
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/profile" className="text-white py-2">
