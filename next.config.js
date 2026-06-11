@@ -28,22 +28,11 @@ const nextConfig = {
   productionBrowserSourceMaps: false,
   // Disable static optimization for all pages
   optimizeFonts: false,
-  experimental: {
-    // Packages that should not be bundled and should remain external
-    serverComponentsExternalPackages: [
-      "firebase",
-      "firebase-admin",
-      "@firebase/firestore",
-      "@firebase/auth",
-      "firebase/app",
-      "firebase/auth",
-      "firebase/firestore",
-      "firebase/storage",
-      "react-firebase-hooks",
-    ],
-    // Workaround for Firebase serialization issues
-    esmExternals: "loose",
-  },
+  // NOTE: do NOT add serverComponentsExternalPackages for firebase or
+  // react-firebase-hooks, and do not set esmExternals. Externalizing them
+  // loads a second copy of React during SSR ("Invalid hook call",
+  // "Cannot read properties of null (reading 'useReducer')") and 500s
+  // every page that renders AuthGate.
 };
 
 module.exports = nextConfig;

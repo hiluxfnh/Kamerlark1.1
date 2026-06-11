@@ -1,23 +1,44 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/Config";
 
-const PUBLIC_PATHS = new Set(["/", "/help", "/contact", "/login", "/search"]);
+const PUBLIC_PATHS = new Set([
+  "/",
+  "/help",
+  "/contact",
+  "/login",
+  "/search",
+  "/terms",
+  "/privacy",
+]);
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname() || "/";
+  const rawPathname = usePathname() || "/";
+  // trailingSlash: true means paths arrive as "/login/" — normalize before
+  // matching, or the login page redirects to itself in a loop (white screen).
+  const pathname =
+    rawPathname.length > 1 && rawPathname.endsWith("/")
+      ? rawPathname.slice(0, -1)
+      : rawPathname;
   const router = useRouter();
   const [user, loading] = useAuthState(auth);
 
   const isPublic = PUBLIC_PATHS.has(pathname);
+  const shouldRedirect = !loading && !user && !isPublic;
 
-  if (loading) return null;
-  if (!user && !isPublic) {
-    const next = typeof window !== 'undefined' ? window.location.pathname + window.location.search : pathname;
-    router.push(`/login?next=${encodeURIComponent(next)}`);
-    return null;
-  }
+  // Navigation is a side effect — never call router.push during render.
+  useEffect(() => {
+    if (shouldRedirect) {
+      const next =
+        typeof window !== "undefined"
+          ? window.location.pathname + window.location.search
+          : pathname;
+      router.push(`/login?next=${encodeURIComponent(next)}`);
+    }
+  }, [shouldRedirect, pathname, router]);
+
+  if (loading || shouldRedirect) return null;
   return <>{children}</>;
 }
