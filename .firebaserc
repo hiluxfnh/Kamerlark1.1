@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "kamerlark1"
+    "default": "kamerlark-dev-2026",
+    "prod": "kamerlark1"
   }
 }

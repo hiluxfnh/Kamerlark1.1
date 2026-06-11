@@ -4,28 +4,25 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// Fallback values if environment variables aren't available
+// All values come from env (.env.local locally, dashboard vars in prod).
+// No hardcoded fallbacks: a missing variable must fail loudly instead of
+// silently pointing at the wrong Firebase project.
 const firebaseConfig = {
-  apiKey:
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
-    "AIzaSyBwTX1giyCj1Xtj7A6VW1Lb19tbiiAmm2A",
-  authDomain:
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
-    "kamerlark1.firebaseapp.com",
-  databaseURL:
-    process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
-    "https://kamerlark1-default-rtdb.firebaseio.com",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "kamerlark1",
-  storageBucket:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "kamerlark1.appspot.com",
-  messagingSenderId:
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "342771663259",
-  appId:
-    process.env.NEXT_PUBLIC_FIREBASE_APP_ID ||
-    "1:342771663259:web:6f71b1e03ea003e089213e",
-  measurementId:
-    process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || "G-F59CGZN0Q4",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
+
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  throw new Error(
+    "Firebase env vars missing — copy .env.local.example to .env.local and fill it in."
+  );
+}
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
