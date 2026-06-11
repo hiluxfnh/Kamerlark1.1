@@ -286,12 +286,13 @@ const LoginSignup = () => {
               </label>
 
               <label className={styles.label}>
+                {/* Optional — uploads need Firebase Storage, and forcing a
+                    photo at signup hurt conversion anyway */}
                 <input
                   className={styles.input}
                   type="file"
                   accept="image/*"
                   onChange={handleProfilePictureChange}
-                  required
                 />
               </label>
             </>
