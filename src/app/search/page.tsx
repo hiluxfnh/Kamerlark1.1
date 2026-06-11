@@ -309,7 +309,7 @@ const SearchPage = () => {
           boxShadow: "0px 0px 5px 0px lightgrey",
         }}
       >
-  <div className="flex flex-row gap-2 py-2 w-256 mx-auto items-center">
+  <div className="mx-auto flex w-full max-w-6xl flex-row items-center gap-2 overflow-x-auto px-4 py-2 no-scrollbar sm:px-6">
           <div className="relative">
             <p
               className="p-2 px-3 rounded-2xl text-sm flex flex-row items-center gap-1 cursor-pointer "
@@ -908,9 +908,9 @@ const SearchPage = () => {
           )}
         </div>
       </div>
-      <div className="w-256 mx-auto">
+      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
   {rooms.length ? (
-          <div className="grid grid-cols-4 w-full mx-auto gap-5 mt-3">
+          <div className="mt-3 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rooms.slice(0, visibleCount).map((room) => {
               const badgeClass =
                 room.origin === "Location"

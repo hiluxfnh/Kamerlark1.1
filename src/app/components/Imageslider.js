@@ -136,36 +136,39 @@ const ImageSlider = () => {
       }}
     >
       <div
-        className={styles.slide}
+        className={`${styles.slide} min-h-[440px] sm:min-h-[500px]`}
         style={{
-          backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/proctoshield-8eaf3.appspot.com/o/Untitled%20design-12.png?alt=media&token=e5163b88-de44-47fe-956e-01ac18dbbc53)`,
+          // Local gradient: instant, reliable, and not hot-linked from a
+          // third-party Firebase bucket like the old background was.
+          background:
+            "radial-gradient(ellipse at 70% 20%, rgba(8,145,178,0.25), transparent 50%), linear-gradient(135deg, #07303c 0%, #0a1929 55%, #000 100%)",
         }}
       >
         <div
-          className={`${styles.content} w-256 absolute`}
+          className={`${styles.content} absolute w-full max-w-3xl px-4`}
           style={{
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
           }}
         >
-          <div className="w-170 mx-auto">
-            <h2 className="text-4xl font-bold text-center">
-              Find Your Perfect Accommodation
+          <div className="mx-auto w-full max-w-2xl">
+            <h2 className="text-center text-3xl font-bold tracking-tight text-white sm:text-5xl">
+              Find your perfect student home
             </h2>
-            <p className="text-base text-center my-3">
-              Find the best accommodation for your stay near your university.
-              And get the best experience of your life.
+            <p className="my-4 text-center text-sm text-gray-300 sm:text-base">
+              Rooms, studios and apartments near universities across Cameroon —
+              verified owners, direct chat, no agency fees.
             </p>
           </div>
-          <div className="w-170 mx-auto z-50">
+          <div className="z-50 mx-auto w-full max-w-2xl">
             <div className="mt-10 relative">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
-                placeholder="Search Location for accommodation..."
-                className="w-170 p-4 border border-gray-300 rounded-lg outline-none text-black text-sm"
+                placeholder="Search by city, neighbourhood or university…"
+                className="w-full rounded-xl border border-gray-300 p-4 pr-28 text-sm text-black shadow-xl outline-none focus:ring-2 focus:ring-cyan-700"
                 onFocus={() => {
                   setShowSearch(true);
                   try {
@@ -229,7 +232,7 @@ const ImageSlider = () => {
                 SEARCH
               </button>
               {showSearch && search.length === 0 ? (
-                <div className="w-170 h-80 bg-white rounded-md shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
+                <div className="w-full h-80 bg-white rounded-xl shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
                   <div className="sticky float-end right-2 top-2 text-black cursor-pointer">
                     <CloseIcon onClick={() => setShowSearch(false)} />
                   </div>

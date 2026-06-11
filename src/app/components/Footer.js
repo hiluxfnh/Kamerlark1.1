@@ -1,7 +1,7 @@
 // components/Footer.js
 import React from "react";
 import Image from "next/image";
-import kl from "../assets/klchristmas.png";
+import kl from "../assets/kamerlark.png";
 import Link from "next/link";
 import EmailIcon from "@mui/icons-material/Email";
 import LocalPhoneIcon from "@mui/icons-material/LocalPhone";

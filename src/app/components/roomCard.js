@@ -1,114 +1,116 @@
 import Image from "next/image";
 import PersonIcon from "@mui/icons-material/Person";
 import HotelIcon from "@mui/icons-material/Hotel";
-import HouseIcon from "@mui/icons-material/House";
+import SquareFootIcon from "@mui/icons-material/SquareFoot";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-const RoomCardNew = (props) => {
-  const router = useRouter();
+
+// Strip any trailing m²/m2 the owner typed so we control the unit display
+const cleanSize = (raw) => {
+  if (!raw) return null;
+  const s = String(raw).replace(/m²|m2/gi, "").trim();
+  return s ? `${s} m²` : null;
+};
+
+const formatPrice = (price) => {
+  const n = Number(price);
+  if (!Number.isFinite(n)) return price;
+  return new Intl.NumberFormat("fr-FR").format(n);
+};
+
+const RoomCardNew = ({ room }) => {
   const imgSrc =
-    props?.room?.images && props.room.images.length > 0
-      ? props.room.images[0]
+    room?.images && room.images.length > 0
+      ? room.images[0]
       : require("../assets/a1.png");
-  const amenities = Array.isArray(props?.room?.amenities)
-    ? props.room.amenities
-    : [];
-  const capacity = props?.room?.capacity || "-";
-  const roomSize = props?.room?.roomSize || "-";
-  const location = props?.room?.location || "";
-  const name = props?.room?.name || "Room";
-  const price = props?.room?.price || 0;
-  const currency = props?.room?.currency || "XAF";
-  // Prefetch the room route when this card mounts for snappy navigation
-  useEffect(() => {
-    const id = props?.room?.id;
-    if (id) {
-      try {
-        router.prefetch?.(`/room/${id}`);
-      } catch {}
-    }
-  }, [props?.room?.id, router]);
+  const amenities = Array.isArray(room?.amenities) ? room.amenities : [];
+  const shownAmenities = amenities.slice(0, 2);
+  const moreAmenities = amenities.length - shownAmenities.length;
+  const name = room?.name || "Room";
+  const size = cleanSize(room?.roomSize);
+
   return (
-    <div
-      className="w-64 rounded-xl p-4 gap-4 relative border theme-card"
-      style={{
-        boxShadow: "0 0 10px 0 lightgrey",
-        height: "350px",
-      }}
+    <Link
+      href={`/room/${room?.id}`}
+      prefetch
+      aria-label={`Open ${name}`}
+      className="group flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#082e4d]"
     >
-      <div
-        className="w-full overflow-hidden rounded-lg"
-        style={{
-          height: "150px",
-        }}
-      >
+      <div className="relative aspect-[4/3] w-full overflow-hidden">
         <Image
           loading="lazy"
-          className="object-cover rounded-lg"
-          style={{
-            width: "100%",
-            height: "100%",
-          }}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           src={imgSrc}
           alt={name}
-          width={500}
-          height={500}
+          width={600}
+          height={450}
         />
+        {room?.furnishedStatus ? (
+          <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 shadow-sm backdrop-blur">
+            {room.furnishedStatus}
+          </span>
+        ) : null}
       </div>
-      <div>
-        <h2 className="my-2 font-medium">{name}</h2>
-        <div className="overflow-scroll no-scrollbar">
-          <div
-            className="flex flex-row"
-            style={{
-              width: "max-content",
-            }}
-          >
-            {amenities.map((amenity, index) => (
-              <p
-                className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm"
-                key={index}
+
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
+        <h2 className="line-clamp-1 font-semibold text-gray-900">{name}</h2>
+
+        {room?.location ? (
+          <p className="flex items-center gap-1 text-xs text-gray-500">
+            <LocationOnIcon sx={{ fontSize: 14 }} />
+            <span className="line-clamp-1">{room.location}</span>
+          </p>
+        ) : null}
+
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
+          {room?.bedType ? (
+            <span className="inline-flex items-center gap-1">
+              <HotelIcon sx={{ fontSize: 15 }} /> {room.bedType}
+            </span>
+          ) : null}
+          {room?.capacity ? (
+            <span className="inline-flex items-center gap-1">
+              <PersonIcon sx={{ fontSize: 15 }} /> {room.capacity}
+            </span>
+          ) : null}
+          {size ? (
+            <span className="inline-flex items-center gap-1">
+              <SquareFootIcon sx={{ fontSize: 15 }} /> {size}
+            </span>
+          ) : null}
+        </div>
+
+        {shownAmenities.length > 0 ? (
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {shownAmenities.map((amenity) => (
+              <span
+                key={amenity}
+                className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] text-gray-700"
               >
                 {amenity}
-              </p>
+              </span>
             ))}
+            {moreAmenities > 0 ? (
+              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] text-gray-500">
+                +{moreAmenities}
+              </span>
+            ) : null}
           </div>
-        </div>
-        <div className="flex flex-row mt-2 gap-2 justify-between w-58">
-          <p className="text-sm pr-1">
-            <HotelIcon fontSize="16" /> Semi
+        ) : null}
+
+        <div className="mt-auto flex items-baseline justify-between pt-3">
+          <p className="text-base font-bold text-gray-900">
+            {formatPrice(room?.price)}{" "}
+            <span className="text-xs font-medium text-gray-500">
+              {room?.currency || "XAF"}/month
+            </span>
           </p>
-          <p className="text-sm pr-1">
-            <PersonIcon fontSize="16" /> {capacity}
-          </p>
-          <p className="text-sm pr-1">
-            <HouseIcon fontSize="16" /> {roomSize}m2
-          </p>
-        </div>
-        <div className="my-2">
-          <p className="text-xs pr-1">
-            <LocationOnIcon fontSize="16" />
-            {location}
-          </p>
-        </div>
-        {/* <div>{props.room.description.slice(0,50)+"..."}</div> */}
-        <div className="flex flex-row justify-between items-center absolute bottom-2 w-56">
-          <p className="font-bold">
-            {price} <span className="font-medium text-xs">{currency}</span>
-          </p>
-          <Link
-            href={`/room/${props.room?.id}`}
-            prefetch
-            className="inline-flex items-center justify-center rounded-md bg-[#082e4d] px-3 py-2 text-[12px] font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#082e4d] transition"
-            aria-label={`Open ${name}`}
-          >
-            More details
-          </Link>
+          <span className="text-xs font-semibold text-[#082e4d] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            View →
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 export default RoomCardNew;

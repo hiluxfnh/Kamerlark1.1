@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../styles/Header.module.css";
 import Image from "next/image";
-import kl from "../assets/klchristmas.png";
+import kl from "../assets/kamerlark.png";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../firebase/Config";

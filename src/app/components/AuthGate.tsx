@@ -25,7 +25,9 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [user, loading] = useAuthState(auth);
 
-  const isPublic = PUBLIC_PATHS.has(pathname);
+  // Room detail pages are browsable without an account — gating discovery
+  // behind signup kills conversion. Booking/chat still require login.
+  const isPublic = PUBLIC_PATHS.has(pathname) || pathname.startsWith("/room/");
   const shouldRedirect = !loading && !user && !isPublic;
 
   // Navigation is a side effect — never call router.push during render.
