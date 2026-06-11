@@ -40,11 +40,11 @@ export default function Home() {
         id: doc.id,
         ...doc.data(),
       }));
-      // Newest first, consistent with the Search page default
-      roomList.sort(
-        (a, b) =>
-          (b?.createdAt?.toMillis?.() || 0) - (a?.createdAt?.toMillis?.() || 0)
-      );
+      // Newest first, consistent with the Search page default.
+      // Older kamerlark1 documents use `timestamp` instead of `createdAt`.
+      const ts = (r) =>
+        r?.createdAt?.toMillis?.() || r?.timestamp?.toMillis?.() || 0;
+      roomList.sort((a, b) => ts(b) - ts(a));
       setRooms(roomList);
       setLoading(false);
     };
