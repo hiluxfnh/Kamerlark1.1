@@ -13,7 +13,7 @@ import {
   endBefore,
   limit,
 } from "firebase/firestore";
-import { auth, db, storage } from "../../firebase/Config";
+import { auth, db } from "../../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -26,7 +26,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import { Button, styled } from "@mui/material";
 import Image from "next/image";
-import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage";
+import { uploadImages as uploadAllImages } from "../../lib/uploadImage";
 import { onSnapshot, serverTimestamp } from "firebase/firestore";
 import ChatSideBar from "../components/ChatSideBar";
 import backImage from "../../assets/backChat.jpg";
@@ -273,28 +273,11 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
     return () => unsub();
   }, [chatRoomMappingId, user?.uid]);
   const uploadImages = async () => {
-    const uploadPromises = files.map((image) => {
-      const storageRef = ref(storage, `images/chat/${user?.uid || 'anon'}/${image.lastModified}-${image.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, image);
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            // Progress function (optional)
-          },
-          (error) => {
-            console.error("Error uploading image:", error);
-            reject(error);
-          },
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-              resolve(downloadURL);
-            });
-          }
-        );
-      });
-    });
-    return Promise.all(uploadPromises);
+    return uploadAllImages(
+      files,
+      (image: File) =>
+        `images/chat/${user?.uid || "anon"}/${image.lastModified}-${image.name}`
+    );
   };
   const handleAddMessage = async () => {
     if (!user) {

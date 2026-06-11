@@ -25,12 +25,8 @@ import {
   updateProfile,
   deleteUser,
 } from "firebase/auth";
-import { auth, db, storage } from "../../firebase/Config";
-import {
-  ref as storageRef,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
+import { auth, db } from "../../firebase/Config";
+import { uploadImage } from "../../lib/uploadImage";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
 
@@ -109,9 +105,7 @@ export default function AccountManagement({ personalInfo }) {
       if (!file || !user) return;
       setAvatarUploading(true);
       const path = `users/${user.uid}/avatar-${Date.now()}-${file.name}`;
-      const ref = storageRef(storage, path);
-      await uploadBytes(ref, file);
-      const url = await getDownloadURL(ref);
+      const url = await uploadImage(file, path);
       // Update Auth profile and Users doc
       if (auth.currentUser) {
         await updateProfile(auth.currentUser, { photoURL: url });

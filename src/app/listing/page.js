@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import dynamic from "next/dynamic";
-import { db, storage, auth } from "../firebase/Config";
+import { db, auth } from "../firebase/Config";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadImages as uploadAllImages } from "../lib/uploadImage";
 import Spinner from "../components/Spinner";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
@@ -134,24 +134,10 @@ const AddListing = () => {
 
   const uploadImages = async (ownerId) => {
     if (!files.length) return [];
-    const uploadPromises = files.map((image) => {
-      const storageRef = ref(
-        storage,
-        `images/rooms/${ownerId}/${image.lastModified}-${image.name}`
-      );
-      const uploadTask = uploadBytesResumable(storageRef, image);
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          undefined,
-          (error) => reject(error),
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
-          }
-        );
-      });
-    });
-    return Promise.all(uploadPromises);
+    return uploadAllImages(
+      files,
+      (image) => `images/rooms/${ownerId}/${image.lastModified}-${image.name}`
+    );
   };
 
   const handleSubmit = async () => {

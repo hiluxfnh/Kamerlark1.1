@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { auth, db, storage } from "../firebase/Config";
+import { auth, db } from "../firebase/Config";
 import {
   useCreateUserWithEmailAndPassword,
   useSignInWithEmailAndPassword,
@@ -11,8 +11,8 @@ import {
   signInWithPopup,
   updateProfile,
 } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, doc, getDoc, setDoc } from "firebase/firestore";
+import { uploadImage } from "../lib/uploadImage";
 import styles from "../styles/login.module.css";
 import Image from "next/image";
 import kl from "../assets/klchristmas.png";
@@ -151,13 +151,10 @@ const LoginSignup = () => {
 
   const uploadProfilePicture = async (uid) => {
     if (!profilePicture) return null;
-    const storageRef = ref(
-      storage,
+    return uploadImage(
+      profilePicture,
       `profile_pictures/${uid}/${profilePicture.name}`
     );
-    await uploadBytes(storageRef, profilePicture);
-    const downloadURL = await getDownloadURL(storageRef);
-    return downloadURL;
   };
 
   const resetForm = () => {

@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import Header from "../../../components/Header";
 import dynamic from "next/dynamic";
-import { db, storage, auth } from "../../../firebase/Config";
+import { db, auth } from "../../../firebase/Config";
 import {
   addDoc,
   collection,
@@ -12,7 +12,7 @@ import {
   setDoc,
   serverTimestamp,
 } from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { uploadImages as uploadAllImages } from "../../../lib/uploadImage";
 import Spinner from "../../../components/Spinner"; // Import Spinner
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
@@ -127,24 +127,10 @@ const EditIdPage = ({ params }) => {
   const uploadImages = async (ownerId) => {
     const toUpload = files.filter((f) => typeof f !== "string");
     if (!toUpload.length) return [];
-    const uploadPromises = toUpload.map((image) => {
-      const storageRef = ref(
-        storage,
-        `images/rooms/${ownerId}/${image.lastModified}-${image.name}`
-      );
-      const uploadTask = uploadBytesResumable(storageRef, image);
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          undefined,
-          (error) => reject(error),
-          () => {
-            getDownloadURL(uploadTask.snapshot.ref).then(resolve).catch(reject);
-          }
-        );
-      });
-    });
-    return Promise.all(uploadPromises);
+    return uploadAllImages(
+      toUpload,
+      (image) => `images/rooms/${ownerId}/${image.lastModified}-${image.name}`
+    );
   };
 
   const handleSubmit = async (e) => {
