@@ -18,7 +18,7 @@ const Footer = () => {
       <h2 id="footer-heading" className="sr-only">
         Footer
       </h2>
-      <div className="w-256 max-w-[90vw] mx-auto px-4 py-8 md:py-10">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 md:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
@@ -64,7 +64,7 @@ const Footer = () => {
                   className="hover:text-white transition-colors"
                   aria-label="WhatsApp"
                 >
-                  +919108553983
+                  +91 91085 53983 (WhatsApp)
                 </a>
               </div>
             </div>
@@ -193,7 +193,7 @@ const Footer = () => {
         </div>
       </div>
       <div className="border-t border-white/10">
-        <div className="w-256 max-w-[90vw] mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-gray-400">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-gray-400">
           <p>
             &copy; {new Date().getFullYear()} KamerLark. All rights reserved.
           </p>

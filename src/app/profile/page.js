@@ -78,7 +78,7 @@ function CustomTabPanel(props) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}
-      className="w-96"
+      className="w-full"
     >
       {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
     </div>
@@ -230,13 +230,14 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <div className="flex flex-1 pt-16">
-        <nav className="w-[250px] bg-white border-r theme-card">
-          <ul className="flex flex-col">
+      {/* Sidebar on md+; horizontal scrollable tab bar on mobile */}
+      <div className="flex flex-1 flex-col pt-16 md:flex-row">
+        <nav className="w-full border-b bg-white theme-card md:w-[250px] md:border-b-0 md:border-r">
+          <ul className="no-scrollbar flex flex-row overflow-x-auto md:flex-col">
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "overview" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("overview")}
@@ -244,7 +245,7 @@ export default function UserProfile() {
               <DashboardIcon className="mr-3" /> Overview
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "account" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("account")}
@@ -252,7 +253,7 @@ export default function UserProfile() {
               <ManageAccountsIcon className="mr-3" /> Account Management
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "properties" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("properties")}
@@ -265,7 +266,7 @@ export default function UserProfile() {
               ) : null}
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "notifications" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("notifications")}
@@ -278,7 +279,7 @@ export default function UserProfile() {
               ) : null}
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "calendar" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("calendar")}
@@ -291,7 +292,7 @@ export default function UserProfile() {
               ) : null}
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center ${
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
                 tab === "settings" ? "bg-gray-200" : ""
               }`}
               onClick={() => setTab("settings")}
@@ -299,7 +300,7 @@ export default function UserProfile() {
               <SettingsIcon className="mr-3" /> Settings
             </li>
             <li
-              className={`p-4 cursor-pointer flex flex-row items-center`}
+              className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center`}
               onClick={() => {
                 auth.signOut().then(() => {
                   if (pathname !== "/") {
@@ -605,7 +606,7 @@ function RentedProperties({ personalInfo, user }) {
               {[...Array(2)].map((_, i) => (
                 <div
                   key={i}
-                  className="grid grid-cols-12 w-200 rounded-xl my-3 p-4 animate-pulse border"
+                  className="grid grid-cols-12 w-full max-w-3xl rounded-xl my-3 p-4 animate-pulse border"
                 >
                   <div className="col-start-1 col-end-4">
                     <div className="h-24 w-36 bg-gray-200 rounded-xl" />
@@ -621,7 +622,7 @@ function RentedProperties({ personalInfo, user }) {
           ) : (
             listings.map((listing, index) => (
               <div
-                className="grid grid-cols-12 w-200 rounded-xl my-3 p-4 text-sm"
+                className="grid grid-cols-12 w-full max-w-3xl rounded-xl my-3 p-4 text-sm"
                 style={{ boxShadow: "0px 0px 10px lightgrey" }}
                 key={index}
               >
