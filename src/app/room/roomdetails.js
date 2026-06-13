@@ -22,6 +22,8 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import InputFieldCustom from "../components/InputField";
 import {
@@ -75,6 +77,11 @@ const RoomDetails = ({ room }) => {
   const [selectedImage, setSelectedImage] = useState("");
   const [addBookingSuccess, setAddBookingSuccess] = useState(false);
   const [addAppointmentSuccess, setAddAppointmentSuccess] = useState(false);
+  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
+  const notify = (message, severity = "success") =>
+    setToast({ open: true, message, severity });
+  const [isBooking, setIsBooking] = useState(false);
+  const [isRequestingAppt, setIsRequestingAppt] = useState(false);
 
   const [dropDownMenu, setDropDownMenu] = useState({
     safetyFeatures: false,
@@ -261,11 +268,13 @@ const RoomDetails = ({ room }) => {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     if (!bookingDetails.agreeTerms) {
-      alert(
-        "You must agree to the terms of the leasing contract and policies of KamerLark."
+      notify(
+        "Please agree to the leasing contract and KamerLark policies to continue.",
+        "warning"
       );
       return;
     }
+    setIsBooking(true);
     try {
       const bookingDetailsModified = {
         userName: bookingDetails.name,
@@ -281,7 +290,6 @@ const RoomDetails = ({ room }) => {
         chatId: "",
         status: "pending",
       };
-      alert("Booking in progress..." + auth.currentUser.uid);
       const booking = await addDoc(
         collection(db, "bookings"),
         bookingDetailsModified
@@ -315,17 +323,20 @@ const RoomDetails = ({ room }) => {
           )
         );
       } catch {}
-      alert("Booking successful!");
+      notify("Booking request sent! The owner will respond in your chat.", "success");
       setIsBookNowOpen(false);
       setAddBookingSuccess(true);
     } catch (error) {
       console.error("Error adding booking: ", error);
-      alert("Failed to book the room");
+      notify("Couldn't send your booking. Please try again.", "error");
+    } finally {
+      setIsBooking(false);
     }
   };
 
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
+    setIsRequestingAppt(true);
     try {
       // Combine date and time for calendar-friendly values
       const apptDate = dayjs(appointmentDetails.date);
@@ -383,12 +394,14 @@ const RoomDetails = ({ room }) => {
           )
         );
       } catch {}
-      alert("Appointment successful!");
+      notify("Visit request sent! Confirm the time with the owner in your chat.", "success");
       setIsAppointmentOpen(false);
       setAddAppointmentSuccess(true);
     } catch (error) {
-      console.error("Error adding booking: ", error);
-      alert("Failed to book the room");
+      console.error("Error adding appointment: ", error);
+      notify("Couldn't request the visit. Please try again.", "error");
+    } finally {
+      setIsRequestingAppt(false);
     }
   };
 
@@ -1119,8 +1132,9 @@ const RoomDetails = ({ room }) => {
             </p>
           </div>
           <CustomButton
-            label={"Submit"}
+            label={isBooking ? "Sending…" : "Submit"}
             onClick={handleBookingSubmit}
+            disabled={isBooking}
             colStart={1}
             colEnd={13}
           />
@@ -1217,8 +1231,9 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <CustomButton
-            label={"Submit"}
+            label={isRequestingAppt ? "Sending…" : "Submit"}
             onClick={handleAppointmentSubmit}
+            disabled={isRequestingAppt}
             colStart={1}
             colEnd={13}
           />
@@ -1390,6 +1405,22 @@ const RoomDetails = ({ room }) => {
           </div>
         </div>
       </CustomModal>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={5000}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setToast((t) => ({ ...t, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };
