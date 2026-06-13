@@ -161,7 +161,7 @@ const ChatRoom = () => {
       <Header />
       <div className="pt-16">
         <div
-          className="h-170 grid grid-cols-12 w-full md:w-256 mx-auto my-5 rounded-lg text-sm overflow-hidden px-3 md:px-0"
+          className="h-170 grid grid-cols-12 w-full max-w-5xl mx-auto my-5 rounded-lg text-sm overflow-hidden px-3 md:px-0"
           style={{ boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)" }}
         >
           {/* Mobile toggle */}
@@ -188,14 +188,15 @@ const ChatRoom = () => {
             {chatRoomId !== "" ? (
               <ChatBox chatRoomId={chatRoomId} currentUser={currentUser} />
             ) : (
-              <div className="flex flex-col justify-center items-center mt-28">
-                <Image src={message} width={400} height={400} alt="back" />
-                <button
-                  className="bg-black p-3 px-4 rounded-md text-white"
-                  style={{ marginTop: "-50px" }}
-                >
-                  Start Messaging
-                </button>
+              <div className="flex flex-col items-center justify-center mt-28 px-6 text-center">
+                <Image src={message} width={320} height={320} alt="" />
+                <p className="-mt-6 text-base font-semibold text-gray-800">
+                  Select a conversation
+                </p>
+                <p className="mt-1 max-w-xs text-sm text-gray-500">
+                  Choose a chat from the list to view messages, or start one by
+                  booking or messaging an owner from a listing.
+                </p>
               </div>
             )}
           </div>
@@ -338,7 +339,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
       }, { merge: true });
       setFiles([]);
       setImageUploader(false);
-      alert("Images uploaded successfully");
+      // No alert needed — the uploaded images appear immediately in the thread.
     } catch (e) {
       console.error("Error uploading images:", e);
     }
@@ -451,12 +452,12 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
           <div>
             <p>Uploaded Images</p>
             <div
-              className="w-170"
+              className="w-full max-w-2xl overflow-x-auto"
               style={{
                 height: "200px",
               }}
             >
-              <div className="flex flex-row" style={{}}>
+              <div className="flex flex-row gap-2" style={{}}>
                 {files.map((file,index) => (
                   <div className="" key={index}>
                     <Image
