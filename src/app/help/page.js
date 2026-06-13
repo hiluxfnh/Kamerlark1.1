@@ -14,6 +14,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 const SUPPORT_EMAIL = "info.kamerlark@gmail.com";
 const WHATSAPP_E164 = "+919108553983"; // international format without spaces
+const WHATSAPP_DISPLAY = "+91 91085 53983"; // human-readable
 
 export default function HelpPage() {
   const [query, setQuery] = useState("");
@@ -129,7 +130,7 @@ export default function HelpPage() {
               rel="noopener noreferrer"
               className="inline-block mt-3 text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
             >
-              {WHATSAPP_E164}
+              {WHATSAPP_DISPLAY}
             </a>
           </div>
           <div className="rounded-md border p-4 theme-card">
@@ -338,7 +339,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "How do I contact support?",
-    answer: `Email: ${SUPPORT_EMAIL}  |  WhatsApp: ${WHATSAPP_E164}`,
+    answer: `Email: ${SUPPORT_EMAIL}  |  WhatsApp: ${WHATSAPP_DISPLAY}`,
   },
   {
     question: "Can I edit my profile details?",
