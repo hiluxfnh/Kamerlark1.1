@@ -190,7 +190,7 @@ const Header = () => {
       {isNavOpen && (
         <nav
           aria-label="Mobile"
-          className="md:hidden w-256 max-w-[90vw] mx-auto px-2 pb-3"
+          className="md:hidden mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6"
         >
           <div className="flex flex-col gap-2">
             <Link href="/" className="text-white py-2 border-b border-white/10">

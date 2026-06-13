@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { uploadImages as uploadAllImages } from "../../../lib/uploadImage";
 import Spinner from "../../../components/Spinner"; // Import Spinner
+import useToast from "../../../components/useToast";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -54,6 +55,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 const EditIdPage = ({ params }) => {
+  const { notify, toast } = useToast();
   const { roomId } = params;
   const roomDocRef = doc(db, "roomdetails", roomId);
   useEffect(() => {
@@ -150,10 +152,10 @@ const EditIdPage = ({ params }) => {
         },
         { merge: true }
       );
-      alert("Room details added successfully");
+      notify("Changes saved.", "success");
     } catch (error) {
-      console.error("Error adding room details: ", error);
-      alert("Failed to add room details");
+      console.error("Error updating room details: ", error);
+      notify("Couldn't save changes. Please try again.", "error");
     }
     setLoading(false);
   };
@@ -792,10 +794,10 @@ const EditIdPage = ({ params }) => {
                       { merge: true }
                     );
                     setShowLocationEditor(false);
-                    alert("Location updated");
+                    notify("Location updated.", "success");
                   } catch (e) {
                     console.error(e);
-                    alert("Failed to update location");
+                    notify("Couldn't update location. Please try again.", "error");
                   }
                 }}
               >
@@ -805,6 +807,7 @@ const EditIdPage = ({ params }) => {
           </div>
         </div>
       )}
+      {toast}
     </>
   );
 };

@@ -4,6 +4,7 @@ import { auth, db } from "../../firebase/Config";
 import { addDoc, collection, doc, getDocs, limit, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from "firebase/firestore";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getIdTokenResult } from "firebase/auth";
+import useToast from "../../components/useToast";
 
 // Replace with your own UID(s)
 const ADMIN_UIDS = new Set<string>([
@@ -32,6 +33,7 @@ type TicketNote = {
 };
 
 function TicketNotes({ ticketId, canWrite }: { ticketId: string; canWrite: boolean }) {
+  const { notify, toast } = useToast();
   const [user] = useAuthState(auth);
   const [notes, setNotes] = useState<TicketNote[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -60,12 +62,13 @@ function TicketNotes({ ticketId, canWrite }: { ticketId: string; canWrite: boole
       });
       setNewNote("");
     } catch (e: any) {
-      alert(e?.message || "Failed to add note");
+      notify(e?.message || "Failed to add note", "error");
     }
   };
 
   return (
     <div className="mt-3 border-t pt-3">
+      {toast}
       {loading ? (
         <p className="text-xs text-gray-500">Loading notes…</p>
       ) : notes.length === 0 ? (
@@ -106,6 +109,7 @@ function TicketNotes({ ticketId, canWrite }: { ticketId: string; canWrite: boole
 }
 
 export default function AdminTicketsPage() {
+  const { notify, toast } = useToast();
   const [user] = useAuthState(auth);
   const [allowed, setAllowed] = useState(false);
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -186,7 +190,7 @@ export default function AdminTicketsPage() {
       await updateDoc(doc(db, "supportTickets", id), { status });
       setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status } : t)));
     } catch (e: any) {
-      alert(e?.message || "Failed to update status");
+      notify(e?.message || "Failed to update status", "error");
     }
   };
 
@@ -201,6 +205,7 @@ export default function AdminTicketsPage() {
 
   return (
     <div className="p-6">
+      {toast}
       <h1 className="text-xl font-semibold">Support Tickets</h1>
       <div className="mt-3 flex items-center gap-2 text-sm">
         <label>

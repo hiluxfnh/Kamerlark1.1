@@ -6,6 +6,7 @@ import { db, auth } from "../firebase/Config";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { uploadImages as uploadAllImages } from "../lib/uploadImage";
 import Spinner from "../components/Spinner";
+import useToast from "../components/useToast";
 import TextField from "@mui/material/TextField";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -48,6 +49,7 @@ const VisuallyHiddenInput = styled("input")({
 });
 
 const AddListing = () => {
+  const { notify, toast } = useToast();
   const [safetyFeature, setSafetyFeature] = useState("");
   const [rule, setRule] = useState("");
   const [accessibilityFeature, setAccessibilityFeature] = useState("");
@@ -155,7 +157,7 @@ const AddListing = () => {
     if (Object.keys(newErrors).length) return;
     const user = auth.currentUser;
     if (!user) {
-      alert("Please log in to add a listing.");
+      notify("Please log in to add a listing.", "warning");
       return;
     }
     setLoading(true);
@@ -206,7 +208,7 @@ const AddListing = () => {
         createdAt: serverTimestamp(),
         roomId: `${user.uid}-${Date.now()}`,
       });
-      alert("Room details added successfully");
+      notify("Listing published! It's now live on KamerLark.", "success");
       setRoomDetails({
         roomId: "",
         name: "",
@@ -240,7 +242,7 @@ const AddListing = () => {
       setPreviews([]);
     } catch (error) {
       console.error("Error adding room details: ", error);
-      alert("Failed to add room details");
+      notify("Couldn't publish the listing. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -335,7 +337,7 @@ const AddListing = () => {
     <>
       <Header />
       <div className="w-screen theme-surface min-h-screen pt-16">
-        <div className="w-256 mx-auto pt-10 mb-5">
+        <div className="mx-auto w-full max-w-5xl px-4 pt-10 mb-5 sm:px-6">
           <h1 className="text-2xl font-medium text-left mb-2">Add Listing</h1>
           <div
             className="bg-black mb-3"
@@ -972,6 +974,7 @@ const AddListing = () => {
           </div>
         </div>
       </div>
+      {toast}
     </>
   );
 };
