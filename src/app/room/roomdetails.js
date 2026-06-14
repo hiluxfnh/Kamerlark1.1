@@ -8,10 +8,14 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   updateDoc,
+  setDoc,
   arrayUnion,
   increment,
   serverTimestamp,
+  query,
+  where,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
 import dynamic from "next/dynamic";
@@ -198,10 +202,16 @@ const RoomDetails = ({ room }) => {
     return <Spinner />; // Show spinner while loading room data
   }
 
-  const images = room.images.slice(0, 4); // Only take the first 4 images
+  // Guard against missing/empty images (older docs, or listings with none).
+  const FALLBACK_IMG = require("../assets/a1.png");
+  const images = (Array.isArray(room.images) ? room.images : [])
+    .filter((u) => typeof u === "string" && u.trim().length > 0)
+    .slice(0, 4);
+  // Never feed <Image> an empty src — that crashes the whole page.
+  const mainImage = selectedImage || images[0] || FALLBACK_IMG;
 
   useEffect(() => {
-    if (images && images.length > 0) setSelectedImage(images[0]);
+    if (images.length > 0) setSelectedImage(images[0]);
   }, [room]);
 
   // Increment view counter on mount
@@ -504,7 +514,7 @@ const RoomDetails = ({ room }) => {
           <div className="w-full lg:w-3/5">
             <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-gray-100 sm:aspect-[16/10]">
               <Image
-                src={selectedImage}
+                src={mainImage}
                 alt={room.name}
                 width={900}
                 height={620}

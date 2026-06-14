@@ -85,7 +85,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
           style={{ width: "150px" }}
         >
           <Image
-            src={listing.roomDetails.images[0]}
+            src={listing.roomDetails.images?.[0] || require("../../assets/a1.png")}
             alt={listing.roomDetails.name}
             width={100}
             height={100}

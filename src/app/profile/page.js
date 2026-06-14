@@ -633,7 +633,7 @@ function RentedProperties({ personalInfo, user }) {
                   }}
                 >
                   <Image
-                    src={listing.images[0]}
+                    src={listing.images?.[0] || require("../assets/a1.png")}
                     alt={listing.name}
                     width={100}
                     height={100}

@@ -45,8 +45,14 @@ const MessagesDisplay = ({ messages, lastSeenTimestamp, hasMore, onLoadMore }: {
     return messages.findIndex((m: any) => isAfter(m.timestamp, lastSeenTimestamp));
   }, [messages, lastSeenTimestamp]);
 
-  const renderImages = (urls: string[]) => {
-    if (!urls || urls.length === 0) return null;
+  const renderImages = (raw: string[] | string) => {
+    // Image messages should be an array of URLs, but legacy/bad docs may store
+    // a single string, undefined, or empty entries. Normalise and drop empties
+    // so <Image> never receives an empty src (which crashes the page).
+    const urls = (Array.isArray(raw) ? raw : raw ? [raw] : []).filter(
+      (u) => typeof u === "string" && u.trim().length > 0
+    );
+    if (urls.length === 0) return null;
     if (urls.length === 1) {
       return (
         <div className="rounded-lg overflow-hidden">

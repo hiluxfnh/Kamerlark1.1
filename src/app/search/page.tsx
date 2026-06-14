@@ -5,6 +5,7 @@ import SchoolIcon from "@mui/icons-material/School";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SingleBedIcon from "@mui/icons-material/SingleBed";
 import MapIcon from "@mui/icons-material/Map";
+import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import { use, useEffect, useRef, useState } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../firebase/Config";
@@ -13,6 +14,8 @@ import RoomCardNew from "../components/roomCard";
 import { Box, Slider, Typography } from "@mui/material";
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+const SearchMapView = dynamic(() => import("../components/SearchMapView"), { ssr: false });
 function valuetext(value: number) {
   return `${value}°C`;
 }
@@ -78,6 +81,7 @@ const SearchPage = () => {
 
   //location
   const [locationModal, setLocationModal] = useState(false);
+  const [mapView, setMapView] = useState(false);
   const viewParam = params.get("view");
   const [location, setLocation] = useState(viewParam === "all" ? "" : params.get("search") || "");
 
@@ -901,6 +905,14 @@ const SearchPage = () => {
             setWashroomOther("");
             setLocation("");
           }}><DeleteSweepIcon fontSize="small"/>Clear all</p>
+          <button
+            className="ml-auto flex items-center gap-1 p-2 px-3 rounded-2xl text-sm border border-gray-300 hover:bg-gray-100 transition-colors"
+            onClick={() => setMapView((v) => !v)}
+            title={mapView ? "Switch to grid view" : "Switch to map view"}
+          >
+            {mapView ? <ViewModuleIcon fontSize="small" /> : <MapIcon fontSize="small" />}
+            {mapView ? "Grid" : "Map"}
+          </button>
           {viewParam === 'all' && !(location && location.trim()) && (
             <span className="ml-auto inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 border">
               All listings
@@ -908,7 +920,12 @@ const SearchPage = () => {
           )}
         </div>
       </div>
-      <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
+      {mapView ? (
+        <div className="w-full">
+          <SearchMapView rooms={rooms} />
+        </div>
+      ) : null}
+      <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6${mapView ? " hidden" : ""}`}>
   {rooms.length ? (
           <div className="mt-3 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rooms.slice(0, visibleCount).map((room) => {
