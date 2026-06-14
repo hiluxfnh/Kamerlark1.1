@@ -284,19 +284,23 @@ const RoomDetails = ({ room }) => {
       );
       return;
     }
+    if (!auth.currentUser) {
+      notify("You must be signed in to book.", "error");
+      return;
+    }
+    const ownerId = room.ownerId || null;
     setIsBooking(true);
     try {
       const bookingDetailsModified = {
-        userName: bookingDetails.name,
-        userEmail: bookingDetails.email,
-        userPhone: bookingDetails.phone,
-        userAddress: bookingDetails.address,
-        // Format using dayjs for correct month handling
+        userName: bookingDetails.name || "",
+        userEmail: bookingDetails.email || "",
+        userPhone: bookingDetails.phone || "",
+        userAddress: bookingDetails.address || "",
         moveInDate: dayjs(bookingDetails.moveInDate).format("DD-MM-YYYY"),
-        notes: bookingDetails.notes,
+        notes: bookingDetails.notes || "",
         roomId: room.id,
-        ownerId: room.ownerId,
-        userId: auth.currentUser.uid, // Add user ID to the booking details
+        ownerId: ownerId,
+        userId: auth.currentUser.uid,
         chatId: "",
         status: "pending",
       };
@@ -305,40 +309,55 @@ const RoomDetails = ({ room }) => {
         bookingDetailsModified
       );
       const bookingId = booking.id;
-      const roomId = await ChatRoomHandler({
-        userId1: auth.currentUser.uid,
-        userId2: room.ownerId,
-      });
-      const roomRef = doc(db, "chatRoom", roomId);
-      await addDoc(collection(roomRef, "messages"), {
-        bookingId: bookingId,
-        userId: user.uid,
-        type: "booking",
-        photoURL: user.photoURL,
-        timestamp: serverTimestamp(),
-      });
-      try {
-        const mQ = query(
-          collection(db, "chatRoomMapping"),
-          where("roomId", "==", roomId)
-        );
-        const mSnap = await getDocs(mQ);
-        await Promise.all(
-          mSnap.docs.map((d) =>
-            setDoc(
-              doc(db, "chatRoomMapping", d.id),
-              { lastMessageTs: serverTimestamp() },
-              { merge: true }
-            )
-          )
-        );
-      } catch {}
+
+      // Only open a chat thread if the listing has an owner other than self
+      if (ownerId && ownerId !== auth.currentUser.uid) {
+        try {
+          const roomId = await ChatRoomHandler({
+            userId1: auth.currentUser.uid,
+            userId2: ownerId,
+          });
+          const chatRoomRef = doc(db, "chatRoom", roomId);
+          await addDoc(collection(chatRoomRef, "messages"), {
+            bookingId: bookingId,
+            userId: user.uid,
+            type: "booking",
+            photoURL: user.photoURL || null,
+            timestamp: serverTimestamp(),
+          });
+          try {
+            const mQ = query(
+              collection(db, "chatRoomMapping"),
+              where("roomId", "==", roomId)
+            );
+            const mSnap = await getDocs(mQ);
+            await Promise.all(
+              mSnap.docs.map((d) =>
+                setDoc(
+                  doc(db, "chatRoomMapping", d.id),
+                  { lastMessageTs: serverTimestamp() },
+                  { merge: true }
+                )
+              )
+            );
+          } catch {}
+        } catch (chatErr) {
+          // Chat thread failed — booking is already saved, just skip chat
+          console.warn("Chat setup failed after booking:", chatErr);
+        }
+      }
+
       notify("Booking request sent! The owner will respond in your chat.", "success");
       setIsBookNowOpen(false);
       setAddBookingSuccess(true);
     } catch (error) {
-      console.error("Error adding booking: ", error);
-      notify("Couldn't send your booking. Please try again.", "error");
+      console.error("Booking error:", error?.code, error?.message, error);
+      notify(
+        error?.code === "permission-denied"
+          ? "Permission denied — please sign out and sign back in, then try again."
+          : `Booking failed: ${error?.message || "unknown error"}`,
+        "error"
+      );
     } finally {
       setIsBooking(false);
     }
@@ -346,9 +365,13 @@ const RoomDetails = ({ room }) => {
 
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
+    if (!auth.currentUser) {
+      notify("You must be signed in to request a visit.", "error");
+      return;
+    }
+    const ownerId = room.ownerId || null;
     setIsRequestingAppt(true);
     try {
-      // Combine date and time for calendar-friendly values
       const apptDate = dayjs(appointmentDetails.date);
       const apptTime = dayjs(appointmentDetails.time);
       const combinedStart = apptDate
@@ -358,58 +381,71 @@ const RoomDetails = ({ room }) => {
         .millisecond(0);
       const combinedTimeStr = combinedStart.format("HH:mm");
       const appointmentDetailsModified = {
-        userName: appointmentDetails.name,
-        userEmail: appointmentDetails.email,
-        userPhone: appointmentDetails.phone,
+        userName: appointmentDetails.name || "",
+        userEmail: appointmentDetails.email || "",
+        userPhone: appointmentDetails.phone || "",
         appointmentDate: apptDate.format("DD-MM-YYYY"),
         appointmentTime: combinedTimeStr,
-        message: appointmentDetails.message,
+        message: appointmentDetails.message || "",
         roomId: room.id,
-        ownerId: room.ownerId,
-        userId: auth.currentUser.uid, // Add user ID to the booking details
+        ownerId: ownerId,
+        userId: auth.currentUser.uid,
         chatId: "",
         status: "pending",
-        appointmentType: appointmentDetails.appointmenttype,
+        appointmentType: appointmentDetails.appointmenttype || "",
       };
       const appointment = await addDoc(
         collection(db, "appointments"),
         appointmentDetailsModified
       );
       const appointmentId = appointment.id;
-      const roomId = await ChatRoomHandler({
-        userId1: auth.currentUser.uid,
-        userId2: room.ownerId,
-      });
-      const roomRef = doc(db, "chatRoom", roomId);
-      await addDoc(collection(roomRef, "messages"), {
-        appointmentId: appointmentId,
-        userId: user.uid,
-        type: "appointment",
-        photoURL: user.photoURL,
-        timestamp: serverTimestamp(),
-      });
-      try {
-        const mQ = query(
-          collection(db, "chatRoomMapping"),
-          where("roomId", "==", roomId)
-        );
-        const mSnap = await getDocs(mQ);
-        await Promise.all(
-          mSnap.docs.map((d) =>
-            setDoc(
-              doc(db, "chatRoomMapping", d.id),
-              { lastMessageTs: serverTimestamp() },
-              { merge: true }
-            )
-          )
-        );
-      } catch {}
+
+      if (ownerId && ownerId !== auth.currentUser.uid) {
+        try {
+          const roomId = await ChatRoomHandler({
+            userId1: auth.currentUser.uid,
+            userId2: ownerId,
+          });
+          const chatRoomRef = doc(db, "chatRoom", roomId);
+          await addDoc(collection(chatRoomRef, "messages"), {
+            appointmentId: appointmentId,
+            userId: user.uid,
+            type: "appointment",
+            photoURL: user.photoURL || null,
+            timestamp: serverTimestamp(),
+          });
+          try {
+            const mQ = query(
+              collection(db, "chatRoomMapping"),
+              where("roomId", "==", roomId)
+            );
+            const mSnap = await getDocs(mQ);
+            await Promise.all(
+              mSnap.docs.map((d) =>
+                setDoc(
+                  doc(db, "chatRoomMapping", d.id),
+                  { lastMessageTs: serverTimestamp() },
+                  { merge: true }
+                )
+              )
+            );
+          } catch {}
+        } catch (chatErr) {
+          console.warn("Chat setup failed after appointment:", chatErr);
+        }
+      }
+
       notify("Visit request sent! Confirm the time with the owner in your chat.", "success");
       setIsAppointmentOpen(false);
       setAddAppointmentSuccess(true);
     } catch (error) {
-      console.error("Error adding appointment: ", error);
-      notify("Couldn't request the visit. Please try again.", "error");
+      console.error("Appointment error:", error?.code, error?.message, error);
+      notify(
+        error?.code === "permission-denied"
+          ? "Permission denied — please sign out and sign back in, then try again."
+          : `Visit request failed: ${error?.message || "unknown error"}`,
+        "error"
+      );
     } finally {
       setIsRequestingAppt(false);
     }
