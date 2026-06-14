@@ -1,9 +1,12 @@
+"use client";
 import Image from "next/image";
 import PersonIcon from "@mui/icons-material/Person";
 import HotelIcon from "@mui/icons-material/Hotel";
 import SquareFootIcon from "@mui/icons-material/SquareFoot";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Link from "next/link";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../firebase/Config";
 
 // Strip any trailing m²/m2 the owner typed so we control the unit display
 const cleanSize = (raw) => {
@@ -19,6 +22,8 @@ const formatPrice = (price) => {
 };
 
 const RoomCardNew = ({ room }) => {
+  const [user] = useAuthState(auth);
+  const isOwner = user && room?.ownerId && user.uid === room.ownerId;
   const imgSrc =
     room?.images && room.images.length > 0
       ? room.images[0]
@@ -45,6 +50,11 @@ const RoomCardNew = ({ room }) => {
           width={600}
           height={450}
         />
+        {isOwner ? (
+          <span className="absolute right-3 top-3 rounded-full bg-green-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
+            Your listing
+          </span>
+        ) : null}
         {room?.furnishedStatus ? (
           <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 shadow-sm backdrop-blur">
             {room.furnishedStatus}

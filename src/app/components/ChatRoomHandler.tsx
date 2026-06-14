@@ -8,12 +8,18 @@ const ChatRoomHandler = async ({ userId1, userId2 }) => {
     const [a, b] = [userId1, userId2].sort();
     const pairId = `${a}_${b}`;
 
-    // Try direct doc by pairId to avoid array-contains scan if schema supports it
-    const pairDocRef = doc(db, 'chatRoomMapping', pairId);
-    const pairDoc = await getDoc(pairDocRef);
-    if (pairDoc.exists()) {
-        await setDoc(pairDocRef, { timestamp: serverTimestamp() }, { merge: true });
-        return pairDoc.data().roomId;
+    // Try direct doc by pairId to avoid array-contains scan if schema supports it.
+    // getDoc on a non-existent doc can be denied by Firestore rules when resource==null,
+    // so we catch that and fall through to the query.
+    try {
+        const pairDocRef = doc(db, 'chatRoomMapping', pairId);
+        const pairDoc = await getDoc(pairDocRef);
+        if (pairDoc.exists()) {
+            await setDoc(pairDocRef, { timestamp: serverTimestamp() }, { merge: true });
+            return pairDoc.data().roomId;
+        }
+    } catch (_) {
+        // permission denied on non-existent doc — fall through to query
     }
 
     // Fallback: minimal scan for userId1, then filter by userId2
