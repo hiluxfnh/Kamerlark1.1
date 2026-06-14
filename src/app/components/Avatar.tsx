@@ -1,5 +1,5 @@
-import Image from "next/image";
-import React from "react";
+"use client";
+import React, { useState } from "react";
 
 type Props = {
   src?: string | null;
@@ -38,15 +38,24 @@ function getInitials(name?: string | null) {
 
 const Avatar: React.FC<Props> = ({ src, name, size = 40, className = "", rounded = true }) => {
   const initials = getInitials(name);
-  // Only render the image when there's a real, non-empty src. Otherwise fall
-  // back to initials so a missing profile pic never shows a broken image.
-  if (src && String(src).trim().length > 0) {
+  const [imgError, setImgError] = useState(false);
+  // Render the image only when there's a real src AND it hasn't failed to load.
+  // A broken/expired photoURL (e.g. revoked Google avatar) triggers onError and
+  // falls back to initials instead of showing a broken-image icon.
+  if (src && String(src).trim().length > 0 && !imgError) {
+    // Native <img> (not next/image): images are globally `unoptimized` so
+    // next/image adds no benefit here, and its onError is unreliable for remote
+    // 404s. A plain img fires onError reliably, so a broken/expired photoURL
+    // cleanly falls back to initials instead of a broken-image icon.
+    // eslint-disable-next-line @next/next/no-img-element
     return (
-      <Image
+      <img
         src={src}
         alt={name || "avatar"}
         width={size}
         height={size}
+        onError={() => setImgError(true)}
+        style={{ width: size, height: size }}
         className={`${rounded ? "rounded-full" : "rounded-md"} object-cover ${className}`}
       />
     );

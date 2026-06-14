@@ -45,7 +45,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 type MessagesProps = { roomId: string };
-const Messages: React.FC<MessagesProps> = ({ roomId }) => {
+const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, currentUser }) => {
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
   const initialLimit = 50;
@@ -154,7 +154,7 @@ const Messages: React.FC<MessagesProps> = ({ roomId }) => {
     );
   }
   const merged = [...(older || []), ...(messages || [])];
-  return <MessagesDisplay messages={merged} lastSeenTimestamp={lastSeen} hasMore={hasMore} onLoadMore={onLoadMore} />;
+  return <MessagesDisplay messages={merged} currentUser={currentUser} lastSeenTimestamp={lastSeen} hasMore={hasMore} onLoadMore={onLoadMore} />;
 };
 const ChatRoom = () => {
   const [chatRoomId, setChatRoomId] = useState("");
@@ -392,7 +392,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
             }}
           />
           <div className="relative h-full w-full">
-            <Messages roomId={chatRoomId} />
+            <Messages roomId={chatRoomId} currentUser={currentUser} />
           </div>
         </div>
       ) : (

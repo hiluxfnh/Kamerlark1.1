@@ -7,7 +7,7 @@ import BookingComponent from "./BookingComponent";
 import TimeStampConvertor from "../../components/timestampConvertor";
 import AppointmentComponent from "./AppointmentComponent";
 
-const MessagesDisplay = ({ messages, lastSeenTimestamp, hasMore, onLoadMore }: { messages: any[]; lastSeenTimestamp?: any; hasMore?: boolean; onLoadMore?: () => void; }) => {
+const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, onLoadMore }: { messages: any[]; currentUser?: any; lastSeenTimestamp?: any; hasMore?: boolean; onLoadMore?: () => void; }) => {
   const [user] = useAuthState(auth);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [atBottom, setAtBottom] = useState(true);
@@ -117,7 +117,15 @@ const MessagesDisplay = ({ messages, lastSeenTimestamp, hasMore, onLoadMore }: {
             <div className={`flex items-end ${own ? 'flex-row-reverse' : 'flex-row'} max-w-[85%] sm:max-w-[75%]`}>
               {showAvatar ? (
                 <div className="mx-2 shrink-0">
-                  <Avatar src={msg.photoURL} name={msg.userName || msg.name || "User"} size={40} />
+                  <Avatar
+                    src={msg.photoURL}
+                    name={
+                      own
+                        ? user?.displayName || msg.userName || "You"
+                        : currentUser?.userName || msg.userName || msg.name || "User"
+                    }
+                    size={40}
+                  />
                 </div>
               ) : (
                 <div className="w-10 mx-2" />
