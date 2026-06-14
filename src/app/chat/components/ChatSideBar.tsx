@@ -82,6 +82,8 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
               unread,
               unreadCount,
               lastMessageTime,
+              _oppId: oppositeUserId,
+              _hasMessages: Boolean(lastMsg),
               _sortTs: Math.max(mappingTs, lastTs),
             };
           } catch (e) {
@@ -90,8 +92,26 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
           }
         })
       );
-      // Drop skipped rooms and keep newest-first ordering
-      setChatRooms(rows.filter(Boolean).sort((a: any, b: any) => (b._sortTs || 0) - (a._sortTs || 0)));
+      // Collapse duplicate conversations with the same person (legacy data
+      // created more than one mapping per user pair). Keep the one that has
+      // real messages / most recent activity — that's the working room, so the
+      // user never lands on a stale duplicate that 404s on open.
+      const byOpponent = new Map<string, any>();
+      for (const r of rows.filter(Boolean) as any[]) {
+        const key = r._oppId || r.roomId || r.id;
+        const existing = byOpponent.get(key);
+        if (
+          !existing ||
+          (r._hasMessages && !existing._hasMessages) ||
+          ((r._hasMessages === existing._hasMessages) && (r._sortTs || 0) > (existing._sortTs || 0))
+        ) {
+          byOpponent.set(key, r);
+        }
+      }
+      const deduped = Array.from(byOpponent.values()).sort(
+        (a: any, b: any) => (b._sortTs || 0) - (a._sortTs || 0)
+      );
+      setChatRooms(deduped);
     };
 
     // Preferred: indexed query (newest first). If the composite index is missing,

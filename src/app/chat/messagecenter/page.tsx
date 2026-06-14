@@ -142,7 +142,17 @@ const Messages: React.FC<MessagesProps> = ({ roomId }) => {
     };
   }, [roomId, JSON.stringify((messages || []).slice(-3))]);
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (error) {
+    // A permission-denied here almost always means an orphaned conversation
+    // (the underlying chatRoom doc is missing). Show a calm message instead of
+    // the raw Firebase error string.
+    return (
+      <div className="p-6 text-center text-sm text-gray-500">
+        This conversation is no longer available. Start a new one from the
+        listing or the member&apos;s profile.
+      </div>
+    );
+  }
   const merged = [...(older || []), ...(messages || [])];
   return <MessagesDisplay messages={merged} lastSeenTimestamp={lastSeen} hasMore={hasMore} onLoadMore={onLoadMore} />;
 };

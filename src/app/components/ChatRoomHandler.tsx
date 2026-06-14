@@ -4,17 +4,17 @@ import { db } from "../firebase/Config";
 const ChatRoomHandler = async ({ userId1, userId2 }) => {
     const chatRoomMappingRef = collection(db, 'chatRoomMapping');
     const chatRoomRef = collection(db, 'chatRoom');
-    // Deterministic pair id
+    // Deterministic pair id — a single, stable mapping doc per user pair.
     const [a, b] = [userId1, userId2].sort();
     const pairId = `${a}_${b}`;
+    const pairDocRef = doc(db, 'chatRoomMapping', pairId);
 
-    // Try direct doc by pairId to avoid array-contains scan if schema supports it.
-    // getDoc on a non-existent doc can be denied by Firestore rules when resource==null,
+    // Fast path: the deterministic pair doc already exists.
+    // getDoc on a non-existent doc can be denied by rules when resource==null,
     // so we catch that and fall through to the query.
     try {
-        const pairDocRef = doc(db, 'chatRoomMapping', pairId);
         const pairDoc = await getDoc(pairDocRef);
-        if (pairDoc.exists()) {
+        if (pairDoc.exists() && pairDoc.data().roomId) {
             await setDoc(pairDocRef, { timestamp: serverTimestamp() }, { merge: true });
             return pairDoc.data().roomId;
         }
@@ -22,20 +22,34 @@ const ChatRoomHandler = async ({ userId1, userId2 }) => {
         // permission denied on non-existent doc — fall through to query
     }
 
-    // Fallback: minimal scan for userId1, then filter by userId2
+    // Fallback: find any legacy mapping for this pair (older data may have
+    // used random-id mapping docs). Reuse its roomId so we don't create a
+    // duplicate conversation.
     const q = query(chatRoomMappingRef, where("userIds", "array-contains", userId1));
     const data = await getDocs(q);
     const filtered = data.docs.find(d => (d.data().userIds || []).includes(userId2));
-    if (filtered) {
-        await setDoc(filtered.ref, { timestamp: serverTimestamp() }, { merge: true });
-        return filtered.data().roomId;
+    if (filtered && filtered.data().roomId) {
+        const existingRoomId = filtered.data().roomId;
+        // Heal forward: ensure the deterministic pair doc points at the same
+        // room so future lookups are O(1) and no further duplicates appear.
+        try {
+            await setDoc(
+                pairDocRef,
+                { roomId: existingRoomId, userIds: [userId1, userId2], timestamp: serverTimestamp() },
+                { merge: true }
+            );
+        } catch {}
+        return existingRoomId;
     }
 
-    // Create new room + mapping (also write pairId doc for fast future lookup)
+    // Create a new room and exactly ONE mapping (the deterministic pair doc).
     const chatRoomDoc = await addDoc(chatRoomRef, { createdAt: serverTimestamp(), userIds: [userId1, userId2] });
     const roomId = chatRoomDoc.id;
-    await addDoc(chatRoomMappingRef, { roomId, userIds: [userId1, userId2], timestamp: serverTimestamp() });
-    await setDoc(pairDocRef, { roomId, userIds: [userId1, userId2], timestamp: serverTimestamp() }, { merge: true });
+    await setDoc(
+        pairDocRef,
+        { roomId, userIds: [userId1, userId2], timestamp: serverTimestamp() },
+        { merge: true }
+    );
     return roomId || null;
 }
 
