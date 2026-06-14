@@ -20,6 +20,7 @@ import {
 } from "firebase/auth";
 import { auth, db } from "../firebase/Config";
 import Header from "../components/Header";
+import Avatar from "../components/Avatar";
 import AccountManagement from "./Components/AccountManagement";
 import {
   UserIcon,
@@ -1110,19 +1111,11 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-            {personalInfo?.profileImage || user?.photoURL ? (
-              <Image
-                src={personalInfo?.profileImage || user?.photoURL}
-                alt="avatar"
-                width={64}
-                height={64}
-                className="rounded-full object-cover"
-              />
-            ) : (
-              <span className="text-gray-500 text-sm">No photo</span>
-            )}
-          </div>
+          <Avatar
+            src={personalInfo?.profileImage || user?.photoURL}
+            name={personalInfo?.userName || user?.displayName || user?.email}
+            size={64}
+          />
           <div>
             <h2 className="text-xl font-semibold">
               {personalInfo?.userName || "Your profile"}

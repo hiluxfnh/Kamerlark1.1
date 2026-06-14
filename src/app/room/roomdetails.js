@@ -40,6 +40,7 @@ import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
 import { useAuthState } from "react-firebase-hooks/auth";
 import ChatRoomHandler from "../components/ChatRoomHandler";
+import Avatar from "../components/Avatar";
 import { useRouter } from "next/navigation";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
@@ -140,7 +141,7 @@ const RoomDetails = ({ room }) => {
     const review = {
       name: user.displayName || "Anonymous",
       review: newReview.trim(),
-      image: user.photoURL || "https://via.placeholder.com/150",
+      image: user.photoURL || "", // empty -> Avatar shows initials
       rating: Number(rating),
       userId: user.uid,
       createdAtMs: Date.now(),
@@ -148,14 +149,21 @@ const RoomDetails = ({ room }) => {
 
     try {
       const roomRef = doc(db, "roomdetails", room.id);
-      await updateDoc(roomRef, {
-        reviews: arrayUnion(review),
-      });
-      setReviews((prevReviews) => [...prevReviews, review]);
+      // One review per account: drop this user's previous review (if any) and
+      // keep only the most recent. Read fresh so we don't clobber others'.
+      const snap = await getDoc(roomRef);
+      const existing = Array.isArray(snap.data()?.reviews)
+        ? snap.data().reviews
+        : [];
+      const next = existing.filter((r) => r.userId !== user.uid);
+      next.push(review);
+      await updateDoc(roomRef, { reviews: next });
+      setReviews(next);
       setNewReview("");
       setRating(0);
     } catch (error) {
       console.error("Error adding review: ", error);
+      notify("Couldn't submit your review. Please try again.", "error");
     }
   };
 
@@ -911,19 +919,8 @@ const RoomDetails = ({ room }) => {
                   className="flex flex-row gap-2 p-4 border rounded-xl mb-2"
                   key={index}
                 >
-                  <div className="w-10 h-10 bg-black rounded-full overflow-hidden mr-3">
-                    <Image
-                      src={review.image}
-                      alt="User"
-                      width={100}
-                      height={100}
-                      layout="responsive"
-                      style={{
-                        width: "auto",
-                        height: "100px",
-                        objectFit: "cover",
-                      }}
-                    />
+                  <div className="mr-3 shrink-0">
+                    <Avatar src={review.image} name={review.name} size={40} />
                   </div>
                   <div className="w-40">
                     <p className="text-sm font-semibold mb-1">{review.name}</p>

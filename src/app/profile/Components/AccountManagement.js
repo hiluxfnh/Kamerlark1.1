@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import UserAvatar from "../../components/Avatar";
 import {
   Button,
-  Avatar,
   Snackbar,
   Alert,
   Dialog,
@@ -229,9 +229,10 @@ export default function AccountManagement({ personalInfo }) {
       <h2 className="text-xl font-bold mb-4">Account Management</h2>
       {/* Profile summary and avatar */}
       <div className="flex items-center gap-4 mb-6 p-4 rounded-lg border bg-white">
-        <Avatar
+        <UserAvatar
           src={personalInfoState.profileImage || user?.photoURL || ""}
-          sx={{ width: 64, height: 64 }}
+          name={personalInfoState.userName || user?.displayName || user?.email}
+          size={64}
         />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-gray-600">Signed in as</p>
