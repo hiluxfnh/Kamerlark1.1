@@ -76,7 +76,7 @@ const AppointmentCard = ({
           label={"Date & Time"}
           name={"time"}
           value={
-            appointment.appointmentDate + "at" + appointment.appointmentTime
+            appointment.appointmentDate + " at " + appointment.appointmentTime
           }
           onChange={() => {}}
           colStart={1}

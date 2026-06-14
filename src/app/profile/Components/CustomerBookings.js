@@ -127,6 +127,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 fontSize: "12px",
               }}
               fullWidth
+              onClick={() => listing.userId && router.push(`/profile/${listing.userId}`)}
             >
               View User Profile
             </Button>
@@ -138,6 +139,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 fontSize: "12px",
               }}
               fullWidth
+              onClick={() => listing.roomId && router.push(`/room/${listing.roomId}`)}
             >
               Room Details
             </Button>
@@ -192,7 +194,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                   fullWidth
                   onClick={onDecline}
                 >
-                  Declined
+                  Decline
                 </Button>
               </>
             ) : null}
