@@ -285,35 +285,49 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
       router.push("/login");
       return;
     }
-  if (newMessage.trim() === "") {
+    const text = newMessage.trim();
+    if (text === "" || !chatRoomId) {
       return;
     }
-    await setDoc(
-      doc(db, "chatRoomMapping", chatRoomMappingId),
-      {
-  timestamp: serverTimestamp(),
-  // Per-user lastRead map: write sender's lastRead on send to help self-read consistency
-  lastRead: { [user.uid]: serverTimestamp() },
-    typing: false,
-    typingUserId: user.uid,
-      },
-      { merge: true }
-    );
-    await addDoc(collection(roomRef, "messages"), {
-      message: newMessage,
-      userId: user.uid,
-      type: "text",
-      photoURL: user.photoURL,
-      timestamp: serverTimestamp(),
-    });
-    // update lastMessageTs on mapping for unread counts
-    try {
-      const q = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
-      const snap = await getDocs(q);
-      await Promise.all(snap.docs.map(d => setDoc(doc(db, 'chatRoomMapping', d.id), { lastMessageTs: serverTimestamp() }, { merge: true })));
-    } catch {}
+    // Clear the input immediately for snappy UX; restore it if the send fails.
     setNewMessage("");
-    // scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    try {
+      // The critical write: post the message. Do this FIRST so nothing else
+      // (a missing mapping id, a failed timestamp update) can block it.
+      await addDoc(collection(roomRef, "messages"), {
+        message: text,
+        userId: user.uid,
+        type: "text",
+        photoURL: user.photoURL || null,
+        timestamp: serverTimestamp(),
+      });
+      // Best-effort: bump the mapping(s) so the conversation sorts to top and
+      // unread counts stay accurate. Never let these block or fail the send.
+      try {
+        const q = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
+        const snap = await getDocs(q);
+        await Promise.all(
+          snap.docs.map((d) =>
+            setDoc(
+              doc(db, "chatRoomMapping", d.id),
+              {
+                timestamp: serverTimestamp(),
+                lastMessageTs: serverTimestamp(),
+                lastRead: { [user.uid]: serverTimestamp() },
+                typing: false,
+                typingUserId: user.uid,
+              },
+              { merge: true }
+            )
+          )
+        );
+      } catch (e) {
+        console.warn("Message sent, but updating conversation metadata failed:", e);
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      setNewMessage(text); // restore so the user doesn't lose their text
+    }
   };
 
   const handleAddImages = async () => {

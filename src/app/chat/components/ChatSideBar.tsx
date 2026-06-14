@@ -36,58 +36,82 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
   useEffect(() => {
     if (!user) return;
     const docRef = collection(db, "chatRoomMapping");
+
+    // Process a snapshot into chat-room rows. Each room is wrapped in its own
+    // try/catch so a single malformed mapping doc (e.g. missing opposite user)
+    // can never wipe out the entire conversation list.
+    const handleSnap = async (snap: any) => {
+      const data = snap.docs.filter((d: any) => (d.data().userIds || []).includes(user.uid));
+      const rows = await Promise.all(
+        data.map(async (room: any) => {
+          try {
+            const mapping = room.data();
+            const oppositeUserId = (mapping.userIds || []).find((id: string) => id !== user.uid);
+            if (!oppositeUserId || !mapping.roomId) return null; // skip malformed mappings
+            const userSnap = await getDoc(doc(db, "Users", oppositeUserId));
+            const oppositeUser = userSnap.data();
+            const messagesRef = collection(db, "chatRoom", mapping.roomId, "messages");
+            const lastSnap = await getDocs(query(messagesRef, orderBy("timestamp", "desc"), limit(1)));
+            const lastMsg = lastSnap.docs[0]?.data();
+            const toMillis = (t: any) => t?.toMillis ? t.toMillis() : (t?.toDate ? t.toDate().getTime() : (typeof t === 'number' ? t : Date.parse(t)));
+            const mappingTs = mapping.timestamp ? toMillis(mapping.timestamp) : 0;
+            const lastTs = lastMsg?.timestamp ? toMillis(lastMsg.timestamp) : 0;
+            let lastReadTs = mappingTs;
+            if (mapping.lastRead && mapping.lastRead[user.uid]) lastReadTs = toMillis(mapping.lastRead[user.uid]);
+            const unread = Boolean(lastMsg && lastMsg.userId !== user.uid && lastTs > lastReadTs);
+            let unreadCount = 0;
+            try {
+              const sampleSnap = await getDocs(query(messagesRef, orderBy('timestamp', 'desc'), limit(10)));
+              unreadCount = sampleSnap.docs.filter((d) => {
+                const m = d.data();
+                return m.userId !== user.uid && toMillis(m.timestamp) > lastReadTs;
+              }).length;
+            } catch {}
+            const toDate = (t: any) => t?.toDate ? t.toDate() : (typeof t === 'number' ? new Date(t) : (t?.seconds ? new Date(t.seconds * 1000) : new Date()));
+            const lmDate = lastMsg?.timestamp ? toDate(lastMsg.timestamp) : (mapping.timestamp ? toDate(mapping.timestamp) : new Date());
+            const lastMessageTime = humanizeTime(lmDate);
+            const time = mapping.timestamp?.toDate ? mapping.timestamp.toDate() : new Date();
+            const timeStr = time.toLocaleString();
+            return {
+              id: room.id,
+              user: oppositeUser,
+              ...mapping,
+              date: timeStr.split(',')[0],
+              time: timeStr.split(',')[1],
+              lastMessage: lastMsg?.type === 'text' ? String(lastMsg.message) : (lastMsg?.type === 'image' ? '📷 Image' : ''),
+              unread,
+              unreadCount,
+              lastMessageTime,
+              _sortTs: Math.max(mappingTs, lastTs),
+            };
+          } catch (e) {
+            console.warn("Skipping a chat room that failed to load:", e);
+            return null;
+          }
+        })
+      );
+      // Drop skipped rooms and keep newest-first ordering
+      setChatRooms(rows.filter(Boolean).sort((a: any, b: any) => (b._sortTs || 0) - (a._sortTs || 0)));
+    };
+
+    // Preferred: indexed query (newest first). If the composite index is missing,
+    // fall back to an unordered query so the list still loads.
     const qRooms = query(docRef, where("userIds", "array-contains", user.uid), orderBy("timestamp", "desc"));
-    const unsub = onSnapshot(qRooms, async (snap) => {
-      const data = snap.docs.filter((d) => (d.data().userIds || []).includes(user.uid));
-      const results: any[] = [];
-  await Promise.all(data.map(async (room) => {
-        const mapping = room.data();
-        const oppositeUserId = mapping.userIds.find((id: string) => id !== user.uid);
-        const userRef = doc(db, "Users", oppositeUserId);
-        const userSnap = await getDoc(userRef);
-        const oppositeUser = userSnap.data();
-        const messagesRef = collection(db, "chatRoom", mapping.roomId, "messages");
-        const lastQ = query(messagesRef, orderBy("timestamp", "desc"), limit(1));
-        const lastSnap = await getDocs(lastQ);
-        const lastMsg = lastSnap.docs[0]?.data();
-        const toMillis = (t: any) => t?.toMillis ? t.toMillis() : (t?.toDate ? t.toDate().getTime() : (typeof t === 'number' ? t : Date.parse(t)));
-  const mappingTs = mapping.timestamp ? toMillis(mapping.timestamp) : 0;
-  const lastTs = lastMsg?.timestamp ? toMillis(lastMsg.timestamp) : 0;
-        let lastReadTs = mappingTs;
-        if (mapping.lastRead && mapping.lastRead[user.uid]) lastReadTs = toMillis(mapping.lastRead[user.uid]);
-        const unread = Boolean(lastMsg && lastMsg.userId !== user.uid && lastTs > lastReadTs);
-        // Compute a small unread count sample (up to 10 recent messages)
-        let unreadCount = 0;
-        try {
-          const sampleQ = query(messagesRef, orderBy('timestamp', 'desc'), limit(10));
-          const sampleSnap = await getDocs(sampleQ);
-          unreadCount = sampleSnap.docs.filter(d => {
-            const m = d.data();
-            const mts = toMillis(m.timestamp);
-            return m.userId !== user.uid && mts > lastReadTs;
-          }).length;
-        } catch {}
-        // Compute last message time string (fallback to mapping timestamp)
-        const toDate = (t: any) => t?.toDate ? t.toDate() : (typeof t === 'number' ? new Date(t) : (t?.seconds ? new Date(t.seconds * 1000) : new Date()));
-  const lmDate = lastMsg?.timestamp ? toDate(lastMsg.timestamp) : (mapping.timestamp ? toDate(mapping.timestamp) : new Date());
-  const lastMessageTime = humanizeTime(lmDate);
-        const time = mapping.timestamp?.toDate ? mapping.timestamp.toDate() : new Date();
-        const timeStr = time.toLocaleString();
-        results.push({
-          id: room.id,
-          user: oppositeUser,
-          ...mapping,
-          date: timeStr.split(',')[0],
-          time: timeStr.split(',')[1],
-          lastMessage: lastMsg?.type === 'text' ? String(lastMsg.message) : (lastMsg?.type === 'image' ? '📷 Image' : ''),
-          unread,
-          unreadCount,
-          lastMessageTime,
-        });
-      }));
-      setChatRooms(results);
-    });
-    return () => unsub();
+    const unsub = onSnapshot(
+      qRooms,
+      handleSnap,
+      (err) => {
+        console.warn("Chat list ordered query failed, falling back unordered:", err?.message);
+        const fallbackUnsub = onSnapshot(
+          query(docRef, where("userIds", "array-contains", user.uid)),
+          handleSnap,
+          (e2) => console.error("Chat list failed to load:", e2)
+        );
+        (unsubRef as any).current = fallbackUnsub;
+      }
+    );
+    const unsubRef = { current: unsub } as { current: () => void };
+    return () => { try { (unsubRef.current || unsub)(); } catch {} };
   }, [user]);
   return (
     <div>

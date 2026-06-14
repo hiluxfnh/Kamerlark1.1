@@ -100,7 +100,10 @@ const MapComponent = ({
             onLocationChange({ ...newPos, address: first.display_name });
         }
       } catch (e) {
-        console.error("Geocode failed", e);
+        // Geocoding is best-effort (Nominatim can rate-limit / be blocked by
+        // CORS). A failure just means we keep the existing marker position —
+        // warn quietly instead of spamming the console with errors.
+        console.warn("Geocode unavailable; using existing coordinates.");
       }
     };
     geocode();

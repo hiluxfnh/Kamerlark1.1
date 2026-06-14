@@ -984,7 +984,7 @@ const RoomDetails = ({ room }) => {
         title="Booking Successful"
       >
         <p>
-          Your booking has submitted for approval. Wait for the owners response.
+          Your booking has been submitted for approval. Wait for the owner&apos;s response.
         </p>
         {/* Offer calendar options for planned move-in date */}
         {bookingDetails?.moveInDate ? (
@@ -1041,10 +1041,10 @@ const RoomDetails = ({ room }) => {
       <CustomModal
         isOpen={addAppointmentSuccess}
         onClose={() => setAddAppointmentSuccess(false)}
-        title="Appointment sent Successful"
+        title="Appointment Request Sent"
       >
         <p>
-          Your appointment has submitted for approval. Wait for the owners
+          Your appointment request has been submitted. Wait for the owner&apos;s
           response.
         </p>
         {/* Offer calendar options for appointment */}
