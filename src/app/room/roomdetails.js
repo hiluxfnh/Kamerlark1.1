@@ -334,13 +334,18 @@ const RoomDetails = ({ room }) => {
             timestamp: serverTimestamp(),
           });
           try {
-            const mQ = query(
-              collection(db, "chatRoomMapping"),
-              where("roomId", "==", roomId)
+            // Query by the allowed array-contains predicate (a roomId-only
+            // query is denied by security rules), then narrow client-side.
+            const mSnap = await getDocs(
+              query(
+                collection(db, "chatRoomMapping"),
+                where("userIds", "array-contains", auth.currentUser.uid)
+              )
             );
-            const mSnap = await getDocs(mQ);
             await Promise.all(
-              mSnap.docs.map((d) =>
+              mSnap.docs
+                .filter((d) => d.data().roomId === roomId)
+                .map((d) =>
                 setDoc(
                   doc(db, "chatRoomMapping", d.id),
                   { lastMessageTs: serverTimestamp() },
@@ -423,13 +428,18 @@ const RoomDetails = ({ room }) => {
             timestamp: serverTimestamp(),
           });
           try {
-            const mQ = query(
-              collection(db, "chatRoomMapping"),
-              where("roomId", "==", roomId)
+            // Query by the allowed array-contains predicate (a roomId-only
+            // query is denied by security rules), then narrow client-side.
+            const mSnap = await getDocs(
+              query(
+                collection(db, "chatRoomMapping"),
+                where("userIds", "array-contains", auth.currentUser.uid)
+              )
             );
-            const mSnap = await getDocs(mQ);
             await Promise.all(
-              mSnap.docs.map((d) =>
+              mSnap.docs
+                .filter((d) => d.data().roomId === roomId)
+                .map((d) =>
                 setDoc(
                   doc(db, "chatRoomMapping", d.id),
                   { lastMessageTs: serverTimestamp() },

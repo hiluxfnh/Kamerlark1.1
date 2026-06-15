@@ -45,6 +45,20 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 type MessagesProps = { roomId: string };
+
+// A chatRoomMapping query filtered ONLY by roomId is rejected by security
+// rules: they require the requester to be in `userIds`, which Firestore cannot
+// verify from a roomId-only query, so it denies the whole query ("Missing or
+// insufficient permissions"). Query by the allowed array-contains predicate and
+// narrow to the room client-side instead.
+async function findMyMappingDocs(roomId: string, uid?: string | null) {
+  if (!uid || !roomId) return [] as any[];
+  const snap = await getDocs(
+    query(collection(db, "chatRoomMapping"), where("userIds", "array-contains", uid))
+  );
+  return snap.docs.filter((d: any) => d.data().roomId === roomId);
+}
+
 const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, currentUser }) => {
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
@@ -61,10 +75,9 @@ const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, cur
   useEffect(() => {
     const loadMapping = async () => {
       try {
-        // Find mapping by roomId
-        const q = query(collection(db, "chatRoomMapping"), where("roomId", "==", roomId));
-        const snap = await getDocs(q);
-        const doc0 = snap.docs[0];
+        // Find this user's mapping for the room (rule-compliant query)
+        const mineForRoom = await findMyMappingDocs(roomId, auth.currentUser?.uid);
+        const doc0 = mineForRoom[0];
         const d = doc0?.data() || {};
         // Prefer per-user lastRead if exists; fallback to legacy timestamp
         const authUid = auth.currentUser?.uid;
@@ -119,9 +132,8 @@ const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, cur
     if (!uid) return;
     const markRead = async () => {
       try {
-        const q = query(collection(db, "chatRoomMapping"), where("roomId", "==", roomId));
-        const snap = await getDocs(q);
-        const doc0 = snap.docs[0];
+        const mineForRoom = await findMyMappingDocs(roomId, uid);
+        const doc0 = mineForRoom[0];
         if (!doc0) return;
         await setDoc(doc(db, "chatRoomMapping", doc0.id), { lastRead: { [uid]: serverTimestamp() } }, { merge: true });
       } catch {}
@@ -256,18 +268,19 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
   useEffect(() => {
     if (user) {
       const fetchMappingId = async () => {
-        const chatRoomMappingQuery = query(
-          collection(db, "chatRoomMapping"),
-          where("roomId", "==", chatRoomId)
-        );
-        const chatRoomMappingSnapshot = await getDocs(chatRoomMappingQuery);
-        chatRoomMappingSnapshot.forEach((doc) => {
-          setChatRoomMappingId(doc.id);
-          const oppositeUserId: any = doc
-            .data()
-            .userIds.filter((id) => id !== user.uid)[0];
+        try {
+          const mineForRoom = await findMyMappingDocs(chatRoomId, user.uid);
+          const d0 = mineForRoom[0];
+          if (!d0) return;
+          setChatRoomMappingId(d0.id);
+          const oppositeUserId: any = (d0.data().userIds || []).filter(
+            (id: string) => id !== user.uid
+          )[0];
           setOppUserId(oppositeUserId);
-        });
+        } catch (e) {
+          // Non-fatal: typing indicator / read receipts just won't update.
+          console.warn("Could not resolve chat mapping:", e);
+        }
       };
   fetchMappingId();
     }
@@ -314,10 +327,9 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
       // Best-effort: bump the mapping(s) so the conversation sorts to top and
       // unread counts stay accurate. Never let these block or fail the send.
       try {
-        const q = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
-        const snap = await getDocs(q);
+        const mineForRoom = await findMyMappingDocs(chatRoomId, user.uid);
         await Promise.all(
-          snap.docs.map((d) =>
+          mineForRoom.map((d) =>
             setDoc(
               doc(db, "chatRoomMapping", d.id),
               {
@@ -354,13 +366,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
         photoURL: user.photoURL,
         timestamp: serverTimestamp(),
       });
-  const mappingQ2 = query(collection(db, 'chatRoomMapping'), where('roomId', '==', chatRoomId));
-  const mapSnap2 = await getDocs(mappingQ2);
-  await Promise.all(mapSnap2.docs.map(d => setDoc(doc(db, 'chatRoomMapping', d.id), { lastMessageTs: serverTimestamp() }, { merge: true })));
-      await setDoc(doc(db, "chatRoomMapping", chatRoomMappingId), {
-        timestamp: serverTimestamp(),
-        lastRead: { [user.uid]: serverTimestamp() },
-      }, { merge: true });
+  const mapDocs2 = await findMyMappingDocs(chatRoomId, user.uid);
+  await Promise.all(mapDocs2.map(d => setDoc(doc(db, 'chatRoomMapping', d.id), { lastMessageTs: serverTimestamp(), timestamp: serverTimestamp(), lastRead: { [user.uid]: serverTimestamp() } }, { merge: true })));
       setFiles([]);
       setImageUploader(false);
       // No alert needed — the uploaded images appear immediately in the thread.
