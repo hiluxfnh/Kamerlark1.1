@@ -16,6 +16,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import { styled } from "@mui/material/styles";
 import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CustomButton from "../components/CustomButton";
 import InputFieldCustom from "../components/InputField";
 import {
@@ -47,6 +48,42 @@ const VisuallyHiddenInput = styled("input")({
   whiteSpace: "nowrap",
   width: 1,
 });
+
+// Max photos per listing. 5 is too few to show a room well; unlimited is
+// costly on the free Storage tier and slow on mobile data — 10 is the sweet
+// spot rental platforms use.
+const MAX_PHOTOS = 10;
+
+// Collapsible form section (defined at module scope so its open/closed state
+// and the inputs inside it survive parent re-renders).
+const Section = ({ title, subtitle, defaultOpen = true, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mb-4 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors hover:bg-gray-50"
+        aria-expanded={open}
+      >
+        <div className="min-w-0">
+          <h2 className="text-base font-semibold text-gray-900">{title}</h2>
+          {subtitle ? (
+            <p className="mt-0.5 text-xs text-gray-500">{subtitle}</p>
+          ) : null}
+        </div>
+        <KeyboardArrowDownIcon
+          className={`shrink-0 text-gray-400 transition-transform duration-200 ${
+            open ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+      {open ? (
+        <div className="border-t border-gray-100 px-4 pb-5 pt-3">{children}</div>
+      ) : null}
+    </div>
+  );
+};
 
 const AddListing = () => {
   const { notify, toast } = useToast();
@@ -122,7 +159,7 @@ const AddListing = () => {
   const handleFileChange = (event) => {
     const selected = Array.from(event.target.files || []);
     if (!selected.length) return;
-    const newFiles = [...files, ...selected].slice(0, 5);
+    const newFiles = [...files, ...selected].slice(0, MAX_PHOTOS);
     setFiles(newFiles);
     // Allow re-selecting the same file after a removal
     event.target.value = "";
@@ -352,7 +389,12 @@ const AddListing = () => {
               width: "80px",
             }}
           ></div>
-          <div className="stack-on-mobile grid grid-cols-12 gap-2 my-4">
+          <p className="mb-4 text-sm text-gray-500">
+            Fill in your room&apos;s details. Tap any section header to collapse
+            it.
+          </p>
+          <Section title="The basics" subtitle="Name and location">
+            <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"name"}
               label={"Room Name"}
@@ -421,49 +463,59 @@ const AddListing = () => {
                 <p className="text-xs text-red-600 mt-1">{errors.location}</p>
               ) : null}
             </div>
+            </div>
+          </Section>
+
+          <Section title="Owner & contact" subtitle="Who renters reach out to">
+            <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"ownerFirstName"}
               label={"Owner's First Name"}
               value={roomDetails.ownerFirstName}
               onChange={handleChange}
               colStart={1}
-              colEnd={5}
+              colEnd={7}
             />
             <InputFieldCustom
               name={"ownerLastName"}
               label={"Owner's Last Name"}
               value={roomDetails.ownerLastName}
               onChange={handleChange}
-              colStart={5}
-              colEnd={9}
+              colStart={7}
+              colEnd={13}
             />
             <InputFieldCustom
               name={"ownerEmail"}
               label={"Owner's Email"}
               value={roomDetails.ownerEmail}
               onChange={handleChange}
-              colStart={9}
-              colEnd={13}
+              colStart={1}
+              colEnd={7}
             />
             <InputFieldCustom
               name={"phno"}
               label={"Phone Number"}
               value={roomDetails.phno}
               onChange={handleChange}
-              colStart={1}
-              colEnd={5}
+              colStart={7}
+              colEnd={13}
             />
+            </div>
+          </Section>
+
+          <Section title="Pricing & room details" subtitle="Rent, type, size and furnishing">
+            <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"price"}
               label={"Price"}
               value={roomDetails.price}
               onChange={handleChange}
-              colStart={5}
-              colEnd={9}
+              colStart={1}
+              colEnd={7}
               error={Boolean(errors.price)}
               helperText={errors.price}
             />
-            <FormControl fullWidth className="col-start-9 col-end-13">
+            <FormControl fullWidth className="col-start-7 col-end-13">
               <InputLabel id="currency-select-label">Currency</InputLabel>
               <Select
                 labelId="currency-select-label"
@@ -482,9 +534,9 @@ const AddListing = () => {
               value={roomDetails.capacity}
               onChange={handleChange}
               colStart={1}
-              colEnd={3}
+              colEnd={7}
             />
-            <FormControl fullWidth className="col-start-3 col-end-8">
+            <FormControl fullWidth className="col-start-7 col-end-13">
               <InputLabel id="bedtype-select-label">Bed Type</InputLabel>
               <Select
                 labelId="bedtype-select-label"
@@ -499,7 +551,7 @@ const AddListing = () => {
                 <MenuItem value={"other"}>Other</MenuItem>
               </Select>
             </FormControl>
-            <FormControl fullWidth className=" col-start-8 col-end-13">
+            <FormControl fullWidth className="col-start-1 col-end-7">
               <InputLabel id="washrooms-select-label">Washrooms</InputLabel>
               <Select
                 labelId="washrooms-select-label"
@@ -518,7 +570,7 @@ const AddListing = () => {
               disablePortal
               id="university-select"
               options={universities}
-              className="col-start-1 col-end-6"
+              className="col-start-7 col-end-13"
               renderInput={(params) => (
                 <TextField {...params} label="University" />
               )}
@@ -544,10 +596,10 @@ const AddListing = () => {
               label="Room Size"
               value={roomDetails.roomSize}
               onChange={handleChange}
-              colStart={6}
-              colEnd={9}
+              colStart={1}
+              colEnd={7}
             />
-            <FormControl fullWidth className="col-start-9 col-end-13">
+            <FormControl fullWidth className="col-start-7 col-end-13">
               <InputLabel id="furnished-select-label">
                 Furnished Status
               </InputLabel>
@@ -566,6 +618,11 @@ const AddListing = () => {
                 <MenuItem value={"unfurnished"}>Unfurnished</MenuItem>
               </Select>
             </FormControl>
+            </div>
+          </Section>
+
+          <Section title="Description, features & rules" subtitle="What makes your room stand out">
+            <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <div className="col-start-1 col-end-6">
               <FormControl fullWidth>
                 <InputLabel id="utilities-multi-label">Utilities</InputLabel>
@@ -919,8 +976,11 @@ const AddListing = () => {
               multiline={true}
               rows={5}
             />
-          </div>
-          <div className="stack-on-mobile grid grid-cols-12 gap-2 my-4">
+            </div>
+          </Section>
+
+          <Section title="Photos" subtitle="Add up to 10 — the first is your cover photo">
+          <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <Button
               component="label"
               role={undefined}
@@ -939,8 +999,8 @@ const AddListing = () => {
             </Button>
             <div className="col-start-1 col-end-13">
               <p className="text-sm text-gray-500">
-                Upload photos of the room — {files.length}/5 added
-                {files.length >= 5 ? " (limit reached)" : ""}
+                Upload photos of the room — {files.length}/{MAX_PHOTOS} added
+                {files.length >= MAX_PHOTOS ? " (limit reached)" : ""}
               </p>
             </div>
           </div>
@@ -969,7 +1029,9 @@ const AddListing = () => {
               ))}
             </div>
           ) : null}
-          <div className="grid grid-cols-12">
+          </Section>
+
+          <div className="grid grid-cols-12 mb-6">
             <div className="col-start-1 col-end-13">
               <Button
                 variant="contained"

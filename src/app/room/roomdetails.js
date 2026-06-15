@@ -214,7 +214,7 @@ const RoomDetails = ({ room }) => {
   const FALLBACK_IMG = require("../assets/a1.png");
   const images = (Array.isArray(room.images) ? room.images : [])
     .filter((u) => typeof u === "string" && u.trim().length > 0)
-    .slice(0, 4);
+    .slice(0, 10);
   // Never feed <Image> an empty src — that crashes the whole page.
   const mainImage = selectedImage || images[0] || FALLBACK_IMG;
 
