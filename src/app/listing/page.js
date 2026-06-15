@@ -124,6 +124,12 @@ const AddListing = () => {
     if (!selected.length) return;
     const newFiles = [...files, ...selected].slice(0, 5);
     setFiles(newFiles);
+    // Allow re-selecting the same file after a removal
+    event.target.value = "";
+  };
+
+  const removeImage = (index) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleChange = (e) => {
@@ -933,27 +939,36 @@ const AddListing = () => {
             </Button>
             <div className="col-start-1 col-end-13">
               <p className="text-sm text-gray-500">
-                Upload images of the room (max 5 images)
+                Upload photos of the room — {files.length}/5 added
+                {files.length >= 5 ? " (limit reached)" : ""}
               </p>
             </div>
           </div>
-          {/* Map is embedded above with search + click-to-pick */}
-          <div className="flex flex-row flex-wrap">
-            {previews.length > 0
-              ? previews.map((src, index) => (
-                  <div
-                    className="w-40 h-40 my-2 mx-2 overflow-hidden"
-                    key={index}
+          {/* Image previews — responsive grid with per-photo remove buttons */}
+          {previews.length > 0 ? (
+            <div className="my-2 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
+              {previews.map((src, index) => (
+                <div
+                  className="relative aspect-square overflow-hidden rounded-xl ring-1 ring-black/10"
+                  key={index}
+                >
+                  <img
+                    src={src}
+                    alt={`Photo ${index + 1}`}
+                    className="h-full w-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    aria-label={`Remove photo ${index + 1}`}
+                    className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-base leading-none text-white transition-colors hover:bg-black/80"
                   >
-                    <img
-                      src={src}
-                      alt={`Uploaded file ${index + 1}`}
-                      className="w-40 h-40 object-cover"
-                    />
-                  </div>
-                ))
-              : null}
-          </div>
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <div className="grid grid-cols-12">
             <div className="col-start-1 col-end-13">
               <Button
