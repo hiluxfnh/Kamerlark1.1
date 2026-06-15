@@ -24,6 +24,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button, styled } from "@mui/material";
 import Image from "next/image";
 import { uploadImages as uploadAllImages } from "../../lib/uploadImage";
@@ -171,86 +172,73 @@ const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, cur
 const ChatRoom = () => {
   const [chatRoomId, setChatRoomId] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   useEffect(() => {
     if (typeof window !== "undefined") {
       const queryParameters = new URLSearchParams(window.location.search);
       setChatRoomId(queryParameters.get("roomId") || "");
     }
   }, []);
+  const backToList = () => {
+    setChatRoomId("");
+    setCurrentUser(null);
+  };
+
   return (
     <>
       <Header />
       <div className="pt-16">
-        <div
-          className="h-170 grid grid-cols-12 w-full max-w-5xl mx-auto my-5 rounded-lg text-sm overflow-hidden px-3 md:px-0"
-          style={{ boxShadow: "0px 0px 15px 0px rgba(0,0,0,0.2)" }}
-        >
-          {/* Mobile toggle */}
-          <div className="col-span-12 md:hidden flex items-center justify-between mb-2">
-            <button
-              className="px-3 py-2 text-sm rounded-md border border-gray-300"
-              onClick={() => setMobileSidebarOpen(true)}
-            >
-              Chats
-            </button>
-          </div>
-
-          {/* Sidebar (desktop) */}
-          <div className="hidden md:block md:col-start-1 md:col-end-5 border-r-2">
-            <ChatSideBar
-              chatRoomId={chatRoomId}
-              setChatRoomId={setChatRoomId}
-              setCurrentUser={setCurrentUser}
-            />
-          </div>
-
-          {/* Chat content */}
-          <div className="col-span-12 md:col-start-5 md:col-end-13 grid grid-rows-12 max-h-full">
-            {chatRoomId !== "" ? (
-              <ChatBox chatRoomId={chatRoomId} currentUser={currentUser} />
-            ) : (
-              <div className="flex flex-col items-center justify-center mt-28 px-6 text-center">
-                <Image src={message} width={320} height={320} alt="" />
-                <p className="-mt-6 text-base font-semibold text-gray-800">
-                  Select a conversation
-                </p>
-                <p className="mt-1 max-w-xs text-sm text-gray-500">
-                  Choose a chat from the list to view messages, or start one by
-                  booking or messaging an owner from a listing.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile sidebar overlay */}
-        {mobileSidebarOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
+        <div className="mx-auto h-[calc(100dvh-64px)] w-full max-w-5xl overflow-hidden bg-white text-sm md:my-5 md:h-[calc(100dvh-7rem)] md:rounded-2xl md:shadow-[0_0_18px_rgba(0,0,0,0.12)]">
+          <div className="grid h-full grid-cols-1 md:grid-cols-12">
+            {/* Conversation list: always on desktop; on mobile only when no thread is open */}
             <div
-              className="absolute inset-0 bg-black/40"
-              onClick={() => setMobileSidebarOpen(false)}
-            />
-            <div className="absolute left-0 top-0 h-full w-4/5 max-w-xs bg-white shadow-xl">
+              className={`${
+                chatRoomId ? "hidden" : "block"
+              } h-full min-h-0 overflow-hidden border-gray-200 md:col-span-4 md:block md:border-r`}
+            >
               <ChatSideBar
                 chatRoomId={chatRoomId}
-                setChatRoomId={(id: string) => {
-                  setChatRoomId(id);
-                  setMobileSidebarOpen(false);
-                }}
+                setChatRoomId={setChatRoomId}
                 setCurrentUser={setCurrentUser}
               />
             </div>
+
+            {/* Thread pane */}
+            <div
+              className={`${
+                chatRoomId ? "block" : "hidden md:block"
+              } h-full min-h-0 md:col-span-8`}
+            >
+              {chatRoomId !== "" ? (
+                <div className="grid h-full grid-rows-12">
+                  <ChatBox
+                    chatRoomId={chatRoomId}
+                    currentUser={currentUser}
+                    onBack={backToList}
+                  />
+                </div>
+              ) : (
+                <div className="hidden h-full flex-col items-center justify-center px-6 text-center md:flex">
+                  <Image src={message} width={260} height={260} alt="" />
+                  <p className="-mt-4 text-base font-semibold text-gray-800">
+                    Select a conversation
+                  </p>
+                  <p className="mt-1 max-w-xs text-sm text-gray-500">
+                    Choose a chat from the list, or start one by booking or
+                    messaging an owner from a listing.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </>
   );
 };
 export default ChatRoom;
 
-type ChatBoxProps = { chatRoomId: string; currentUser: any };
-const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
+type ChatBoxProps = { chatRoomId: string; currentUser: any; onBack?: () => void };
+const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) => {
   const [files, setFiles] = useState<File[]>([]);
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(event.target.files || []);
@@ -377,16 +365,25 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser }) => {
   };
   return (
     <>
-      <div className="row-start-1 row-end-2 bg-black flex flex-row items-center">
-        <div className="mx-3">
+      <div className="row-start-1 row-end-2 flex flex-row items-center gap-1 bg-black px-2 py-2">
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 md:hidden"
+            aria-label="Back to conversations"
+          >
+            <ArrowBackIcon fontSize="small" />
+          </button>
+        )}
+        <div className="mx-1 shrink-0">
           <Avatar src={currentUser?.photoURL} name={currentUser?.userName} size={40} />
         </div>
-        <p className="text-white text-sm font-sans font-semibold">
-          {currentUser?.userName}
+        <p className="truncate text-sm font-semibold text-white">
+          {currentUser?.userName || "Conversation"}
         </p>
       </div>
       {imageUploader === false ? (
-        <div className="row-start-2 row-end-12 min-w-full p-3 w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-140 relative">
+        <div className="row-start-2 row-end-12 min-h-0 min-w-full p-3 w-full overflow-x-hidden overflow-y-auto no-scrollbar relative">
           <div
             className="absolute inset-0"
             style={{

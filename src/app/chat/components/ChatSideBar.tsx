@@ -134,56 +134,72 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
     return () => { try { (unsubRef.current || unsub)(); } catch {} };
   }, [user]);
   return (
-    <div>
-      <h1 className="text-xl font-sans font-semibold px-3 py-3 pb-4 bg-black text-white">
-        KAMERLARK CHAT
+    <div className="flex h-full flex-col bg-white">
+      <h1 className="shrink-0 bg-black px-4 py-4 text-lg font-semibold text-white">
+        Messages
       </h1>
-    {chatRooms.map((room) => (
-        <button
-      className="flex flex-row items-center justify-between border-b-2 p-2 cursor-pointer min-w-full max-w-full h-16"
-          onClick={() => {
-            setChatRoomId(room.roomId);
-            setCurrentUser(room.user);
-          }}
-          key={room.id}
-        >
-          <div className="flex flex-row items-center">
-            <div className="mx-2">
-              <Avatar src={room?.user?.photoURL} name={room?.user?.userName} size={40} />
-            </div>
-            <div className="flex flex-col items-start">
-              <p
-                className="font-sans font-semibold"
-                style={{
-                  textAlign: "left",
+      <div className="flex-1 overflow-y-auto">
+        {chatRooms.length === 0 ? (
+          <div className="px-6 py-12 text-center text-sm text-gray-400">
+            No conversations yet.
+            <br />
+            Start one by booking or messaging an owner from a listing.
+          </div>
+        ) : (
+          chatRooms.map((room) => {
+            const active = room.roomId === chatRoomId;
+            const name = room?.user?.userName
+              ? String(room.user.userName).split(" ").slice(0, 2).join(" ")
+              : "Unknown";
+            return (
+              <button
+                key={room.id}
+                onClick={() => {
+                  setChatRoomId(room.roomId);
+                  setCurrentUser(room.user);
                 }}
+                className={`flex w-full items-center gap-3 border-b border-gray-100 px-3 py-3 text-left transition-colors ${
+                  active ? "bg-cyan-50" : "hover:bg-gray-50 active:bg-gray-100"
+                }`}
               >
-                {(room && room.user && room.user.userName
-                  ? String(room.user.userName)
-                      .split(" ")
-                      .slice(0, 2)
-                      .join(" ")
-                  : "")}
-              </p>
-              <p className="text-xs text-gray-600 max-w-40 truncate">
-                {room.lastMessage || ""}
-              </p>
-            </div>
-          </div>
-          <div>
-            <div className="flex flex-col items-end">
-              <p className="text-[10px] text-gray-500 leading-none">
-                {room?.lastMessageTime || (room?.time ? `${room?.time?.split(":")[0]}:${room?.time?.split(":")[1]}` : "")}
-              </p>
-              {room.unread && (
-                <span className="mt-2 inline-flex items-center justify-center min-w-4 h-4 px-1 bg-cyan-600 text-white text-[10px] rounded-full">
-                  {room.unreadCount > 0 ? room.unreadCount : ''}
-                </span>
-              )}
-            </div>
-          </div>
-        </button>
-      ))}
+                <div className="shrink-0">
+                  <Avatar
+                    src={room?.user?.photoURL}
+                    name={room?.user?.userName}
+                    size={48}
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="truncate font-semibold text-gray-900">
+                      {name}
+                    </p>
+                    <span className="shrink-0 text-[11px] font-medium text-gray-400">
+                      {room?.lastMessageTime || ""}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex items-center justify-between gap-2">
+                    <p
+                      className={`truncate text-xs ${
+                        room.unread
+                          ? "font-medium text-gray-800"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      {room.lastMessage || "Tap to open conversation"}
+                    </p>
+                    {room.unread && (
+                      <span className="inline-flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-cyan-600 px-1.5 text-[11px] font-semibold text-white">
+                        {room.unreadCount > 0 ? room.unreadCount : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
     </div>
   );
 };
