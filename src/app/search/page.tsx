@@ -361,7 +361,7 @@ const SearchPage = () => {
             </p>
             {sortByModal && (
               <div
-                className="p-3 absolute rounded-md m-1 w-40 h-58 z-50 border theme-card"
+                className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t p-4 theme-card shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:m-1 sm:max-h-none sm:overflow-visible sm:rounded-md sm:border sm:p-3 sm:shadow-none sm:w-40 sm:h-58"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -452,14 +452,14 @@ const SearchPage = () => {
             </p>
             {universityModal && (
               <div
-                className="p-3 absolute rounded-md m-1 w-110 h-58 z-50 border theme-card"
+                className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t p-4 theme-card shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:m-1 sm:max-h-none sm:overflow-visible sm:rounded-md sm:border sm:p-3 sm:shadow-none sm:w-110 sm:h-58"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
                 onMouseLeave={() => { setUniversityModal(false); setBackground(false); }}
               >
                 <h1 className="text-base font-medium mb-3">University</h1>
-                <form className="grid grid-cols-2">
+                <form className="grid grid-cols-1 sm:grid-cols-2">
                   {universities.map((uni) => (
                     <div key={uni.value}>
                       <input
@@ -519,7 +519,7 @@ const SearchPage = () => {
             </p>
             {budgetModal && (
               <div
-                className="p-3 absolute rounded-md m-1 w-110 z-50 border theme-card"
+                className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t p-4 theme-card shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:m-1 sm:max-h-none sm:overflow-visible sm:rounded-md sm:border sm:p-3 sm:shadow-none sm:w-110"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
@@ -625,7 +625,7 @@ const SearchPage = () => {
           {
             bedTypeModal && (
               <div
-                className="p-3 absolute rounded-md m-1 w-64 z-50 border theme-card"
+                className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-2xl border-t p-4 theme-card shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:m-1 sm:max-h-none sm:overflow-visible sm:rounded-md sm:border sm:p-3 sm:shadow-none sm:w-64"
                 style={{
                   boxShadow: "0px 0px 4px 0px grey",
                 }}
