@@ -87,6 +87,21 @@ service cloud.firestore {
       allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
+    // Community posts: signed-in users read all; you may create posts as
+    // yourself (schema-validated) and delete your own (or admin). No edits.
+    match /communityPosts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.category is string
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() <= 2000;
+      allow update: if false;
+      allow delete: if isSignedIn()
+        && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
     // Follows: social graph — readable by signed-in users; a user may only
     // create/delete follow edges where they are the follower.
     match /Follows/{followId} {
