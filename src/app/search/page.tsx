@@ -6,6 +6,8 @@ import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import SingleBedIcon from "@mui/icons-material/SingleBed";
 import MapIcon from "@mui/icons-material/Map";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import { use, useEffect, useRef, useState } from "react";
 import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../firebase/Config";
@@ -295,7 +297,7 @@ const SearchPage = () => {
             width: "100vw",
             height: "100vh",
           }}
-          className="fixed top-0 left-0 z-10"
+          className="fixed top-0 left-0 z-20"
           onClick={() => {
             setSortByModal(false);
             setBackground(false);
@@ -308,12 +310,38 @@ const SearchPage = () => {
       )}
       <Header />
       <div
-        className="pt-16 sticky top-0 z-10 w-full theme-surface"
+        className="pt-16 sticky top-0 z-30 w-full theme-surface"
         style={{
           boxShadow: "0px 0px 5px 0px lightgrey",
         }}
       >
-  <div className="mx-auto flex w-full max-w-6xl flex-row items-center gap-2 overflow-x-auto px-4 py-2 no-scrollbar sm:px-6">
+        {/* Search bar */}
+        <div className="mx-auto w-full max-w-6xl px-4 pt-2 sm:px-6">
+          <div className="relative">
+            <SearchIcon
+              fontSize="small"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
+            <input
+              type="text"
+              value={location}
+              onChange={(e: any) => setLocation(e.target.value)}
+              placeholder="Search city, area, university or property…"
+              className="w-full rounded-full border border-gray-300 py-2.5 pl-10 pr-10 text-sm outline-none transition-colors focus:border-black"
+            />
+            {location ? (
+              <button
+                type="button"
+                onClick={() => setLocation("")}
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+              >
+                <CloseIcon style={{ fontSize: 16 }} />
+              </button>
+            ) : null}
+          </div>
+        </div>
+  <div className="mx-auto flex w-full max-w-6xl flex-row flex-wrap items-center gap-2 px-4 py-2 sm:px-6">
           <div className="relative">
             <p
               className="p-2 px-3 rounded-2xl text-sm flex flex-row items-center gap-1 cursor-pointer "
@@ -855,40 +883,6 @@ const SearchPage = () => {
                       />
                     </div>
                   )}
-              </div>
-            )
-          }
-          </div>
-          <div className="relative">
-          <p
-            className="p-2 px-3 rounded-2xl text-sm flex flex-row items-center gap-1 cursor-pointer "
-            style={{
-              border: "1px solid lightgrey",
-            }}
-            onClick={() => {
-              setLocationModal(true);
-              setSortByModal(false);
-              setUniversityModal(false);
-              setBudgetModal(false);
-              setBackground(true);
-              setBedTypeModal(false);
-            }}
-          >
-            <MapIcon fontSize="small" /> Location
-          </p>
-            {
-            locationModal && (
-              <div
-                className="p-3 absolute rounded-md m-1 w-70 z-50 border theme-card"
-                style={{
-                  boxShadow: "0px 0px 4px 0px grey",
-                }}
-                onMouseLeave={() => { setLocationModal(false); setBackground(false); }}
-              >
-                <h1 className="text-base font-medium mb-3">Location</h1>
-                <input type="text" placeholder="Enter location" className="border p-2 px-3 outline-none rounded-md" value={location} onChange={(e: any) => {
-                  setLocation(e.target.value);
-                }}/>
               </div>
             )
           }
