@@ -83,3 +83,13 @@ body{
 
 /* Reduce tap delay and improve click responsiveness */
 * { touch-action: manipulation; }
+
+/* Forms that lay fields out on a 12-col grid (e.g. Add Listing) get cramped
+   on phones because each field keeps its desktop col-start/col-end. Below the
+   sm breakpoint, force every grid item to span the full width so fields stack
+   cleanly with comfortable touch targets. */
+@media (max-width: 639px) {
+  .stack-on-mobile > * {
+    grid-column: 1 / -1 !important;
+  }
+}

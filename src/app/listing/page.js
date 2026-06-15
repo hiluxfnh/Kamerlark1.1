@@ -346,7 +346,7 @@ const AddListing = () => {
               width: "80px",
             }}
           ></div>
-          <div className="grid grid-cols-12 gap-2 my-4">
+          <div className="stack-on-mobile grid grid-cols-12 gap-2 my-4">
             <InputFieldCustom
               name={"name"}
               label={"Room Name"}
@@ -914,7 +914,7 @@ const AddListing = () => {
               rows={5}
             />
           </div>
-          <div className="grid grid-cols-12 gap-2 my-4">
+          <div className="stack-on-mobile grid grid-cols-12 gap-2 my-4">
             <Button
               component="label"
               role={undefined}

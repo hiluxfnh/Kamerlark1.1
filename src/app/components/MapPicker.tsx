@@ -297,10 +297,10 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
 
   return (
     <div>
-  <div className="flex gap-2 mb-2 relative items-stretch">
+  <div className="flex flex-wrap gap-2 mb-2 relative items-stretch">
         <input
           type="text"
-          className="border p-2 rounded-md flex-1"
+          className="border p-2 rounded-md flex-1 min-w-[55%]"
           placeholder="Enter area, street, or place"
           value={query}
           onChange={(e) => {
@@ -320,7 +320,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
         />
         <button
           type="button"
-          className="px-4 py-2 rounded-md bg-black text-white disabled:bg-gray-400"
+          className="shrink-0 px-4 py-2 rounded-md bg-black text-white disabled:bg-gray-400"
           disabled={!query.trim() || searching}
           onClick={() => geocode(query)}
         >
@@ -328,7 +328,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
         </button>
         <button
           type="button"
-          className="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm"
+          className="shrink-0 grow sm:grow-0 px-3 py-2 rounded-md border border-gray-300 bg-white text-sm"
           onClick={useMyLocation}
           disabled={locating}
           title="Use my current location"
@@ -336,7 +336,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
           {locating ? 'Locating…' : 'Use my location'}
         </button>
         {openSuggest && suggestions.length > 0 && (
-          <ul className="absolute left-0 right-24 top-10 z-20 bg-white border rounded-md shadow max-h-60 overflow-auto text-sm">
+          <ul className="absolute left-0 right-0 top-12 z-20 bg-white border rounded-md shadow max-h-60 overflow-auto text-sm">
             {suggestions.map((s, idx) => (
               <li
                 key={idx}
