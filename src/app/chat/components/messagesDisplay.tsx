@@ -33,18 +33,6 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
     if (atBottom) scrollToBottom();
   }, [messages, atBottom]);
 
-  const isAfter = (ts: any, last: any) => {
-    if (!last) return false;
-    try {
-      const toMillis = (t: any) => t?.toMillis ? t.toMillis() : (t?.toDate ? t.toDate().getTime() : (typeof t === 'number' ? t : Date.parse(t)));
-      return toMillis(ts) > toMillis(last);
-    } catch { return false; }
-  };
-  const firstUnreadIndex = useMemo(() => {
-    if (!Array.isArray(messages) || !lastSeenTimestamp) return -1;
-    return messages.findIndex((m: any) => isAfter(m.timestamp, lastSeenTimestamp));
-  }, [messages, lastSeenTimestamp]);
-
   const renderImages = (raw: string[] | string) => {
     // Image messages should be an array of URLs, but legacy/bad docs may store
     // a single string, undefined, or empty entries. Normalise and drop empties
@@ -86,13 +74,14 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
   };
 
   const isSameSenderAsPrev = (idx: number) => idx > 0 && messages[idx - 1]?.userId === messages[idx]?.userId;
+  const isSameSenderAsNext = (idx: number) => idx < messages.length - 1 && messages[idx + 1]?.userId === messages[idx]?.userId;
 
   return (
-    <div ref={containerRef} className="relative w-full overflow-x-hidden overflow-y-scroll no-scrollbar max-h-130 text-sm font-sans px-1">
+    <div ref={containerRef} className="relative h-full w-full overflow-x-hidden overflow-y-auto no-scrollbar px-2 py-1 text-sm font-sans">
       {hasMore ? (
         <div className="w-full flex justify-center py-2">
           <button
-            className="text-xs px-3 py-1 rounded-full border border-gray-300 bg-white hover:bg-gray-50"
+            className="text-xs px-3 py-1 rounded-full border border-black/10 bg-white/90 text-gray-700 shadow-sm hover:bg-white"
             onClick={() => {
               onLoadMore && onLoadMore();
             }}
@@ -101,62 +90,86 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
           </button>
         </div>
       ) : null}
-      {!atBottom && (
-        <button onClick={scrollToBottom} className="absolute right-3 bottom-3 bg-black/80 text-white text-xs px-3 py-1 rounded-full shadow">New messages ↓</button>
-      )}
       {messages && messages.map((msg, index) => {
         const own = msg.userId === user?.uid;
-        const showAvatar = !isSameSenderAsPrev(index);
+        const firstOfGroup = !isSameSenderAsPrev(index);
+        const lastOfGroup = !isSameSenderAsNext(index);
+        const isSpecial = msg.type === "booking" || msg.type === "appointment";
         return (
-          <div key={msg.id} className={`w-full flex ${own ? 'justify-end' : 'justify-start'} mb-1`}>
-            {index === firstUnreadIndex && (
-              <div className="absolute left-0 right-0 flex items-center justify-center -mt-3">
-                <div className="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow">New</div>
-              </div>
-            )}
-            <div className={`flex items-end ${own ? 'flex-row-reverse' : 'flex-row'} max-w-[85%] sm:max-w-[75%]`}>
-              {showAvatar ? (
-                <div className="mx-2 shrink-0">
+          <div
+            key={msg.id}
+            className={`flex w-full ${own ? "justify-end" : "justify-start"} ${
+              firstOfGroup ? "mt-3" : "mt-[3px]"
+            }`}
+          >
+            <div
+              className={`flex max-w-[82%] items-end gap-2 sm:max-w-[68%] ${
+                own ? "flex-row-reverse" : "flex-row"
+              }`}
+            >
+              {/* Avatar only on the other person's messages, at the end of a group */}
+              {!own &&
+                (lastOfGroup ? (
                   <Avatar
                     src={msg.photoURL}
-                    name={
-                      own
-                        ? user?.displayName || msg.userName || "You"
-                        : currentUser?.userName || msg.userName || msg.name || "User"
-                    }
-                    size={40}
+                    name={currentUser?.userName || msg.userName || msg.name || "User"}
+                    size={28}
                   />
-                </div>
-              ) : (
-                <div className="w-10 mx-2" />
-              )}
-              <div className={`flex flex-col ${own ? 'items-end' : 'items-start'}`}>
-                {msg.type === 'text' && (
-                  <div className={`${own ? 'bg-cyan-700 text-white' : 'bg-gray-100 text-black'} px-3 py-2 rounded-2xl ${own ? 'rounded-br-sm' : 'rounded-bl-sm'} shadow-sm break-words`}>
+                ) : (
+                  <div className="w-7 shrink-0" />
+                ))}
+              <div className={`flex min-w-0 flex-col ${own ? "items-end" : "items-start"}`}>
+                {msg.type === "text" && (
+                  <div
+                    className={`break-words px-3.5 py-2 text-[14px] leading-snug ${
+                      own
+                        ? "rounded-2xl rounded-br-md bg-[#082e4d] text-white"
+                        : "rounded-2xl rounded-bl-md bg-white text-gray-900 ring-1 ring-black/[0.06] shadow-sm"
+                    }`}
+                  >
                     {msg.message}
                   </div>
                 )}
-                {msg.type === 'image' && (
-                  <div className={`${own ? 'bg-cyan-700/5' : 'bg-gray-100'} p-2 rounded-2xl ${own ? 'rounded-br-sm' : 'rounded-bl-sm'} shadow-sm`}>
+                {msg.type === "image" && (
+                  <div
+                    className={`overflow-hidden rounded-2xl ${
+                      own ? "rounded-br-md" : "rounded-bl-md ring-1 ring-black/[0.06]"
+                    }`}
+                  >
                     {renderImages(msg.message)}
                   </div>
                 )}
-                {msg.type === 'booking' && (
+                {msg.type === "booking" && (
                   <div className="mt-1">
                     <BookingComponent message={msg} />
                   </div>
                 )}
-                {msg.type === 'appointment' && (
+                {msg.type === "appointment" && (
                   <div className="mt-1">
                     <AppointmentComponent message={msg} />
                   </div>
                 )}
-                <span className="mt-1 text-[10px] text-gray-500">{TimeStampConvertor(msg.timestamp)}</span>
+                {lastOfGroup && !isSpecial && (
+                  <span className="mt-1 px-1 text-[10px] text-gray-400">
+                    {TimeStampConvertor(msg.timestamp)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
         );
       })}
+      {!atBottom && (
+        <div className="pointer-events-none sticky bottom-1 z-10 flex justify-end pr-1">
+          <button
+            onClick={scrollToBottom}
+            className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#082e4d] text-white shadow-lg transition-transform hover:scale-105"
+            aria-label="Scroll to latest messages"
+          >
+            ↓
+          </button>
+        </div>
+      )}
     </div>
   );
 };

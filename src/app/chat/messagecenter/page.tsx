@@ -30,7 +30,6 @@ import Image from "next/image";
 import { uploadImages as uploadAllImages } from "../../lib/uploadImage";
 import { onSnapshot, serverTimestamp } from "firebase/firestore";
 import ChatSideBar from "../components/ChatSideBar";
-import backImage from "../../assets/backChat.jpg";
 import message from "../../assets/message.webp";
 import Avatar from "../../components/Avatar";
 
@@ -387,12 +386,8 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `url(${backImage.src})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              filter: "blur(2px)",
-              opacity: 0.35,
+              background:
+                "linear-gradient(180deg, #cdd6e0 0%, #bcc7d4 100%)",
             }}
           />
           <div className="relative h-full w-full">
