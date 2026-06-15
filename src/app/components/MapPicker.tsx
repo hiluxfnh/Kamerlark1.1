@@ -55,11 +55,11 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
   const CACHE_KEY = 'map_search_cache_v1';
   const mapTilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
   const tileUrl = mapTilerKey
-    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${mapTilerKey}`
-    : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}@2x.png?key=${mapTilerKey}`
+    : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
   const tileAttribution = mapTilerKey
-    ? '&copy; MapTiler & OpenStreetMap contributors'
-    : '&copy; OpenStreetMap contributors';
+    ? '&copy; MapTiler &copy; OpenStreetMap contributors'
+    : '&copy; OpenStreetMap &copy; CARTO';
   const [locating, setLocating] = useState(false);
   const [locError, setLocError] = useState<string>("");
   const [accuracy, setAccuracy] = useState<number | null>(null);
@@ -360,7 +360,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
   {locError ? <p className="text-sm text-red-600 mb-2">{locError}</p> : null}
       <div style={{ height: 300, width: '100%', position: 'relative' }}>
         <LeafletMap center={[marker.lat, marker.lng]} zoom={13} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url={tileUrl} attribution={tileAttribution} detectRetina />
+          <TileLayer url={tileUrl} attribution={tileAttribution} subdomains="abcd" detectRetina />
           <Marker
             position={[marker.lat, marker.lng]}
             icon={klMarkerIcon}

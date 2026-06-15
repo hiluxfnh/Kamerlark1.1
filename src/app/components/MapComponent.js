@@ -49,12 +49,14 @@ const MapComponent = ({
     typeof interactive === "boolean" ? interactive : Boolean(onLocationChange);
   const hasGoogleKey = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY);
   const mapTilerKey = process.env.NEXT_PUBLIC_MAPTILER_KEY;
+  // Clean modern basemap: MapTiler when keyed, else CARTO Voyager (free, no key).
   const tileUrl = mapTilerKey
-    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}.png?key=${mapTilerKey}`
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    ? `https://api.maptiler.com/maps/streets-v2/256/{z}/{x}/{y}@2x.png?key=${mapTilerKey}`
+    : "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png";
   const tileAttribution = mapTilerKey
-    ? "&copy; MapTiler & OpenStreetMap contributors"
-    : "&copy; OpenStreetMap contributors";
+    ? "&copy; MapTiler &copy; OpenStreetMap contributors"
+    : "&copy; OpenStreetMap &copy; CARTO";
+  const tileSubdomains = mapTilerKey ? "abc" : "abcd";
 
   // Geocode when address changes: prefer Google, fallback to OpenStreetMap Nominatim (free)
   useEffect(() => {
@@ -150,27 +152,37 @@ const MapComponent = ({
     );
   }
 
+  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${markerPosition.lat},${markerPosition.lng}`;
+
   return (
     <div
       style={{
         width: "100%",
-        height: "300px",
+        height: "320px",
         position: "relative",
         zIndex: 1,
+        borderRadius: "16px",
+        overflow: "hidden",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
       }}
     >
       <LeafletMap
         center={[center.lat, center.lng]}
-        zoom={13}
-        style={{ height: "100%", width: "100%" }}
-        scrollWheelZoom={true}
+        zoom={14}
+        style={{ height: "100%", width: "100%", background: "#eef2f6" }}
+        scrollWheelZoom={false}
         dragging={true}
         doubleClickZoom={true}
         boxZoom={isInteractive}
         keyboard={true}
         touchZoom={true}
       >
-        <TileLayer url={tileUrl} attribution={tileAttribution} detectRetina />
+        <TileLayer
+          url={tileUrl}
+          attribution={tileAttribution}
+          subdomains={tileSubdomains}
+          detectRetina
+        />
         <Marker
           position={[markerPosition.lat, markerPosition.lng]}
           icon={(() => {
@@ -233,6 +245,20 @@ const MapComponent = ({
           }
         />
       </LeafletMap>
+      {!isInteractive && (
+        <a
+          href={directionsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ zIndex: 1000 }}
+          className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#082e4d] shadow-lg ring-1 ring-black/5 transition-transform hover:scale-[1.03] active:scale-95"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="3 11 22 2 13 21 11 13 3 11" />
+          </svg>
+          Get directions
+        </a>
+      )}
     </div>
   );
 };
