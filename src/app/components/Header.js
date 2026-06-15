@@ -18,6 +18,8 @@ import ForumIcon from "@mui/icons-material/Forum";
 import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import Avatar from "./Avatar";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -59,6 +61,18 @@ const Header = () => {
     });
     return () => unsub();
   }, [user?.uid]);
+
+  // Lock body scroll while the mobile menu is open
+  useEffect(() => {
+    if (!isNavOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isNavOpen]);
+
+  const closeNav = () => setIsNavOpen(false);
 
   const handleModalClose = () => setShowModal(false);
   const handleModalLogin = () => {
@@ -190,53 +204,136 @@ const Header = () => {
       {isNavOpen && (
         <nav
           aria-label="Mobile"
-          className="md:hidden mx-auto w-full max-w-6xl px-4 pb-3 sm:px-6"
+          className="md:hidden mx-auto w-full max-w-6xl overflow-y-auto px-4 pb-8 pt-1 sm:px-6"
+          style={{
+            minHeight: "calc(100dvh - 52px)",
+            maxHeight: "calc(100dvh - 52px)",
+            animation: "klMenuIn .18s ease-out",
+          }}
         >
-          <div className="flex flex-col gap-2">
-            <Link href="/" className="text-white py-2 border-b border-white/10">
-              Home
-            </Link>
+          {/* Account chip (signed in) */}
+          {user && (
             <Link
-              href="/search?view=all"
-              className="text-white py-2 border-b border-white/10"
+              href="/profile"
+              onClick={closeNav}
+              className="mb-3 flex items-center gap-3 rounded-2xl bg-white/[0.07] p-3 transition-colors active:bg-white/[0.12]"
             >
-              Explore
+              <Avatar
+                src={user.photoURL}
+                name={user.displayName || user.email}
+                size={46}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-white">
+                  {user.displayName || "Your account"}
+                </p>
+                <p className="truncate text-xs text-white/50">{user.email}</p>
+              </div>
+              <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/70">
+                View
+              </span>
             </Link>
+          )}
+
+          <div className="flex flex-col gap-0.5">
+            {[
+              { href: "/", label: "Home", Icon: HomeIcon, match: "/" },
+              {
+                href: "/search?view=all",
+                label: "Explore",
+                Icon: FormatListBulletedIcon,
+                match: "/search",
+              },
+              {
+                href: "/community",
+                label: "Community",
+                Icon: PeopleIcon,
+                match: "/community",
+              },
+              { href: "/help", label: "Help", Icon: HelpIcon, match: "/help" },
+              ...(user
+                ? [
+                    {
+                      href: "/chat/messagecenter",
+                      label: "Messages",
+                      Icon: ForumIcon,
+                      match: "/chat/messagecenter",
+                      badge: unreadCount,
+                    },
+                  ]
+                : []),
+            ].map(({ href, label, Icon, match, badge }) => {
+              // Normalise trailing slashes and match sub-paths so the current
+              // page is reliably highlighted.
+              const here = (pathname || "/").replace(/\/+$/, "") || "/";
+              const m = match.replace(/\/+$/, "") || "/";
+              const active = m === "/" ? here === "/" : here === m || here.startsWith(m + "/");
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={closeNav}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors ${
+                    active
+                      ? "bg-white/[0.12] text-white"
+                      : "text-white/80 active:bg-white/[0.06]"
+                  }`}
+                >
+                  <Icon
+                    fontSize="small"
+                    className={active ? "text-white" : "text-white/55"}
+                  />
+                  <span>{label}</span>
+                  {badge > 0 && (
+                    <span className="ml-1 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-semibold text-white">
+                      {badge}
+                    </span>
+                  )}
+                  <KeyboardArrowRightIcon
+                    fontSize="small"
+                    className="ml-auto text-white/25"
+                  />
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Primary actions */}
+          <div className="mt-4 flex flex-col gap-2 border-t border-white/10 pt-4">
             <Link
-              href="/community"
-              className="text-white py-2 border-b border-white/10"
+              href="/listing"
+              onClick={closeNav}
+              className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition-colors active:bg-gray-200"
             >
-              Community
+              <PlaylistAddCircleIcon fontSize="small" />
+              {user ? "Add a listing" : "Post a listing — it's free"}
             </Link>
-            <Link href="/help" className="text-white py-2">
-              Help
-            </Link>
-            <div className="h-px bg-white/10 my-2" />
-            {!user ? (
-              <>
-                <Link href="/login" className="text-white py-2">
-                  Login
-                </Link>
-                <Link href="/listing" className="text-white py-2">
-                  Post a listing
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/profile" className="text-white py-2">
-                  Profile
-                </Link>
-                <Link href="/listing" className="text-white py-2">
-                  Add listing
-                </Link>
-                <Link href="/chat/messagecenter" className="text-white py-2">
-                  Chat {unreadCount > 0 ? `(${unreadCount})` : ""}
-                </Link>
-              </>
+            {!user && (
+              <Link
+                href="/login"
+                onClick={closeNav}
+                className="flex items-center justify-center gap-2 rounded-xl border border-white/25 px-4 py-3 text-sm font-semibold text-white transition-colors active:bg-white/10"
+              >
+                <LoginIcon fontSize="small" />
+                Log in
+              </Link>
             )}
           </div>
         </nav>
       )}
+      <style jsx global>{`
+        @keyframes klMenuIn {
+          from {
+            opacity: 0;
+            transform: translateY(-6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
       <LoginPromptModal
         show={showModal}
         handleClose={handleModalClose}
