@@ -239,7 +239,7 @@ export default function UserProfile() {
           <ul className="no-scrollbar flex flex-row overflow-x-auto md:flex-col">
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "overview" ? "bg-gray-200" : ""
+                tab === "overview" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("overview")}
             >
@@ -247,7 +247,7 @@ export default function UserProfile() {
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "account" ? "bg-gray-200" : ""
+                tab === "account" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("account")}
             >
@@ -255,7 +255,7 @@ export default function UserProfile() {
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "properties" ? "bg-gray-200" : ""
+                tab === "properties" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("properties")}
             >
@@ -268,7 +268,7 @@ export default function UserProfile() {
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "notifications" ? "bg-gray-200" : ""
+                tab === "notifications" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("notifications")}
             >
@@ -281,7 +281,7 @@ export default function UserProfile() {
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "calendar" ? "bg-gray-200" : ""
+                tab === "calendar" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("calendar")}
             >
@@ -294,7 +294,7 @@ export default function UserProfile() {
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
-                tab === "settings" ? "bg-gray-200" : ""
+                tab === "settings" ? "bg-[#082e4d] text-white" : "hover:bg-gray-100"
               }`}
               onClick={() => setTab("settings")}
             >
@@ -1107,132 +1107,99 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
     loadNext();
   }, [user?.uid]);
 
+  const statCards = [
+    { label: "My bookings", value: stats.bookings, icon: "🏠", bg: "bg-sky-100", fg: "text-sky-700", go: "properties" },
+    { label: "Customer bookings", value: stats.customerBookings, icon: "📥", bg: "bg-emerald-100", fg: "text-emerald-700", go: "properties" },
+    { label: "My listings", value: stats.listings, icon: "🔑", bg: "bg-violet-100", fg: "text-violet-700", go: "properties" },
+    { label: "Appointments", value: stats.appointments, icon: "📅", bg: "bg-amber-100", fg: "text-amber-700", go: "calendar" },
+  ];
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="mx-auto max-w-4xl space-y-5">
+      {/* Profile header */}
+      <div className="flex items-center justify-between gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex min-w-0 items-center gap-4">
           <Avatar
             src={personalInfo?.profileImage || user?.photoURL}
             name={personalInfo?.userName || user?.displayName || user?.email}
             size={64}
           />
-          <div>
-            <h2 className="text-xl font-semibold">
+          <div className="min-w-0">
+            <h2 className="truncate text-xl font-semibold text-gray-900">
               {personalInfo?.userName || "Your profile"}
             </h2>
-            <p className="text-sm text-gray-600">{personalInfo?.email || ""}</p>
+            <p className="truncate text-sm text-gray-500">
+              {personalInfo?.email || ""}
+            </p>
           </div>
         </div>
         <button
-          className="px-3 py-2 rounded-md border"
+          className="shrink-0 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
           onClick={() => onGo("account")}
         >
           Edit profile
         </button>
       </div>
-      {statsLoading ? (
-        <div className="p-4 rounded-lg border theme-card animate-pulse">
-          <div className="h-3 w-20 bg-gray-200 rounded mb-3"></div>
-          <div className="h-4 w-1/2 bg-gray-200 rounded mb-2"></div>
-          <div className="h-3 w-1/3 bg-gray-100 rounded"></div>
-        </div>
-      ) : nextItem ? (
-        <div className="p-4 rounded-lg border bg-gray-50">
-          <p className="text-xs uppercase text-gray-600">Next up</p>
-          <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">
-              {nextItem.type === "appointment" ? "Appointment" : "Booking"}
-            </span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-white">
-              {nextItem.role}
-            </span>
-            <span className="text-sm text-gray-700">
-              {nextItem.dt ? nextItem.dt.format("ddd, MMM D • h:mm A") : ""}
-            </span>
-            {nextItem.roomId ? (
-              <span className="text-xs text-gray-500">
-                Room: {nextItem.roomId}
-              </span>
-            ) : null}
-            <button
-              className="ml-auto text-sm text-blue-600"
-              onClick={() => onGo("calendar")}
-            >
-              Open calendar
-            </button>
+
+      {/* Next up */}
+      {!statsLoading && nextItem ? (
+        <button
+          onClick={() => onGo("calendar")}
+          className="flex w-full items-center gap-3 rounded-2xl border border-[#082e4d]/15 bg-[#082e4d]/5 p-4 text-left"
+        >
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#082e4d] text-lg text-white">
+            ⏰
           </div>
-        </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-[#082e4d]">
+              Next up · {nextItem.role}
+            </p>
+            <p className="text-sm font-medium text-gray-900">
+              {nextItem.type === "appointment" ? "Appointment" : "Booking"}
+              {nextItem.dt ? ` — ${nextItem.dt.format("ddd, MMM D • h:mm A")}` : ""}
+            </p>
+          </div>
+          <span className="shrink-0 text-sm text-[#082e4d]">Open →</span>
+        </button>
       ) : null}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-lg border theme-card">
-          <p className="text-sm text-gray-600">My bookings</p>
-          {statsLoading ? (
-            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-          ) : (
-            <p className="text-2xl font-bold">{stats.bookings}</p>
-          )}
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {statCards.map((s) => (
           <button
-            className="mt-2 text-sm text-blue-600"
-            onClick={() => onGo("properties")}
+            key={s.label}
+            onClick={() => onGo(s.go)}
+            className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
-            View
+            <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${s.bg} ${s.fg}`}>
+              {s.icon}
+            </div>
+            <div className="min-w-0">
+              {statsLoading ? (
+                <div className="h-6 w-10 animate-pulse rounded bg-gray-200" />
+              ) : (
+                <p className="text-2xl font-bold leading-none text-gray-900">
+                  {s.value}
+                </p>
+              )}
+              <p className="mt-1 truncate text-xs text-gray-500">{s.label}</p>
+            </div>
           </button>
-        </div>
-        <div className="p-4 rounded-lg border theme-card">
-          <p className="text-sm text-gray-600">Customer bookings</p>
-          {statsLoading ? (
-            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-          ) : (
-            <p className="text-2xl font-bold">{stats.customerBookings}</p>
-          )}
-          <button
-            className="mt-2 text-sm text-blue-600"
-            onClick={() => onGo("properties")}
-          >
-            Manage
-          </button>
-        </div>
-        <div className="p-4 rounded-lg border theme-card">
-          <p className="text-sm text-gray-600">My listings</p>
-          {statsLoading ? (
-            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-          ) : (
-            <p className="text-2xl font-bold">{stats.listings}</p>
-          )}
-          <button
-            className="mt-2 text-sm text-blue-600"
-            onClick={() => onGo("properties")}
-          >
-            Open
-          </button>
-        </div>
-        <div className="p-4 rounded-lg border theme-card">
-          <p className="text-sm text-gray-600">Appointments</p>
-          {statsLoading ? (
-            <div className="h-7 w-12 bg-gray-200 rounded animate-pulse" />
-          ) : (
-            <p className="text-2xl font-bold">{stats.appointments}</p>
-          )}
-          <button
-            className="mt-2 text-sm text-blue-600"
-            onClick={() => onGo("calendar")}
-          >
-            Calendar
-          </button>
-        </div>
+        ))}
       </div>
+
+      {/* Quick actions */}
       <div className="flex flex-wrap gap-3">
         <button
-          className="px-4 py-2 rounded-md bg-black text-white"
+          className="rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61]"
           onClick={() => router.push("/listing")}
         >
-          Add a listing
+          + Add a listing
         </button>
         <button
-          className="px-4 py-2 rounded-md border"
+          className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           onClick={() => router.push("/chat/messagecenter")}
         >
-          Open Messages
+          Open messages
         </button>
       </div>
     </div>
