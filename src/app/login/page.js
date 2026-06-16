@@ -29,6 +29,30 @@ const GoogleIcon = () => (
   </svg>
 );
 
+// Map raw Firebase auth errors to short, friendly messages.
+const friendlyAuthError = (err) => {
+  const code = String(err?.code || err?.message || "").toLowerCase();
+  if (
+    code.includes("wrong-password") ||
+    code.includes("invalid-credential") ||
+    code.includes("invalid-login")
+  )
+    return "Incorrect email or password.";
+  if (code.includes("user-not-found"))
+    return "No account found with that email.";
+  if (code.includes("email-already-in-use"))
+    return "An account with that email already exists.";
+  if (code.includes("weak-password"))
+    return "Password should be at least 6 characters.";
+  if (code.includes("invalid-email"))
+    return "Please enter a valid email address.";
+  if (code.includes("too-many-requests"))
+    return "Too many attempts. Please wait a moment and try again.";
+  if (code.includes("network"))
+    return "Network error — check your connection and try again.";
+  return "Something went wrong. Please try again.";
+};
+
 const LoginSignup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -69,8 +93,7 @@ const LoginSignup = () => {
       if (isLogin) {
         const userCredential = await signInWithFirebase(email, password);
         if (!userCredential) {
-          const msg = signInError?.message || "Login failed. Please try again.";
-          setErrorMessage(`Login Error: ${msg}`);
+          setErrorMessage(friendlyAuthError(signInError));
           return;
         }
         sessionStorage.setItem("user", true);
@@ -79,9 +102,7 @@ const LoginSignup = () => {
       } else {
         const userCredential = await createUserWithFirebase(email, password);
         if (!userCredential) {
-          const msg =
-            createUserError?.message || "Sign up failed. Please try again.";
-          setErrorMessage(`Sign Up Error: ${msg}`);
+          setErrorMessage(friendlyAuthError(createUserError));
           return;
         }
         const user = userCredential.user;
@@ -107,12 +128,8 @@ const LoginSignup = () => {
         return;
       }
     } catch (error) {
-      const msg =
-        error && error.message
-          ? error.message
-          : String(error || "Unknown error");
-      console.error("Auth Error:", msg);
-      setErrorMessage(`Error: ${msg}`);
+      console.error("Auth Error:", error?.code, error?.message);
+      setErrorMessage(friendlyAuthError(error));
     } finally {
       setIsSubmitting(false);
       setSubmittingSource(null);
@@ -312,11 +329,12 @@ const LoginSignup = () => {
         </form>
 
         {errorMessage && (
-          <Message
-            message={errorMessage}
-            type="error"
-            onClose={() => setErrorMessage("")}
-          />
+          <div
+            role="alert"
+            className="mt-3 w-full rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-center text-sm text-red-700"
+          >
+            {errorMessage}
+          </div>
         )}
         {/* Success toast removed to avoid flicker; we navigate immediately */}
 
