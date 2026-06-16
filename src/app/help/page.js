@@ -4,21 +4,23 @@ import Link from "next/link";
 import Header from "../components/Header";
 import EmailIcon from "@mui/icons-material/Email";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import SearchIcon from "@mui/icons-material/Search";
 import LockIcon from "@mui/icons-material/Lock";
 import GppGoodIcon from "@mui/icons-material/GppGood";
 import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 const SUPPORT_EMAIL = "info.kamerlark@gmail.com";
-const WHATSAPP_E164 = "+919108553983"; // international format without spaces
-const WHATSAPP_DISPLAY = "+91 91085 53983"; // human-readable
+const WHATSAPP_E164 = "+919108553983";
+const WHATSAPP_DISPLAY = "+91 91085 53983";
+const WA_LINK = `https://wa.me/${WHATSAPP_E164.replace("+", "")}`;
 
 export default function HelpPage() {
   const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(0);
   const [user] = useAuthState(auth);
   const [subj, setSubj] = useState("");
   const [desc, setDesc] = useState("");
@@ -28,27 +30,22 @@ export default function HelpPage() {
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const faqs = useMemo(() => FAQ_ITEMS, []);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return faqs;
-    return faqs.filter(
+    if (!q) return FAQ_ITEMS;
+    return FAQ_ITEMS.filter(
       (f) =>
         f.question.toLowerCase().includes(q) ||
-        (typeof f.answer === "string"
-          ? f.answer.toLowerCase().includes(q)
-          : false)
+        f.answer.toLowerCase().includes(q)
     );
-  }, [faqs, query]);
-
-  // mailto and WhatsApp links are constructed directly in JSX below
+  }, [query]);
 
   const submitTicket = async (e) => {
     e?.preventDefault?.();
     setErr("");
     setSent(false);
     if (!subj.trim() || !desc.trim()) {
-      setErr("Please provide a subject and description.");
+      setErr("Please add a subject and a description.");
       return;
     }
     try {
@@ -66,8 +63,8 @@ export default function HelpPage() {
       setSent(true);
       setSubj("");
       setDesc("");
-    } catch (e) {
-      setErr(e?.message || "Failed to submit. Try again.");
+    } catch (e2) {
+      setErr(e2?.message || "Couldn't submit. Please try again.");
     } finally {
       setSending(false);
     }
@@ -76,241 +73,245 @@ export default function HelpPage() {
   return (
     <>
       <Header />
-      <main className="w-full max-w-5xl mx-auto px-4 md:px-6 py-10 md:py-14 theme-surface">
-        <section className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold">Help Center</h1>
-          <p className="text-sm text-gray-600 mt-2">
-            Quick answers, how-tos, and ways to reach us.
+      <main className="theme-surface min-h-screen pt-16">
+        <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
+          {/* Hero + search */}
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            How can we help?
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Search the FAQs, browse safety tips, or reach our team directly.
           </p>
-          <div className="mt-4 flex gap-2">
+          <div className="relative mt-4">
+            <SearchIcon
+              fontSize="small"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search FAQs (e.g., bookings, payments, profile)"
-              className="w-full rounded-md border px-3 py-2 text-sm theme-card"
+              placeholder="Search for an answer (e.g. booking, roommate, listing)…"
+              className="w-full rounded-full border border-gray-300 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-black"
             />
           </div>
-        </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-          <div className="rounded-md border p-4 theme-card">
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <EmailIcon fontSize="small" /> Email us
+          {/* Contact cards */}
+          <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-700">
+                <EmailIcon fontSize="small" />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">Email us</p>
+              <p className="mt-0.5 text-xs text-gray-500">
+                We reply within 1 business day.
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                <span className="truncate text-xs text-gray-700">
+                  {SUPPORT_EMAIL}
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(SUPPORT_EMAIL);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    } catch {}
+                  }}
+                  className="shrink-0 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium hover:bg-gray-100"
+                >
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">
-              We reply within 1 business day.
-            </p>
-            <div className="inline-flex items-center gap-2 mt-3">
-              <span className="text-sm font-mono">{SUPPORT_EMAIL}</span>
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(SUPPORT_EMAIL);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 1500);
-                  } catch {}
-                }}
-                className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
-                aria-live="polite"
-              >
-                {copied ? "Copied" : "Copy"}
-              </button>
-            </div>
-          </div>
-          <div className="rounded-md border p-4 theme-card">
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <WhatsAppIcon fontSize="small" /> WhatsApp
-            </div>
-            <p className="text-sm text-gray-600 mt-2">Chat with support.</p>
+
             <a
-              href={`https://wa.me/${WHATSAPP_E164.replace("+", "")}`}
+              href={WA_LINK}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-3 text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
+              className="block rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:border-emerald-300"
             >
-              {WHATSAPP_DISPLAY}
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                <WhatsAppIcon fontSize="small" />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">WhatsApp</p>
+              <p className="mt-0.5 text-xs text-gray-500">Chat with support.</p>
+              <p className="mt-3 text-xs font-medium text-emerald-700">
+                {WHATSAPP_DISPLAY} →
+              </p>
             </a>
-          </div>
-          <div className="rounded-md border p-4 theme-card">
-            <div className="flex items-center gap-2 font-semibold text-sm">
-              <GppGoodIcon fontSize="small" /> Safety & Policies
-            </div>
-            <p className="text-sm text-gray-600 mt-2">
-              Learn how we keep the community safe.
-            </p>
-            <div className="mt-3 flex gap-2 text-sm flex-wrap">
-              <Link href="/privacy" className="underline hover:opacity-80">
-                Privacy Policy
-              </Link>
-              <span className="text-gray-400">•</span>
-              <Link href="/terms" className="underline hover:opacity-80">
-                Terms of Service
-              </Link>
-              <span className="text-gray-400">•</span>
-              <a
-                href="#safety"
-                className="underline hover:opacity-80"
-                onClick={(e) => {
-                  e.preventDefault();
-                  const el = document.getElementById("safety");
-                  el?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
-                Safety tips
-              </a>
-            </div>
-          </div>
-        </section>
 
-        <section className="mb-10">
-          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
-            <HelpOutlineIcon fontSize="small" /> Frequently Asked Questions
-          </h2>
-          <div className="rounded-md border theme-card">
-            {filtered.length === 0 ? (
-              <p className="p-4 text-sm text-gray-600">No matches.</p>
-            ) : (
-              filtered.map((item, idx) => (
-                <div key={idx} className="border-b last:border-b-0">
-                  <button
-                    className="w-full text-left px-4 py-3 flex items-center justify-between"
-                    onClick={() => setOpen(open === idx ? null : idx)}
-                    aria-expanded={open === idx}
-                  >
-                    <span className="font-medium text-sm">{item.question}</span>
-                    <span aria-hidden className="ml-3 text-gray-500">
-                      {open === idx ? "−" : "+"}
-                    </span>
-                  </button>
-                  {open === idx ? (
-                    <div className="px-4 pb-4 text-sm text-gray-700 whitespace-pre-wrap">
-                      {item.answer}
-                    </div>
-                  ) : null}
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-
-        <section id="safety" className="mb-10">
-          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
-            <LockIcon fontSize="small" /> Safety tips
-          </h2>
-          <ul className="rounded-md border theme-card list-disc pl-6 py-4 text-sm space-y-2">
-            <li>Communicate and pay only on KamerLark channels.</li>
-            <li>Never share passwords or one-time codes.</li>
-            <li>Verify property details and owner identity before payments.</li>
-            <li>Report suspicious behavior using the form below.</li>
-          </ul>
-        </section>
-
-        <section className="mb-6">
-          <h2 className="text-xl font-semibold flex items-center gap-2 mb-3">
-            <ReportProblemIcon fontSize="small" /> Report an issue
-          </h2>
-          <div className="rounded-md border theme-card p-4">
-            <p className="text-sm text-gray-700">
-              Send us details and we’ll investigate.
-            </p>
-            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <form onSubmit={submitTicket} className="space-y-3">
-                {err ? <p className="text-xs text-red-600">{err}</p> : null}
-                {sent ? (
-                  <p className="text-xs text-green-700">
-                    Ticket submitted. We'll reply by{" "}
-                    {pref === "email" ? "email" : "WhatsApp"}.
-                  </p>
-                ) : null}
-                <label className="block text-sm">
-                  Subject
-                  <input
-                    type="text"
-                    value={subj}
-                    onChange={(e) => setSubj(e.target.value)}
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                    placeholder="Short summary"
-                  />
-                </label>
-                <label className="block text-sm">
-                  Description
-                  <textarea
-                    value={desc}
-                    onChange={(e) => setDesc(e.target.value)}
-                    className="mt-1 w-full rounded-md border px-3 py-2 text-sm"
-                    rows={5}
-                    placeholder="What happened, steps to reproduce, expected vs actual"
-                  />
-                </label>
-                <div className="flex items-center gap-4 text-sm">
-                  <label className="inline-flex items-center gap-1">
-                    <input
-                      type="radio"
-                      name="pref"
-                      value="email"
-                      checked={pref === "email"}
-                      onChange={() => setPref("email")}
-                    />
-                    Email
-                  </label>
-                  <label className="inline-flex items-center gap-1">
-                    <input
-                      type="radio"
-                      name="pref"
-                      value="whatsapp"
-                      checked={pref === "whatsapp"}
-                      onChange={() => setPref("whatsapp")}
-                    />
-                    WhatsApp
-                  </label>
-                </div>
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors disabled:opacity-50"
+            <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-100 text-violet-700">
+                <GppGoodIcon fontSize="small" />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">
+                Safety &amp; policies
+              </p>
+              <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                <Link href="/privacy" className="text-gray-600 underline hover:text-black">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="text-gray-600 underline hover:text-black">
+                  Terms
+                </Link>
+                <a
+                  href="#safety"
+                  className="text-gray-600 underline hover:text-black"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document
+                      .getElementById("safety")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
                 >
-                  {sending ? "Submitting..." : "Submit ticket"}
-                </button>
-              </form>
-
-              <div className="space-y-2">
-                <p className="text-sm text-gray-700">Or contact us directly:</p>
-                <div className="flex flex-wrap gap-2">
-                  <a
-                    className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
-                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
-                      SUPPORT_EMAIL
-                    )}&su=${encodeURIComponent(
-                      "Issue Report - KamerLark"
-                    )}&body=${encodeURIComponent(
-                      `Describe the issue here (steps, expected vs actual):\n\n- Page or feature:\n- Your account email (optional):\n- Screenshots/recording link (optional):\n\nThanks!`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Open Gmail compose with prefilled support email"
-                  >
-                    Open in Gmail
-                  </a>
-                  <a
-                    className="text-sm rounded-md border px-3 py-2 hover:bg-black hover:text-white transition-colors"
-                    href={`https://wa.me/${WHATSAPP_E164.replace(
-                      "+",
-                      ""
-                    )}?text=${encodeURIComponent(
-                      "Hi KamerLark Support, I want to report an issue:"
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Message on WhatsApp
-                  </a>
-                </div>
+                  Safety tips
+                </a>
               </div>
             </div>
           </div>
-        </section>
+
+          {/* FAQ */}
+          <h2 className="mt-10 text-lg font-semibold text-gray-900">
+            Frequently asked questions
+          </h2>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            {filtered.length === 0 ? (
+              <p className="p-5 text-sm text-gray-500">
+                No matches. Try another keyword, or contact us below.
+              </p>
+            ) : (
+              filtered.map((item, idx) => {
+                const isOpen = open === idx;
+                return (
+                  <div key={item.question} className="border-b border-gray-100 last:border-b-0">
+                    <button
+                      onClick={() => setOpen(isOpen ? -1 : idx)}
+                      aria-expanded={isOpen}
+                      className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-gray-50"
+                    >
+                      <span className="text-sm font-medium text-gray-900">
+                        {item.question}
+                      </span>
+                      <KeyboardArrowDownIcon
+                        fontSize="small"
+                        className={`shrink-0 text-gray-400 transition-transform ${
+                          isOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+                    {isOpen && (
+                      <p className="whitespace-pre-wrap px-4 pb-4 text-sm leading-relaxed text-gray-600">
+                        {item.answer}
+                      </p>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Safety tips */}
+          <section id="safety" className="mt-10 scroll-mt-20">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <LockIcon fontSize="small" /> Staying safe on KamerLark
+            </h2>
+            <ul className="mt-3 space-y-2 rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-700">
+              {[
+                "Chat and arrange everything inside KamerLark — keep a record of your conversations.",
+                "Never share passwords, bank PINs or one-time codes with anyone.",
+                "Visit the room (in person or by video call) and verify the owner before paying anything.",
+                "Be wary of prices that look too good to be true, or pressure to pay quickly.",
+                "Report anything suspicious using the form below — we investigate every report.",
+              ].map((tip) => (
+                <li key={tip} className="flex gap-2">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#082e4d]" />
+                  <span>{tip}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Report an issue */}
+          <section className="mt-10">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+              <ReportProblemIcon fontSize="small" /> Still need help? Report it
+            </h2>
+            <div className="mt-3 rounded-2xl border border-gray-200 bg-white p-5">
+              <form onSubmit={submitTicket} className="space-y-3">
+                {err ? <p className="text-xs text-red-600">{err}</p> : null}
+                {sent ? (
+                  <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                    Thanks — your ticket is in. We&apos;ll get back to you by{" "}
+                    {pref === "email" ? "email" : "WhatsApp"}.
+                  </div>
+                ) : null}
+                <input
+                  type="text"
+                  value={subj}
+                  onChange={(e) => setSubj(e.target.value)}
+                  placeholder="Subject — a short summary"
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400"
+                />
+                <textarea
+                  value={desc}
+                  onChange={(e) => setDesc(e.target.value)}
+                  rows={4}
+                  placeholder="What happened? Include the listing, steps, and what you expected."
+                  className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400"
+                />
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                  <span className="text-xs font-medium text-gray-500">
+                    Reply by:
+                  </span>
+                  {["email", "whatsapp"].map((p) => (
+                    <label key={p} className="inline-flex items-center gap-1.5">
+                      <input
+                        type="radio"
+                        name="pref"
+                        value={p}
+                        checked={pref === p}
+                        onChange={() => setPref(p)}
+                      />
+                      {p === "email" ? "Email" : "WhatsApp"}
+                    </label>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
+                  >
+                    {sending ? "Submitting…" : "Submit ticket"}
+                  </button>
+                  <span className="text-xs text-gray-400">or</span>
+                  <a
+                    className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                      SUPPORT_EMAIL
+                    )}&su=${encodeURIComponent("Issue Report - KamerLark")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Email
+                  </a>
+                  <a
+                    className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                    href={`${WA_LINK}?text=${encodeURIComponent(
+                      "Hi KamerLark Support, I'd like to report an issue:"
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
       </main>
     </>
   );
@@ -320,280 +321,51 @@ const FAQ_ITEMS = [
   {
     question: "How do I book a room?",
     answer:
-      "Go to Search, open a listing, then use Book Now or Book Appointment. You’ll also open a chat with the owner.",
+      "Open a listing from Explore, then tap “Book now”. The owner gets your request and a chat opens automatically so you can agree the details. Prefer to see it first? Use “Visit first” to request an in-person or video viewing.",
   },
   {
-    question: "How do appointments work?",
+    question: "How do viewings / appointments work?",
     answer:
-      "Pick a date/time and appointment type (in-person or virtual). We send you calendar links and notify the owner.",
+      "On a listing, choose “Visit first”, pick a date, time and whether it’s in-person or virtual. We notify the owner and add it to your dashboard under Appointments — you’ll confirm the final time together in chat.",
   },
   {
-    question: "What is your cancellation policy?",
+    question: "How do I message an owner or another student?",
     answer:
-      "Most bookings can be canceled up to 24 hours before move-in. Some listings may have custom terms in Lease Terms.",
+      "Tap “Chat” on any listing to message the owner, or “Message” on a Community post to reach the poster. All your conversations live in the Chat (message centre).",
   },
   {
-    question: "Payments and security",
+    question: "How do I find a roommate?",
     answer:
-      "Only pay through official channels. Avoid sharing sensitive info. Contact support if something looks off.",
+      "Go to Community → Feed and post under “Looking for a roommate” with your budget, university and move-in date. Browse others’ posts and message anyone that’s a good fit. You can also find people in the Members tab.",
   },
   {
-    question: "How do I contact support?",
-    answer: `Email: ${SUPPORT_EMAIL}  |  WhatsApp: ${WHATSAPP_DISPLAY}`,
-  },
-  {
-    question: "Can I edit my profile details?",
+    question: "I'm an owner — how do I post a listing?",
     answer:
-      "Yes. Go to Profile to update name, contact, and preferences. Email changes may require re-authentication.",
+      "Tap “Add listing” in the menu, fill in the sections (basics, location on the map, pricing, photos — up to 10), then Submit. Manage or edit it anytime from My Listings.",
   },
   {
-    question: "Where are Terms and Privacy?",
-    answer: "See links at the top of this page or the site footer.",
+    question: "Can I edit or remove my listing?",
+    answer:
+      "Yes. Open My Listings, then Edit to change details or Delete to take it down. Changes appear immediately.",
+  },
+  {
+    question: "What about cancellations?",
+    answer:
+      "Most bookings can be cancelled up to 24 hours before move-in. Some listings set their own terms — check the Lease Terms section on the listing before you book.",
+  },
+  {
+    question: "Payments & safety",
+    answer:
+      "Only arrange payment through channels you trust, and never pay before you’ve verified the room and the owner. Never share passwords or one-time codes. If something feels off, report it below.",
+  },
+  {
+    question: "How do I edit my profile or reset my password?",
+    answer:
+      "Go to Profile → Account Management to update your name, photo and contact details. To reset a password, use “Forgot password” on the login screen; email changes may ask you to sign in again.",
+  },
+  {
+    question: "How do I report a listing or user?",
+    answer:
+      "Use the “Report it” form at the bottom of this page with the listing or person’s details. We review every report and act on anything that breaks our policies.",
   },
 ];
-
-// 'use client';
-// import { useState, useEffect } from "react";
-// import Link from "next/link";
-// import Header from '../components/Header';
-// import Spinner from '../components/Spinner'; // Import Spinner
-
-// export default function Component() {
-//   const [openIndex, setOpenIndex] = useState(null);
-//   const [loading, setLoading] = useState(true); // Loading state
-
-//   const toggleCollapse = (index) => {
-//     setOpenIndex(openIndex === index ? null : index);
-//   };
-
-//   useEffect(() => {
-//     // Simulate a delay to demonstrate the loading spinner
-//     const timer = setTimeout(() => {
-//       setLoading(false); // Set loading false after the delay
-//     }, 1000);
-
-//     return () => clearTimeout(timer); // Clean up the timer
-//   }, []);
-
-//   if (loading) {
-//     return <Spinner />; // Show spinner when loading
-//   }
-
-//   return (
-//     <>
-//     <Header />
-
-//     <main className="w-full max-w-5xl mx-auto px-4 md:px-6 py-12 md:py-20">
-
-//       <div className="space-y-8">
-//         <div className="space-y-4">
-//           <p className="text-gray-500 dark:text-gray-400 max-w-[700px]">
-//             Welcome to our help and support page. Here you can find answers to frequently asked questions about our room
-//             booking services. If you can't find what you're looking for, please don't hesitate to contact us.
-//           </p>
-//         </div>
-//         <div className="space-y-6">
-//           <h2 className="text-2xl font-bold tracking-tight">Frequently Asked Questions</h2>
-//           <div className="space-y-4">
-//             {faqItems.map((item, index) => (
-//               <div key={index}>
-//                 <button
-//                   className="flex items-center justify-between w-full bg-gray-300  px-4 py-3 rounded-md"
-//                   onClick={() => toggleCollapse(index)}
-//                 >
-//                   <span className="font-medium">{item.question}</span>
-//                   <svg
-//                     className={`w-5 h-5 transition-transform ${openIndex === index ? "rotate-90" : ""}`}
-//                     fill="none"
-//                     stroke="currentColor"
-//                     viewBox="0 0 24 24"
-//                     xmlns="http://www.w3.org/2000/svg"
-//                   >
-//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-//                   </svg>
-//                 </button>
-//                 <div
-//                   className={`px-4 pt-4 text-gray-500 dark:text-gray-400 transition-max-height duration-300 ease-in-out overflow-hidden ${
-//                     openIndex === index ? "max-h-screen" : "max-h-0"
-//                   }`}
-//                 >
-//                   {item.answer}
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//         <div className="space-y-6">
-//           <h2 className="text-2xl font-bold tracking-tight">Helpful Links</h2>
-//           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-//             {helpfulLinks.map((link, index) => (
-//               <Link
-//                 key={index}
-//                 className="flex items-center gap-2 bg-gray-300 px-4 py-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-200 transition-colors"
-//                 href={link.href}
-//               >
-//                 {link.icon}
-//                 <span>{link.text}</span>
-//               </Link>
-//             ))}
-//           </div>
-//         </div>
-//       </div>
-//     </main>
-//     </>
-//   );
-// }
-
-// const faqItems = [
-//   {
-//     question: "How do I book a room?",
-//     answer: (
-//       <p>
-//         To book a room, simply navigate to the "Book a Room" section on our website. You can select your desired
-//         dates, number of guests, and room type. Once you've found the perfect room, follow the step-by-step booking
-//         process to complete your reservation.
-//       </p>
-//     ),
-//   },
-//   {
-//     question: "What is your cancellation policy?",
-//     answer: (
-//       <p>
-//         We understand that plans can change, so we offer a flexible cancellation policy. For most bookings, you can
-//         cancel up to 24 hours before your scheduled check-in time and receive a full refund. Certain room types or
-//         special events may have different cancellation policies, so please check the details of your reservation.
-//       </p>
-//     ),
-//   },
-//   {
-//     question: "What payment methods do you accept?",
-//     answer: (
-//       <p>
-//         We accept a variety of payment methods, including Visa, Mastercard, American Express, and PayPal. You can
-//         securely pay for your booking during the checkout process. If you have any issues with your payment, please
-//         don't hesitate to contact our support team.
-//       </p>
-//     ),
-//   },
-//   {
-//     question: "How can I contact you?",
-//     answer: (
-//       <p>
-//         You can reach our support team in a few different ways:
-//         <ul className="list-disc pl-6 mt-2">
-//           <li>Email us at support@roombooking.com</li>
-//           <li>Call our toll-free number at 1-800-123-4567</li>
-//           <li>Chat with us online during business hours</li>
-//         </ul>
-//         We strive to respond to all inquiries within 1 business day.
-//       </p>
-//     ),
-//   },
-// ];
-
-// const helpfulLinks = [
-//   { href: "#", text: "About Us", icon: <InfoIcon className="w-5 h-5" /> },
-//   { href: "#", text: "Terms of Service", icon: <FileIcon className="w-5 h-5" /> },
-//   { href: "#", text: "Privacy Policy", icon: <LockIcon className="w-5 h-5" /> },
-//   { href: "#", text: "Contact Us", icon: <MailIcon className="w-5 h-5" /> },
-// ];
-
-// function ChevronRightIcon(props) {
-//   return (
-//     <svg
-//       {...props}
-//       xmlns="http://www.w3.org/2000/svg"
-//       width="24"
-//       height="24"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <path d="M9 18l6-6-6-6" />
-//     </svg>
-//   );
-// }
-
-// function FileIcon(props) {
-//   return (
-//     <svg
-//       {...props}
-//       xmlns="http://www.w3.org/2000/svg"
-//       width="24"
-//       height="24"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
-//       <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-//     </svg>
-//   );
-// }
-
-// function InfoIcon(props) {
-//   return (
-//     <svg
-//       {...props}
-//       xmlns="http://www.w3.org/2000/svg"
-//       width="24"
-//       height="24"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <circle cx="12" cy="12" r="10" />
-//       <path d="M12 16v-4" />
-//       <path d="M12 8h.01" />
-//     </svg>
-//   );
-// }
-
-// function LockIcon(props) {
-//   return (
-//     <svg
-//       {...props}
-//       xmlns="http://www.w3.org/2000/svg"
-//       width="24"
-//       height="24"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
-//       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-//     </svg>
-//   );
-// }
-
-// function MailIcon(props) {
-//   return (
-//     <svg
-//       {...props}
-//       xmlns="http://www.w3.org/2000/svg"
-//       width="24"
-//       height="24"
-//       viewBox="0 0 24 24"
-//       fill="none"
-//       stroke="currentColor"
-//       strokeWidth="2"
-//       strokeLinecap="round"
-//       strokeLinejoin="round"
-//     >
-//       <rect width="20" height="16" x="2" y="4" rx="2" />
-//       <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-//     </svg>
-//   );
-// }
