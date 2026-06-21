@@ -520,6 +520,26 @@ function RentedProperties({ personalInfo, user }) {
     }
   };
 
+  const [togglingId, setTogglingId] = useState(null);
+  const toggleAvailable = async (listing) => {
+    const next = listing.available === false; // currently unavailable -> make available
+    setTogglingId(listing.id);
+    try {
+      await setDoc(
+        doc(db, "roomdetails", listing.id),
+        { available: next },
+        { merge: true }
+      );
+      setListings((prev) =>
+        prev.map((l) => (l.id === listing.id ? { ...l, available: next } : l))
+      );
+    } catch (e) {
+      console.error("Failed to update availability", e);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   const EmptyState = ({ text }) => (
     <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center text-sm text-gray-400">
       {text}
@@ -634,9 +654,16 @@ function RentedProperties({ personalInfo, user }) {
                   </Link>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="truncate font-semibold text-gray-900">
-                        {listing.name || "Untitled listing"}
-                      </h3>
+                      <div className="flex min-w-0 items-center gap-2">
+                        <h3 className="truncate font-semibold text-gray-900">
+                          {listing.name || "Untitled listing"}
+                        </h3>
+                        {listing.available === false ? (
+                          <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
+                            Booked
+                          </span>
+                        ) : null}
+                      </div>
                       <p className="shrink-0 text-sm font-bold text-gray-900">
                         {listing.price
                           ? new Intl.NumberFormat("fr-FR").format(
@@ -684,6 +711,17 @@ function RentedProperties({ personalInfo, user }) {
                       >
                         Edit
                       </Link>
+                      <button
+                        onClick={() => toggleAvailable(listing)}
+                        disabled={togglingId === listing.id}
+                        className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {togglingId === listing.id
+                          ? "…"
+                          : listing.available === false
+                          ? "Mark available"
+                          : "Mark unavailable"}
+                      </button>
                       <button
                         onClick={() => deleteListing(listing)}
                         disabled={deletingId === listing.id}

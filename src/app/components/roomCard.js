@@ -60,6 +60,14 @@ const RoomCardNew = ({ room }) => {
             {room.furnishedStatus}
           </span>
         ) : null}
+        {room?.available === false ? (
+          <>
+            <div className="absolute inset-0 bg-black/45" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-900 shadow">
+              No longer available
+            </span>
+          </>
+        ) : null}
       </div>
 
       <div className="flex flex-1 flex-col gap-1.5 p-4">

@@ -16,6 +16,14 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
   const onAccept = async () => {
     try {
       await setDoc(bookingDocRef, { status: "completed" }, { merge: true });
+      // The room is now taken — mark it unavailable so it can't be booked again.
+      if (listing.roomId) {
+        await setDoc(
+          doc(db, "roomdetails", listing.roomId),
+          { available: false },
+          { merge: true }
+        );
+      }
       refresher();
     } catch (e) {
       console.error("Error updating document: ", e);

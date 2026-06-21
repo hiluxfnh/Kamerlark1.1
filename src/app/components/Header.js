@@ -19,6 +19,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Avatar from "./Avatar";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 const Header = () => {
@@ -90,10 +91,23 @@ const Header = () => {
         Skip to content
       </a>
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between p-2 px-4 sm:px-6">
-        <Link href="/" className="flex items-center" aria-label="Go to home">
-          <Image src={kl} alt="KamerLark Logo" className={styles.logoImage} />
-          <span className="ml-1 text-lg text-white">KAMERLARK</span>
-        </Link>
+        <div className="flex items-center gap-1">
+          {pathname !== "/" && (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label="Go back to the previous page"
+              title="Back"
+              className="-ml-1 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+            >
+              <ArrowBackIcon fontSize="small" />
+            </button>
+          )}
+          <Link href="/" className="flex items-center" aria-label="Go to home">
+            <Image src={kl} alt="KamerLark Logo" className={styles.logoImage} />
+            <span className="ml-1 text-lg text-white">KAMERLARK</span>
+          </Link>
+        </div>
 
         {/* Primary nav (desktop) */}
         <nav aria-label="Primary" className="hidden md:flex items-center gap-6">

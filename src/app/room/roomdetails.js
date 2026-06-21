@@ -299,6 +299,27 @@ const RoomDetails = ({ room }) => {
     const ownerId = room.ownerId || null;
     setIsBooking(true);
     try {
+      // Block duplicates: one active (pending/accepted) booking per room.
+      // Query by userId only (auto-indexed) and filter the room client-side.
+      const mine = await getDocs(
+        query(
+          collection(db, "bookings"),
+          where("userId", "==", auth.currentUser.uid)
+        )
+      );
+      const already = mine.docs.find(
+        (d) =>
+          d.data().roomId === room.id &&
+          ["pending", "completed", "accepted"].includes(d.data().status)
+      );
+      if (already) {
+        notify(
+          "You already have a booking request for this room. Check it in your profile.",
+          "warning"
+        );
+        setIsBooking(false);
+        return;
+      }
       const bookingDetailsModified = {
         userName: bookingDetails.name || "",
         userEmail: bookingDetails.email || "",
@@ -611,42 +632,72 @@ const RoomDetails = ({ room }) => {
                 </span>
               </p>
 
+              {/* Availability */}
+              {room.available === false ? (
+                <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  No longer available — this place has been booked.
+                </div>
+              ) : (
+                <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                  Available now
+                </div>
+              )}
+
               {user && room.ownerId !== user.uid ? (
-                <div className="mt-4 flex flex-col gap-2">
-                  <Button
-                    onClick={() => setIsBookNowOpen(true)}
-                    variant="contained"
-                    fullWidth
-                    style={{ backgroundColor: "black", padding: "10px 0" }}
-                  >
-                    Book now
-                  </Button>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      onClick={() => setIsAppointmentOpen(true)}
-                      variant="outlined"
-                      fullWidth
-                      style={{ borderColor: "black", color: "black" }}
-                    >
-                      Visit first
-                    </Button>
+                room.available === false ? (
+                  <div className="mt-4 flex flex-col gap-2">
+                    <p className="text-sm text-gray-600">
+                      This place isn&apos;t taking new booking requests, but you
+                      can still message the owner.
+                    </p>
                     <Button
                       onClick={() => setIsChatOpen(true)}
                       variant="outlined"
                       fullWidth
                       style={{ borderColor: "black", color: "black" }}
                     >
-                      Chat
+                      Chat with owner
                     </Button>
                   </div>
-                  <button
-                    onClick={() => setIsContractTermsOpen(true)}
-                    className="mt-1 text-sm text-gray-600 underline underline-offset-2 hover:text-black"
-                    type="button"
-                  >
-                    View contract terms
-                  </button>
-                </div>
+                ) : (
+                  <div className="mt-4 flex flex-col gap-2">
+                    <Button
+                      onClick={() => setIsBookNowOpen(true)}
+                      variant="contained"
+                      fullWidth
+                      style={{ backgroundColor: "black", padding: "10px 0" }}
+                    >
+                      Book now
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        onClick={() => setIsAppointmentOpen(true)}
+                        variant="outlined"
+                        fullWidth
+                        style={{ borderColor: "black", color: "black" }}
+                      >
+                        Visit first
+                      </Button>
+                      <Button
+                        onClick={() => setIsChatOpen(true)}
+                        variant="outlined"
+                        fullWidth
+                        style={{ borderColor: "black", color: "black" }}
+                      >
+                        Chat
+                      </Button>
+                    </div>
+                    <button
+                      onClick={() => setIsContractTermsOpen(true)}
+                      className="mt-1 text-sm text-gray-600 underline underline-offset-2 hover:text-black"
+                      type="button"
+                    >
+                      View contract terms
+                    </button>
+                  </div>
+                )
               ) : null}
 
               {!user ? (
