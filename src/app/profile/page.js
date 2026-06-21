@@ -959,26 +959,28 @@ function Notifications() {
       </div>
     );
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Notifications</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">Notifications</h2>
       {!items.length ? (
-        <p className="text-sm text-gray-600">No recent notifications.</p>
+        <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center text-sm text-gray-400">
+          You&apos;re all caught up — no recent notifications.
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {items.map((n) => (
             <a
               key={n.id}
               href={n.link}
-              className="block p-4 rounded-lg border hover:bg-gray-50 theme-card"
+              className="block rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-white">
+                    <span className="rounded-full bg-[#082e4d] px-2 py-0.5 text-xs font-medium text-white">
                       {n.title}
                     </span>
                     {n.role ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 text-gray-700">
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
                         {n.role}
                       </span>
                     ) : null}

@@ -225,10 +225,12 @@ export default function AccountManagement({ personalInfo }) {
   };
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Account Management</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">
+        Account Management
+      </h2>
       {/* Profile summary and avatar */}
-      <div className="flex items-center gap-4 mb-6 p-4 rounded-lg border bg-white">
+      <div className="mb-6 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
         <UserAvatar
           src={personalInfoState.profileImage || user?.photoURL || ""}
           name={personalInfoState.userName || user?.displayName || user?.email}
@@ -263,9 +265,9 @@ export default function AccountManagement({ personalInfo }) {
         </div>
       </div>
       {avatarUploading ? <LinearProgress className="mb-4" /> : null}
-      <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+      <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <div className="px-4 py-5 sm:px-6">
-          <h3 className="text-lg leading-6 font-medium text-gray-900">
+          <h3 className="text-base font-semibold text-gray-900">
             Personal Information
           </h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
