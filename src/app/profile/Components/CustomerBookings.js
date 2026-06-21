@@ -5,7 +5,16 @@ import { useState } from "react";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import InputFieldCustom from "../../components/InputField";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp,
+} from "firebase/firestore";
 import { db } from "../../firebase/Config";
 import { useRouter } from "next/navigation";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
@@ -13,6 +22,48 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
   const [show, setShow] = useState(false);
   const bookingDocRef = doc(db, "bookings", listing.id);
   const router = useRouter();
+
+  // Notify the booker of the decision via a chat message (shows up instantly
+  // in their Chat and bumps the unread badge).
+  const notifyBooker = async (text) => {
+    try {
+      if (!listing.ownerId || !listing.userId) return;
+      const roomId = await ChatRoomHandler({
+        userId1: listing.ownerId,
+        userId2: listing.userId,
+      });
+      if (!roomId) return;
+      await addDoc(collection(db, "chatRoom", roomId, "messages"), {
+        message: text,
+        userId: listing.ownerId,
+        type: "text",
+        photoURL: null,
+        timestamp: serverTimestamp(),
+      });
+      const snap = await getDocs(
+        query(
+          collection(db, "chatRoomMapping"),
+          where("userIds", "array-contains", listing.ownerId)
+        )
+      );
+      await Promise.all(
+        snap.docs
+          .filter((d) => d.data().roomId === roomId)
+          .map((d) =>
+            setDoc(
+              doc(db, "chatRoomMapping", d.id),
+              { lastMessageTs: serverTimestamp(), timestamp: serverTimestamp() },
+              { merge: true }
+            )
+          )
+      );
+    } catch (e) {
+      console.warn("Could not notify booker:", e);
+    }
+  };
+
+  const roomName = listing?.roomDetails?.name || "your requested room";
+
   const onAccept = async () => {
     try {
       await setDoc(bookingDocRef, { status: "completed" }, { merge: true });
@@ -24,6 +75,9 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
           { merge: true }
         );
       }
+      await notifyBooker(
+        `✅ Good news! Your booking for "${roomName}" has been accepted. Let's arrange the next steps here.`
+      );
       refresher();
     } catch (e) {
       console.error("Error updating document: ", e);
@@ -32,6 +86,9 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
   const onDecline = async () => {
     try {
       await setDoc(bookingDocRef, { status: "declined" }, { merge: true });
+      await notifyBooker(
+        `Unfortunately your booking request for "${roomName}" was declined. Feel free to message me if you have questions.`
+      );
       refresher();
     } catch (e) {
       console.error("Error updating document: ", e);
