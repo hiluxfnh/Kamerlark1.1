@@ -9,7 +9,7 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
     width:{
       256: '68.75rem',
       148:'37.5rem',
@@ -72,7 +72,8 @@ module.exports = {
     },
     scale:{
       80:'0.80',
-    }
+    },
+    },
   },
   plugins: [],
 }

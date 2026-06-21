@@ -6,6 +6,7 @@ import {
   getDoc,
   doc,
   setDoc,
+  deleteDoc,
   collection,
   where,
   query,
@@ -260,11 +261,6 @@ export default function UserProfile() {
               onClick={() => setTab("properties")}
             >
               <DashboardIcon className="mr-3" /> Dashboard
-              {stats.listings > 0 ? (
-                <span className="ml-auto text-[10px] bg-gray-800 text-white rounded-full px-2 py-0.5">
-                  {stats.listings}
-                </span>
-              ) : null}
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
@@ -504,44 +500,31 @@ function RentedProperties({ personalInfo, user }) {
   useEffect(() => {
     fetchListingsAndBookings();
   }, [user]);
-  // debug logs removed
-  const [properties, setProperties] = useState([
-    {
-      id: 1,
-      name: "Sunny Apartment",
-      address: "123 Sunshine Blvd, Apt 4B, Sunnyville",
-      rentDue: "2024-06-01",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Cozy Cottage",
-      address: "456 Cozy Ln, Cottage Town",
-      rentDue: "2024-06-05",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Modern Loft",
-      address: "789 Modern St, Loft City",
-      rentDue: "2024-06-10",
-      status: "Active",
-    },
-  ]);
-  const ameneties = [
-    "Furnished",
-    "Pet Friendly",
-    "Parking",
-    "Balcony",
-    "Garden",
-    "Swimming Pool",
-    "Gym",
-    "Security",
-    "Laundry",
-  ];
-  const handlePropertyDelete = (propertyId) => {
-    setProperties(properties.filter((property) => property.id !== propertyId));
+  const [deletingId, setDeletingId] = useState(null);
+  const deleteListing = async (listing) => {
+    if (
+      !window.confirm(
+        `Delete "${listing.name || "this listing"}"? This can't be undone.`
+      )
+    )
+      return;
+    setDeletingId(listing.id);
+    try {
+      await deleteDoc(doc(db, "roomdetails", listing.id));
+      setListings((prev) => prev.filter((l) => l.id !== listing.id));
+    } catch (e) {
+      console.error("Failed to delete listing", e);
+      alert("Couldn't delete the listing. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
   };
+
+  const EmptyState = ({ text }) => (
+    <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center text-sm text-gray-400">
+      {text}
+    </div>
+  );
 
   return (
     <div>
@@ -559,7 +542,9 @@ function RentedProperties({ personalInfo, user }) {
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
-          <h1>Rented Properties</h1>
+          <h3 className="mb-3 text-base font-semibold text-gray-900">
+            Bookings you&apos;ve made
+          </h3>
           {loading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -577,10 +562,14 @@ function RentedProperties({ personalInfo, user }) {
                 key={index}
               />
             ))
-          ) : null}
+          ) : (
+            <EmptyState text="You haven't booked any rooms yet." />
+          )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
-          <h1>Customer Bookings</h1>
+          <h3 className="mb-3 text-base font-semibold text-gray-900">
+            Bookings on your listings
+          </h3>
           {loading ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
@@ -598,10 +587,14 @@ function RentedProperties({ personalInfo, user }) {
                 key={index}
               />
             ))
-          ) : null}
+          ) : (
+            <EmptyState text="No one has booked your listings yet." />
+          )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
-          <h1>Listed Properties</h1>
+          <h3 className="mb-3 text-base font-semibold text-gray-900">
+            Your listings
+          </h3>
           {loading ? (
             <div className="space-y-3">
               {[...Array(2)].map((_, i) => (
@@ -620,135 +613,91 @@ function RentedProperties({ personalInfo, user }) {
                 </div>
               ))}
             </div>
-          ) : (
-            listings.map((listing, index) => (
-              <div
-                className="grid grid-cols-12 w-full max-w-3xl rounded-xl my-3 p-4 text-sm"
-                style={{ boxShadow: "0px 0px 10px lightgrey" }}
-                key={index}
-              >
+          ) : listings.length > 0 ? (
+            <div className="space-y-3">
+              {listings.map((listing) => (
                 <div
-                  className="relative col-start-1 col-end-4 rounded-xl overflow-hidden h-full"
-                  style={{
-                    width: "150px",
-                  }}
+                  className="flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:flex-row"
+                  key={listing.id}
                 >
-                  <Image
-                    src={listing.images?.[0] || require("../assets/a1.png")}
-                    alt={listing.name}
-                    width={100}
-                    height={100}
-                    className="rounded-xl absolute h-auto"
-                    style={{
-                      width: "150px",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  />
-                </div>
-                <div className="col-start-4 col-end-10">
-                  <h3 className="text-sm font-semibold">{listing.name}</h3>
-                  <div className="overflow-scroll no-scrollbar my-2">
-                    <div
-                      className="flex flex-row"
-                      style={{
-                        width: "max-content",
-                      }}
-                    >
-                      {listing.amenities.map((amenity, index) => (
-                        <p
-                          className="px-4 rounded-md mr-2 bg-slate-500 text-white text-sm"
-                          key={index}
-                        >
-                          {amenity}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex flex-row flex-wrap mt-2 gap-2">
-                    <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-                      {listing.bedType.length !== 0
-                        ? listing.furnishedStatus + " Bed"
-                        : "Not mentioned"}
-                    </p>
-                    <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-                      {listing.capacity.length !== 0
-                        ? listing.capacity
-                        : "Not mentioned"}{" "}
-                      Capacity
-                    </p>
-                    <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-                      {listing.furnishedStatus.length !== 0
-                        ? listing.furnishedStatus
-                        : "Not mentioned"}
-                    </p>
-                    <p className="text-sm pr-2 border-r-2 border-r-slate-400">
-                      {listing.publicTransportAccess.length !== 0
-                        ? listing.publicTransportAccess
-                        : "Not mentioned"}
-                    </p>
-                    <p className="text-sm">
-                      {listing.uni.length !== 0
-                        ? "Near " + listing.uni
-                        : "Not mentioned"}
-                    </p>
-                  </div>
                   <Link
                     href={`/room/${listing.id}`}
-                    className="text-base text-gray-600 my-2 cursor-pointer"
+                    className="block h-40 w-full shrink-0 overflow-hidden rounded-xl sm:h-28 sm:w-44"
                   >
-                    View Details
+                    <Image
+                      src={listing.images?.[0] || require("../assets/a1.png")}
+                      alt={listing.name || "Listing"}
+                      width={200}
+                      height={150}
+                      className="h-full w-full object-cover"
+                    />
                   </Link>
-                </div>
-                <div className="col-start-10 col-end-13">
-                  <div className="flex flex-col mx-4">
-                    <div
-                      className="my-1 ml-auto"
-                      style={{
-                        width: "100px",
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        style={{
-                          backgroundColor: "black",
-                          fontSize: "12px",
-                        }}
-                        fullWidth
-                      >
-                        <Link href={`/listing/edit/${listing.id}`}>Edit</Link>
-                      </Button>
-                    </div>
-                    <div
-                      className="my-1 ml-auto"
-                      style={{
-                        width: "100px",
-                      }}
-                    >
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        style={{
-                          backgroundColor: "darkred",
-                          fontSize: "12px",
-                        }}
-                        fullWidth
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                    <div className="flex flex-row ml-auto">
-                      <p className="text-base font-medium">
-                        Price: {listing.price}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="truncate font-semibold text-gray-900">
+                        {listing.name || "Untitled listing"}
+                      </h3>
+                      <p className="shrink-0 text-sm font-bold text-gray-900">
+                        {listing.price
+                          ? new Intl.NumberFormat("fr-FR").format(
+                              Number(listing.price)
+                            )
+                          : "—"}{" "}
+                        <span className="text-xs font-medium text-gray-500">
+                          {listing.currency || "XAF"}/mo
+                        </span>
                       </p>
-                      <p className="mt-1 ml-1">{listing.currency}</p>
+                    </div>
+                    <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-xs text-gray-500">
+                      {listing.bedType ? <span>{listing.bedType}</span> : null}
+                      {listing.capacity ? <span>· {listing.capacity} pax</span> : null}
+                      {listing.furnishedStatus ? <span>· {listing.furnishedStatus}</span> : null}
+                      {listing.uni ? <span>· Near {listing.uni}</span> : null}
+                    </div>
+                    {Array.isArray(listing.amenities) && listing.amenities.length ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {listing.amenities.slice(0, 4).map((a, i) => (
+                          <span
+                            key={i}
+                            className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600"
+                          >
+                            {a}
+                          </span>
+                        ))}
+                        {listing.amenities.length > 4 ? (
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500">
+                            +{listing.amenities.length - 4}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link
+                        href={`/room/${listing.id}`}
+                        className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/listing/edit/${listing.id}`}
+                        className="rounded-full bg-[#082e4d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61]"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => deleteListing(listing)}
+                        disabled={deletingId === listing.id}
+                        className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingId === listing.id ? "Deleting…" : "Delete"}
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ))}
+            </div>
+          ) : (
+            <EmptyState text="You haven't posted any listings yet." />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
