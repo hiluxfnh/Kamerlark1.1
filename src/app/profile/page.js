@@ -939,8 +939,8 @@ function Notifications() {
   }, [user?.uid]);
   if (loading)
     return (
-      <div>
-        <h2 className="text-xl font-bold mb-4">Notifications</h2>
+      <div className="mx-auto max-w-3xl">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Notifications</h2>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <div
@@ -1382,12 +1382,13 @@ function CalendarView() {
 
   if (!filtered.length)
     return (
-      <div>
+      <div className="mx-auto max-w-3xl">
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">Calendar</h2>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
           >
             <option value="all">All types</option>
             <option value="appointment">Appointments</option>
@@ -1396,7 +1397,7 @@ function CalendarView() {
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
-            className="border rounded px-2 py-1 text-sm"
+            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
           >
             <option value="all">All roles</option>
             <option value="guest">As guest</option>
@@ -1408,12 +1409,13 @@ function CalendarView() {
     );
 
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">Calendar</h2>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
         >
           <option value="all">All types</option>
           <option value="appointment">Appointments</option>
@@ -1422,7 +1424,7 @@ function CalendarView() {
         <select
           value={roleFilter}
           onChange={(e) => setRoleFilter(e.target.value)}
-          className="border rounded px-2 py-1 text-sm"
+          className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
         >
           <option value="all">All roles</option>
           <option value="guest">As guest</option>
@@ -1532,11 +1534,11 @@ function Settings() {
   if (loading) return <Spinner />;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold mb-4">Settings</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">Settings</h2>
       <div className="space-y-4">
         {/* Appearance */}
-        <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Appearance</h3>
           <div className="flex items-center gap-3">
             <label className="text-sm text-gray-700">Theme</label>
@@ -1562,7 +1564,7 @@ function Settings() {
         </div>
 
         {/* Notifications */}
-        <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Notifications</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <FormControlLabel
@@ -1624,7 +1626,7 @@ function Settings() {
         </div>
 
         {/* Calendar defaults */}
-        <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Calendar</h3>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
@@ -1667,7 +1669,7 @@ function Settings() {
         </div>
 
         {/* Privacy */}
-        <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Privacy</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <FormControlLabel
@@ -1708,7 +1710,7 @@ function Settings() {
         </div>
 
         {/* Localization */}
-        <div className="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
           <h3 className="text-lg font-semibold mb-2">Localization</h3>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
