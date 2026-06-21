@@ -91,26 +91,26 @@ const Header = () => {
         Skip to content
       </a>
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between p-2 px-4 sm:px-6">
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           {pathname !== "/" && (
             <button
               type="button"
               onClick={() => router.back()}
               aria-label="Go back to the previous page"
               title="Back"
-              className="-ml-1 flex h-8 w-8 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+              className="-ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
             >
               <ArrowBackIcon fontSize="small" />
             </button>
           )}
           <Link href="/" className="flex items-center" aria-label="Go to home">
             <Image src={kl} alt="KamerLark Logo" className={styles.logoImage} />
-            <span className="ml-1 text-lg text-white">KAMERLARK</span>
+            <span className="ml-1 text-lg font-semibold text-white">KAMERLARK</span>
           </Link>
         </div>
 
         {/* Primary nav (desktop) */}
-        <nav aria-label="Primary" className="hidden md:flex items-center gap-6">
+        <nav aria-label="Primary" className="hidden lg:flex items-center gap-6">
           <Link
             href="/"
             aria-current={pathname === "/" ? "page" : undefined}
@@ -154,7 +154,7 @@ const Header = () => {
         </nav>
 
         {/* Right side (desktop) */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-4">
           {!user ? (
             <>
               <Link
@@ -205,7 +205,7 @@ const Header = () => {
 
         {/* Mobile menu toggle */}
         <button
-          className="md:hidden text-white p-2"
+          className="lg:hidden text-white p-2"
           aria-label="Toggle menu"
           aria-expanded={isNavOpen}
           onClick={() => setIsNavOpen((s) => !s)}
