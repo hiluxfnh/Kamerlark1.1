@@ -310,7 +310,7 @@ export default function UserProfile() {
             </li>
           </ul>
         </nav>
-        <main className="flex-1 p-6 bg-white theme-surface">
+        <main className="min-w-0 flex-1 p-4 sm:p-6 bg-white theme-surface">
           {tab === "overview" ? (
             <Overview
               personalInfo={personalInfo}
@@ -973,23 +973,16 @@ function Notifications() {
               href={n.link}
               className="block rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:bg-gray-50"
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="rounded-full bg-[#082e4d] px-2 py-0.5 text-xs font-medium text-white">
-                      {n.title}
-                    </span>
-                    {n.role ? (
-                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
-                        {n.role}
-                      </span>
-                    ) : null}
-                  </div>
-                  {n.sub ? (
-                    <p className="text-sm text-gray-800 truncate">{n.sub}</p>
-                  ) : null}
-                </div>
-                <span className="text-xs text-gray-500 whitespace-nowrap">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-[#082e4d] px-2 py-0.5 text-xs font-medium text-white">
+                  {n.title}
+                </span>
+                {n.role ? (
+                  <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs capitalize text-gray-600">
+                    {n.role}
+                  </span>
+                ) : null}
+                <span className="ml-auto text-xs text-gray-400">
                   {(() => {
                     const t = n.ts?.toDate
                       ? n.ts.toDate()
@@ -1000,6 +993,11 @@ function Notifications() {
                   })()}
                 </span>
               </div>
+              {n.sub ? (
+                <p className="mt-1.5 break-words text-sm text-gray-600">
+                  {n.sub}
+                </p>
+              ) : null}
             </a>
           ))}
         </div>
@@ -1327,16 +1325,20 @@ function CalendarView() {
     const today = now.startOf("day");
     const tomorrow = now.add(1, "day").startOf("day");
     const weekEnd = now.endOf("week");
-    const g = { Today: [], Tomorrow: [], "This week": [], Later: [] };
+    const g = { Today: [], Tomorrow: [], "This week": [], Later: [], Past: [] };
     for (const it of filtered) {
       const d = it.dt;
-      if (!d || !d.isValid()) continue;
-      if (d.isBefore(today)) continue; // skip past
-      if (d.isBefore(tomorrow)) g["Today"].push(it);
+      if (!d || !d.isValid()) {
+        g.Past.push(it); // undated/legacy items still show, nothing hidden
+        continue;
+      }
+      if (d.isBefore(today)) g.Past.push(it);
+      else if (d.isBefore(tomorrow)) g["Today"].push(it);
       else if (d.isBefore(tomorrow.add(1, "day"))) g["Tomorrow"].push(it);
       else if (d.isBefore(weekEnd)) g["This week"].push(it);
       else g["Later"].push(it);
     }
+    g.Past.reverse(); // most recent past first
     return g;
   })();
 
@@ -1348,21 +1350,18 @@ function CalendarView() {
     return (
       <div
         key={`${it.type}-${it.id}-${it.role}`}
-        className="p-3 rounded-md border flex flex-wrap items-center gap-2"
+        className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white p-3 shadow-sm"
       >
-        <p className="text-sm font-medium">{title}</p>
-        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-800 text-white">
+        <p className="text-sm font-medium text-gray-900">{title}</p>
+        <span className="rounded-full bg-[#082e4d] px-2 py-0.5 text-xs capitalize text-white">
           {it.role}
         </span>
-        <p className="text-sm text-gray-700">
+        <p className="text-sm text-gray-600">
           {start.format("ddd, MMM D • h:mm A")}
         </p>
-        {it.roomId ? (
-          <p className="text-xs text-gray-500">Room: {it.roomId}</p>
-        ) : null}
         <div className="ml-auto flex items-center gap-3">
           <button
-            className="text-xs text-blue-600"
+            className="text-xs font-medium text-[#082e4d] hover:underline"
             onClick={() =>
               window.open(toGoogleUrl(title, start, end, details), "_blank")
             }
@@ -1370,10 +1369,10 @@ function CalendarView() {
             Add to Google
           </button>
           <button
-            className="text-xs text-gray-700"
+            className="text-xs text-gray-600 hover:underline"
             onClick={() => downloadICS(title, start, end, details)}
           >
-            Download .ics
+            .ics
           </button>
         </div>
       </div>
@@ -1668,103 +1667,31 @@ function Settings() {
           </div>
         </div>
 
-        {/* Privacy */}
+        {/* Language */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Privacy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={!!settings.privacy.showProfilePhoto}
-                  onChange={(e) =>
-                    setSettings((s) => ({
-                      ...s,
-                      privacy: {
-                        ...s.privacy,
-                        showProfilePhoto: e.target.checked,
-                      },
-                    }))
-                  }
-                />
-              }
-              label="Show profile photo"
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={!!settings.privacy.showDisplayName}
-                  onChange={(e) =>
-                    setSettings((s) => ({
-                      ...s,
-                      privacy: {
-                        ...s.privacy,
-                        showDisplayName: e.target.checked,
-                      },
-                    }))
-                  }
-                />
-              }
-              label="Show display name"
-            />
-          </div>
-        </div>
-
-        {/* Localization */}
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Localization</h3>
+          <h3 className="mb-1 text-base font-semibold text-gray-900">Language</h3>
+          <p className="mb-3 text-xs text-gray-500">
+            Your preferred language for the interface.
+          </p>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Currency</label>
-              <Select
-                size="small"
-                value={settings.locale.currency}
-                onChange={(e) =>
-                  setSettings((s) => ({
-                    ...s,
-                    locale: { ...s.locale, currency: e.target.value },
-                  }))
-                }
-              >
-                <MenuItem value="XAF">XAF</MenuItem>
-                <MenuItem value="USD">USD</MenuItem>
-                <MenuItem value="EUR">EUR</MenuItem>
-              </Select>
-            </div>
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-700">Language</label>
               <Select
                 size="small"
                 value={settings.locale.language}
-                onChange={(e) =>
+                onChange={(e) => {
+                  const lang = e.target.value;
                   setSettings((s) => ({
                     ...s,
-                    locale: { ...s.locale, language: e.target.value },
-                  }))
-                }
+                    locale: { ...s.locale, language: lang },
+                  }));
+                  if (typeof document !== "undefined")
+                    document.documentElement.lang = lang;
+                }}
               >
                 <MenuItem value="en">English</MenuItem>
-                <MenuItem value="fr">French</MenuItem>
+                <MenuItem value="fr">Français</MenuItem>
               </Select>
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Timezone</label>
-              <input
-                readOnly
-                className="border rounded px-2 py-1 text-sm w-56 bg-gray-50"
-                value={settings.locale.timezone}
-              />
-              <Button
-                size="small"
-                variant="outlined"
-                onClick={() =>
-                  setSettings((s) => ({
-                    ...s,
-                    locale: { ...s.locale, timezone: defaultTz },
-                  }))
-                }
-              >
-                Use system
-              </Button>
             </div>
           </div>
         </div>

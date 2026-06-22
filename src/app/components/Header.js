@@ -218,7 +218,7 @@ const Header = () => {
       {isNavOpen && (
         <nav
           aria-label="Mobile"
-          className="md:hidden mx-auto w-full max-w-6xl overflow-y-auto px-4 pb-8 pt-1 sm:px-6"
+          className="lg:hidden mx-auto w-full max-w-6xl overflow-y-auto px-4 pb-8 pt-1 sm:px-6"
           style={{
             minHeight: "calc(100dvh - 52px)",
             maxHeight: "calc(100dvh - 52px)",
