@@ -153,65 +153,73 @@ const Header = () => {
           </Link>
         </nav>
 
-        {/* Right side (desktop) */}
-        <div className="hidden lg:flex items-center gap-4">
+        {/* Right side — progressive: key actions stay as icons and reduce with
+            screen size; full text labels show on lg+, hamburger holds the rest */}
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {!user ? (
             <>
               <Link
                 href="/login"
-                className="text-white flex items-center text-sm font-sans hover:opacity-90"
+                aria-label="Log in"
+                className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
               >
-                <LoginIcon fontSize="24" className="mr-1" /> LOGIN
+                <LoginIcon fontSize="small" />
+                <span className="ml-1 hidden lg:inline">LOGIN</span>
               </Link>
               <Link
                 href="/listing"
-                className="rounded-full bg-white px-4 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gray-200"
+                className="rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gray-200 sm:px-4"
               >
-                Post a listing
+                <span className="hidden sm:inline">Post a listing</span>
+                <span className="sm:hidden">Post</span>
               </Link>
             </>
           ) : (
             <>
               <Link
-                href="/profile"
-                className="text-white flex items-center text-sm font-sans"
-              >
-                <PermIdentityIcon fontSize="24" className="mr-1" /> PROFILE
-              </Link>
-              <Link
-                href="/listing"
-                className="text-white flex items-center text-sm font-sans"
-              >
-                <PlaylistAddCircleIcon fontSize="24" className="mr-1" /> ADD
-                LISTING
-              </Link>
-              <Link
                 href="/chat/messagecenter"
-                className="text-white flex items-center text-sm font-sans"
+                aria-label="Chat"
+                className="flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
               >
-                <span className="relative mr-1 inline-block">
-                  <ForumIcon fontSize="24" />
+                <span className="relative inline-block">
+                  <ForumIcon fontSize="small" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-2 min-w-[16px] h-4 px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] leading-none">
+                    <span className="absolute -top-1.5 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-red-500 px-1 text-[10px] leading-none text-white">
                       {unreadCount}
                     </span>
                   )}
                 </span>
-                CHAT
+                <span className="ml-1 hidden lg:inline">CHAT</span>
+              </Link>
+              <Link
+                href="/listing"
+                aria-label="Add a listing"
+                className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
+              >
+                <PlaylistAddCircleIcon fontSize="small" />
+                <span className="ml-1 hidden lg:inline">ADD LISTING</span>
+              </Link>
+              <Link
+                href="/profile"
+                aria-label="Profile"
+                className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
+              >
+                <PermIdentityIcon fontSize="small" />
+                <span className="ml-1 hidden lg:inline">PROFILE</span>
               </Link>
             </>
           )}
-        </div>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="lg:hidden text-white p-2"
-          aria-label="Toggle menu"
-          aria-expanded={isNavOpen}
-          onClick={() => setIsNavOpen((s) => !s)}
-        >
-          {isNavOpen ? <CloseIcon /> : <MenuIcon />}
-        </button>
+          {/* Hamburger — nav links (+ hidden actions on small screens) */}
+          <button
+            className="lg:hidden text-white p-2"
+            aria-label="Toggle menu"
+            aria-expanded={isNavOpen}
+            onClick={() => setIsNavOpen((s) => !s)}
+          >
+            {isNavOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
+        </div>
       </header>
 
       {/* Mobile menu */}
