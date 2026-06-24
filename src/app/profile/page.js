@@ -332,6 +332,7 @@ export default function UserProfile() {
 }
 
 function AdminTicketsWidget() {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [allowed, setAllowed] = useState(false);
   const [tickets, setTickets] = useState([]);
@@ -383,30 +384,30 @@ function AdminTicketsWidget() {
   return (
     <div className="mt-8 p-4 border rounded theme-card">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold">Recent Support Tickets</h3>
+        <h3 className="text-sm font-semibold">{t("profile.recentTickets")}</h3>
         <a href="/admin/tickets" className="text-xs text-blue-600">
-          Open admin
+          {t("profile.openAdmin")}
         </a>
       </div>
       {loading ? (
-        <p className="text-xs mt-2">Loading…</p>
+        <p className="text-xs mt-2">{t("chat.loading")}</p>
       ) : tickets.length === 0 ? (
-        <p className="text-xs mt-2 text-gray-600">No tickets.</p>
+        <p className="text-xs mt-2 text-gray-600">{t("profile.noTickets")}</p>
       ) : (
         <div className="mt-2 space-y-2">
-          {tickets.map((t) => (
-            <div key={t.id} className="text-xs p-2 rounded border">
+          {tickets.map((tk) => (
+            <div key={tk.id} className="text-xs p-2 rounded border">
               <div className="flex items-center justify-between">
                 <p className="font-medium truncate mr-2">
-                  {t.subject || "(no subject)"}
+                  {tk.subject || t("profile.noSubject")}
                 </p>
                 <span className="text-[10px] text-gray-600">
-                  {t.status || "open"}
+                  {tk.status || "open"}
                 </span>
               </div>
-              {t.description ? (
+              {tk.description ? (
                 <p className="text-[12px] text-gray-700 mt-1 line-clamp-2">
-                  {t.description}
+                  {tk.description}
                 </p>
               ) : null}
             </div>
@@ -418,6 +419,7 @@ function AdminTicketsWidget() {
 }
 
 function RentedProperties({ personalInfo, user }) {
+  const { t } = useI18n();
   const [listings, setListings] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [adminBookings, setAdminBookings] = useState([]);
@@ -505,9 +507,7 @@ function RentedProperties({ personalInfo, user }) {
   const [deletingId, setDeletingId] = useState(null);
   const deleteListing = async (listing) => {
     if (
-      !window.confirm(
-        `Delete "${listing.name || "this listing"}"? This can't be undone.`
-      )
+      !window.confirm(t("profile.deleteListingConfirm"))
     )
       return;
     setDeletingId(listing.id);
@@ -516,7 +516,7 @@ function RentedProperties({ personalInfo, user }) {
       setListings((prev) => prev.filter((l) => l.id !== listing.id));
     } catch (e) {
       console.error("Failed to delete listing", e);
-      alert("Couldn't delete the listing. Please try again.");
+      alert(t("profile.deleteListingError"));
     } finally {
       setDeletingId(null);
     }
@@ -557,15 +557,15 @@ function RentedProperties({ personalInfo, user }) {
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab label="MY BOOKINGS" {...a11yProps(0)} />
-            <Tab label="CUSTOMER BOOKINGS" {...a11yProps(1)} />
-            <Tab label="My Listings" {...a11yProps(2)} />
-            <Tab label="APPOINTMENTS" {...a11yProps(3)} />
+            <Tab label={t("profile.tabMyBookings")} {...a11yProps(0)} />
+            <Tab label={t("profile.tabCustomerBookings")} {...a11yProps(1)} />
+            <Tab label={t("profile.tabMyListings")} {...a11yProps(2)} />
+            <Tab label={t("profile.tabAppointments")} {...a11yProps(3)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
           <h3 className="mb-3 text-base font-semibold text-gray-900">
-            Bookings you&apos;ve made
+            {t("profile.bookingsYouMade")}
           </h3>
           {loading ? (
             <div className="space-y-3">
@@ -585,12 +585,12 @@ function RentedProperties({ personalInfo, user }) {
               />
             ))
           ) : (
-            <EmptyState text="You haven't booked any rooms yet." />
+            <EmptyState text={t("profile.emptyMyBookings")} />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <h3 className="mb-3 text-base font-semibold text-gray-900">
-            Bookings on your listings
+            {t("profile.bookingsOnListings")}
           </h3>
           {loading ? (
             <div className="space-y-3">
@@ -610,12 +610,12 @@ function RentedProperties({ personalInfo, user }) {
               />
             ))
           ) : (
-            <EmptyState text="No one has booked your listings yet." />
+            <EmptyState text={t("profile.emptyCustomerBookings")} />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <h3 className="mb-3 text-base font-semibold text-gray-900">
-            Your listings
+            {t("profile.yourListings")}
           </h3>
           {loading ? (
             <div className="space-y-3">
@@ -658,11 +658,11 @@ function RentedProperties({ personalInfo, user }) {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex min-w-0 items-center gap-2">
                         <h3 className="truncate font-semibold text-gray-900">
-                          {listing.name || "Untitled listing"}
+                          {listing.name || t("profile.untitledListing")}
                         </h3>
                         {listing.available === false ? (
                           <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
-                            Booked
+                            {t("profile.booked")}
                           </span>
                         ) : null}
                       </div>
@@ -673,15 +673,15 @@ function RentedProperties({ personalInfo, user }) {
                             )
                           : "—"}{" "}
                         <span className="text-xs font-medium text-gray-500">
-                          {listing.currency || "XAF"}/mo
+                          {listing.currency || "XAF"}{t("profile.perMo")}
                         </span>
                       </p>
                     </div>
                     <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-xs text-gray-500">
                       {listing.bedType ? <span>{listing.bedType}</span> : null}
-                      {listing.capacity ? <span>· {listing.capacity} pax</span> : null}
+                      {listing.capacity ? <span>· {listing.capacity} {t("profile.pax")}</span> : null}
                       {listing.furnishedStatus ? <span>· {listing.furnishedStatus}</span> : null}
-                      {listing.uni ? <span>· Near {listing.uni}</span> : null}
+                      {listing.uni ? <span>· {t("profile.near")} {listing.uni}</span> : null}
                     </div>
                     {Array.isArray(listing.amenities) && listing.amenities.length ? (
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -705,13 +705,13 @@ function RentedProperties({ personalInfo, user }) {
                         href={`/room/${listing.id}`}
                         className="rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                       >
-                        View
+                        {t("card.view")}
                       </Link>
                       <Link
                         href={`/listing/edit/${listing.id}`}
                         className="rounded-full bg-[#082e4d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61]"
                       >
-                        Edit
+                        {t("profile.edit")}
                       </Link>
                       <button
                         onClick={() => toggleAvailable(listing)}
@@ -721,15 +721,15 @@ function RentedProperties({ personalInfo, user }) {
                         {togglingId === listing.id
                           ? "…"
                           : listing.available === false
-                          ? "Mark available"
-                          : "Mark unavailable"}
+                          ? t("profile.markAvailable")
+                          : t("profile.markUnavailable")}
                       </button>
                       <button
                         onClick={() => deleteListing(listing)}
                         disabled={deletingId === listing.id}
                         className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
                       >
-                        {deletingId === listing.id ? "Deleting…" : "Delete"}
+                        {deletingId === listing.id ? t("profile.deleting") : t("community.delete")}
                       </button>
                     </div>
                   </div>
@@ -737,7 +737,7 @@ function RentedProperties({ personalInfo, user }) {
               ))}
             </div>
           ) : (
-            <EmptyState text="You haven't posted any listings yet." />
+            <EmptyState text={t("profile.emptyListings")} />
           )}
         </CustomTabPanel>
         <CustomTabPanel value={value} index={3}>
@@ -764,6 +764,7 @@ function StatusIcon({ status, className }) {
 }
 
 function Notifications() {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -859,18 +860,22 @@ function Notifications() {
           const counterpart = userMap[counterpartId];
           const ts =
             parseDMY(data.appointmentDate, data.appointmentTime) || null;
-          const title = `Appointment${
+          const roleLabel = (r) =>
+            r === "host" ? t("profile.roleHost") : t("profile.roleGuest");
+          const title = `${t("profile.appointment")}${
             data.appointmentType ? ` • ${data.appointmentType}` : ""
           }`;
           const sub = [
             room?.name
-              ? `Room: ${room.name}`
+              ? `${t("profile.lblRoom")} ${room.name}`
               : data.roomId
-              ? `Room: ${data.roomId}`
+              ? `${t("profile.lblRoom")} ${data.roomId}`
               : null,
-            `Role: ${role}`,
-            data.status ? `Status: ${data.status}` : null,
-            counterpart?.userName ? `With: ${counterpart.userName}` : null,
+            `${t("profile.lblRole")} ${roleLabel(role)}`,
+            data.status ? `${t("profile.lblStatus")} ${data.status}` : null,
+            counterpart?.userName
+              ? `${t("profile.lblWith")} ${counterpart.userName}`
+              : null,
           ]
             .filter(Boolean)
             .join(" • ");
@@ -893,17 +898,19 @@ function Notifications() {
           const counterpartId = role === "host" ? data.userId : data.ownerId;
           const counterpart = userMap[counterpartId];
           const ts = parseDMY(data.moveInDate, "09:00") || null;
-          const title = "Booking";
+          const roleLabel = (r) =>
+            r === "host" ? t("profile.roleHost") : t("profile.roleGuest");
+          const title = t("profile.booking");
           const sub = [
             room?.name
-              ? `Room: ${room.name}`
+              ? `${t("profile.lblRoom")} ${room.name}`
               : data.roomId
-              ? `Room: ${data.roomId}`
+              ? `${t("profile.lblRoom")} ${data.roomId}`
               : null,
-            `Role: ${role}`,
-            data.status ? `Status: ${data.status}` : null,
+            `${t("profile.lblRole")} ${roleLabel(role)}`,
+            data.status ? `${t("profile.lblStatus")} ${data.status}` : null,
             counterpart?.userName
-              ? `${role === "host" ? "By" : "With"}: ${counterpart.userName}`
+              ? `${role === "host" ? t("profile.lblBy") : t("profile.lblWith")} ${counterpart.userName}`
               : null,
           ]
             .filter(Boolean)
@@ -942,7 +949,7 @@ function Notifications() {
   if (loading)
     return (
       <div className="mx-auto max-w-3xl">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Notifications</h2>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("nav.notifications")}</h2>
         <div className="space-y-3">
           {[...Array(3)].map((_, i) => (
             <div
@@ -965,7 +972,7 @@ function Notifications() {
       <h2 className="mb-4 text-lg font-semibold text-gray-900">Notifications</h2>
       {!items.length ? (
         <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center text-sm text-gray-400">
-          You&apos;re all caught up — no recent notifications.
+          {t("profile.allCaughtUp")}
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -1009,6 +1016,7 @@ function Notifications() {
 }
 
 function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [nextItem, setNextItem] = useState(null);
 
@@ -1097,10 +1105,10 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
   }, [user?.uid]);
 
   const statCards = [
-    { label: "My bookings", value: stats.bookings, icon: "🏠", bg: "bg-sky-100", fg: "text-sky-700", go: "properties" },
-    { label: "Customer bookings", value: stats.customerBookings, icon: "📥", bg: "bg-emerald-100", fg: "text-emerald-700", go: "properties" },
-    { label: "My listings", value: stats.listings, icon: "🔑", bg: "bg-violet-100", fg: "text-violet-700", go: "properties" },
-    { label: "Appointments", value: stats.appointments, icon: "📅", bg: "bg-amber-100", fg: "text-amber-700", go: "calendar" },
+    { label: t("profile.statMyBookings"), value: stats.bookings, icon: "🏠", bg: "bg-sky-100", fg: "text-sky-700", go: "properties" },
+    { label: t("profile.statCustomerBookings"), value: stats.customerBookings, icon: "📥", bg: "bg-emerald-100", fg: "text-emerald-700", go: "properties" },
+    { label: t("profile.statMyListings"), value: stats.listings, icon: "🔑", bg: "bg-violet-100", fg: "text-violet-700", go: "properties" },
+    { label: t("profile.statAppointments"), value: stats.appointments, icon: "📅", bg: "bg-amber-100", fg: "text-amber-700", go: "calendar" },
   ];
   return (
     <div className="mx-auto max-w-4xl space-y-5">
@@ -1114,7 +1122,7 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
           />
           <div className="min-w-0">
             <h2 className="truncate text-xl font-semibold text-gray-900">
-              {personalInfo?.userName || "Your profile"}
+              {personalInfo?.userName || t("profile.yourProfile")}
             </h2>
             <p className="truncate text-sm text-gray-500">
               {personalInfo?.email || ""}
@@ -1125,7 +1133,7 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
           className="shrink-0 rounded-full border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
           onClick={() => onGo("account")}
         >
-          Edit profile
+          {t("profile.editProfile")}
         </button>
       </div>
 
@@ -1140,14 +1148,14 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-[#082e4d]">
-              Next up · {nextItem.role}
+              {t("profile.nextUp")} · {nextItem.role === "host" ? t("profile.roleHost") : t("profile.roleGuest")}
             </p>
             <p className="text-sm font-medium text-gray-900">
-              {nextItem.type === "appointment" ? "Appointment" : "Booking"}
+              {nextItem.type === "appointment" ? t("profile.appointment") : t("profile.booking")}
               {nextItem.dt ? ` — ${nextItem.dt.format("ddd, MMM D • h:mm A")}` : ""}
             </p>
           </div>
-          <span className="shrink-0 text-sm text-[#082e4d]">Open →</span>
+          <span className="shrink-0 text-sm text-[#082e4d]">{t("profile.open")} →</span>
         </button>
       ) : null}
 
@@ -1182,13 +1190,13 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
           className="rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61]"
           onClick={() => router.push("/listing")}
         >
-          + Add a listing
+          + {t("profile.addAListing")}
         </button>
         <button
           className="rounded-full border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           onClick={() => router.push("/chat/messagecenter")}
         >
-          Open messages
+          {t("profile.openMessages")}
         </button>
       </div>
     </div>
@@ -1196,6 +1204,7 @@ function Overview({ personalInfo, stats, statsLoading, onGo, router }) {
 }
 
 function CalendarView() {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [items, setItems] = useState([]);
   const [typeFilter, setTypeFilter] = useState("all"); // all | appointment | booking
@@ -1345,7 +1354,7 @@ function CalendarView() {
   })();
 
   const renderItem = (it) => {
-    const title = it.type === "appointment" ? "Appointment" : "Booking";
+    const title = it.type === "appointment" ? t("profile.appointment") : t("profile.booking");
     const start = it.dt || dayjs();
     const end = start.add(1, "hour");
     const details = it.roomId ? `Room: ${it.roomId}` : "";
@@ -1356,7 +1365,7 @@ function CalendarView() {
       >
         <p className="text-sm font-medium text-gray-900">{title}</p>
         <span className="rounded-full bg-[#082e4d] px-2 py-0.5 text-xs capitalize text-white">
-          {it.role}
+          {it.role === "host" ? t("profile.roleHost") : t("profile.roleGuest")}
         </span>
         <p className="text-sm text-gray-600">
           {start.format("ddd, MMM D • h:mm A")}
@@ -1368,7 +1377,7 @@ function CalendarView() {
               window.open(toGoogleUrl(title, start, end, details), "_blank")
             }
           >
-            Add to Google
+            {t("profile.addToGoogleShort")}
           </button>
           <button
             className="text-xs text-gray-600 hover:underline"
@@ -1384,34 +1393,34 @@ function CalendarView() {
   if (!filtered.length)
     return (
       <div className="mx-auto max-w-3xl">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Calendar</h2>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("nav.calendar")}</h2>
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
           >
-            <option value="all">All types</option>
-            <option value="appointment">Appointments</option>
-            <option value="booking">Bookings</option>
+            <option value="all">{t("profile.calAllTypes")}</option>
+            <option value="appointment">{t("profile.calAppointments")}</option>
+            <option value="booking">{t("profile.calBookings")}</option>
           </select>
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm outline-none"
           >
-            <option value="all">All roles</option>
-            <option value="guest">As guest</option>
-            <option value="host">As host</option>
+            <option value="all">{t("profile.calAllRoles")}</option>
+            <option value="guest">{t("profile.calAsGuest")}</option>
+            <option value="host">{t("profile.calAsHost")}</option>
           </select>
         </div>
-        <p className="text-sm text-gray-600">No upcoming items.</p>
+        <p className="text-sm text-gray-600">{t("profile.calNoUpcoming")}</p>
       </div>
     );
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Calendar</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("nav.calendar")}</h2>
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <select
           value={typeFilter}
@@ -1433,16 +1442,23 @@ function CalendarView() {
         </select>
       </div>
       <div className="space-y-6">
-        {Object.entries(groups).map(([label, arr]) =>
-          arr.length ? (
+        {Object.entries(groups).map(([label, arr]) => {
+          const groupLabels = {
+            Today: t("profile.grpToday"),
+            Tomorrow: t("profile.grpTomorrow"),
+            "This week": t("profile.grpThisWeek"),
+            Later: t("profile.grpLater"),
+            Past: t("profile.grpPast"),
+          };
+          return arr.length ? (
             <div key={label}>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                {label}
+                {groupLabels[label] || label}
               </h3>
               <div className="space-y-3">{arr.map((it) => renderItem(it))}</div>
             </div>
-          ) : null
-        )}
+          ) : null;
+        })}
       </div>
     </div>
   );
