@@ -19,8 +19,10 @@ import {
 import Image from "next/image";
 import Avatar from "../../components/Avatar";
 import RoomCard from "../../components/roomCard";
+import { useI18n } from "../../lib/i18n";
 
 export default function PublicProfilePage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const uid = Array.isArray(params?.uid) ? params.uid[0] : params?.uid;
@@ -148,7 +150,7 @@ export default function PublicProfilePage() {
       <>
         <Header />
         <div className="pt-16 flex items-center justify-center min-h-[60vh] text-gray-500">
-          Loading profile…
+          {t("pubprofile.loading")}
         </div>
       </>
     );
@@ -159,7 +161,7 @@ export default function PublicProfilePage() {
       <>
         <Header />
         <div className="pt-16 flex items-center justify-center min-h-[60vh] text-gray-500">
-          Profile not found.
+          {t("pubprofile.notFound")}
         </div>
       </>
     );
@@ -184,7 +186,7 @@ export default function PublicProfilePage() {
               </div>
               <div className="flex-1">
                 <h1 className="text-xl sm:text-2xl font-semibold">
-                  {profile.userName || "User"}
+                  {profile.userName || t("chat.userFallback")}
                 </h1>
                 <div className="flex flex-wrap gap-2 mt-1 text-xs">
                   {profile.university && (
@@ -209,7 +211,7 @@ export default function PublicProfilePage() {
                   onClick={startChat}
                   className="bg-white text-black px-3 py-1.5 rounded-md text-sm font-medium shadow"
                 >
-                  Message
+                  {t("pubprofile.message")}
                 </button>
                 {!isMe &&
                   (isFollowing ? (
@@ -217,14 +219,14 @@ export default function PublicProfilePage() {
                       onClick={unfollow}
                       className="bg-black/40 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow"
                     >
-                      Following
+                      {t("community.following")}
                     </button>
                   ) : (
                     <button
                       onClick={follow}
                       className="bg-white/20 text-white px-3 py-1.5 rounded-md text-sm font-medium ring-1 ring-white/50"
                     >
-                      Follow
+                      {t("community.follow")}
                     </button>
                   ))}
               </div>
@@ -232,14 +234,14 @@ export default function PublicProfilePage() {
             <div className="mt-4 flex gap-6 text-sm">
               <div>
                 <span className="font-semibold">{followersCount}</span>{" "}
-                Followers
+                {t("pubprofile.followers")}
               </div>
               <div>
                 <span className="font-semibold">{followingCount}</span>{" "}
-                Following
+                {t("pubprofile.followingCount")}
               </div>
               <div>
-                <span className="font-semibold">{rooms.length}</span> Listings
+                <span className="font-semibold">{rooms.length}</span> {t("pubprofile.listings")}
               </div>
             </div>
           </div>
@@ -250,36 +252,38 @@ export default function PublicProfilePage() {
           {/* Left: About */}
           <div className="lg:col-span-1 space-y-4">
             <div className="border rounded-lg p-4">
-              <h2 className="font-semibold mb-2">About</h2>
+              <h2 className="font-semibold mb-2">{t("pubprofile.about")}</h2>
               <p className="text-sm text-gray-600">
-                {profile.bio || "No bio provided."}
+                {profile.bio || t("pubprofile.noBio")}
               </p>
               <div className="mt-4 space-y-1 text-sm">
                 {profile.email && (
                   <div>
-                    <span className="text-gray-500">Email: </span>
+                    <span className="text-gray-500">{t("pubprofile.emailLabel")}</span>
                     {profile.email}
                   </div>
                 )}
                 {profile.phone && (
                   <div>
-                    <span className="text-gray-500">Phone: </span>
+                    <span className="text-gray-500">{t("pubprofile.phoneLabel")}</span>
                     {profile.phone}
                   </div>
                 )}
               </div>
             </div>
             <div className="border rounded-lg p-4">
-              <h2 className="font-semibold mb-2">Highlights</h2>
+              <h2 className="font-semibold mb-2">{t("pubprofile.highlights")}</h2>
               <ul className="text-sm text-gray-700 list-disc ml-5 space-y-1">
                 {profile.university && (
-                  <li>Studies/Studied at {profile.university}</li>
+                  <li>{t("pubprofile.studiesAt")} {profile.university}</li>
                 )}
-                {profile.location && <li>Based in {profile.location}</li>}
+                {profile.location && <li>{t("pubprofile.basedIn")} {profile.location}</li>}
                 {rooms.length > 0 && (
                   <li>
-                    Has {rooms.length} active listing
-                    {rooms.length > 1 ? "s" : ""}
+                    {t("pubprofile.has")} {rooms.length}{" "}
+                    {rooms.length > 1
+                      ? t("pubprofile.activeListings")
+                      : t("pubprofile.activeListing")}
                   </li>
                 )}
               </ul>
@@ -288,10 +292,10 @@ export default function PublicProfilePage() {
           {/* Right: Listings */}
           <div className="lg:col-span-2">
             <h2 className="font-semibold mb-3">
-              Listings by {profile.userName?.split(" ")?.[0] || "user"}
+              {t("pubprofile.listingsBy")} {profile.userName?.split(" ")?.[0] || t("pubprofile.userShort")}
             </h2>
             {rooms.length === 0 ? (
-              <div className="text-gray-500 text-sm">No listings yet.</div>
+              <div className="text-gray-500 text-sm">{t("pubprofile.noListings")}</div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {rooms.map((room) => (

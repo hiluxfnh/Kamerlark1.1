@@ -14,8 +14,10 @@ import {
 } from "firebase/firestore";
 import CustomModal from "../components/CustomModal";
 import Spinner from "../components/Spinner";
+import { useI18n } from "../lib/i18n";
 
 const MyListing = () => {
+  const { t } = useI18n();
   const [listings, setListings] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [selectedListing, setSelectedListing] = useState(null);
@@ -109,9 +111,9 @@ const MyListing = () => {
     <>
       <Header />
       <div className={styles.container}>
-        <h1>My Listings</h1>
+        <h1>{t("room.myListings")}</h1>
         <div className={styles.section}>
-          <h2>My Bookings</h2>
+          <h2>{t("mylisting.myBookings")}</h2>
           <div className={styles.listings}>
             {bookings.length > 0 ? (
               bookings.map((booking) => (
@@ -123,18 +125,18 @@ const MyListing = () => {
                       className={styles.button}
                       onClick={() => handleBookingDetails(booking)}
                     >
-                      View Details
+                      {t("booking.viewDetails")}
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <p>No bookings found.</p>
+              <p>{t("mylisting.noBookings")}</p>
             )}
           </div>
         </div>
         <div className={styles.section}>
-          <h2>My Properties</h2>
+          <h2>{t("mylisting.myProperties")}</h2>
           <div className={styles.listings}>
             {listings.length > 0 ? (
               listings.map((listing) => (
@@ -146,19 +148,19 @@ const MyListing = () => {
                       className={styles.button}
                       onClick={() => handleEdit(listing)}
                     >
-                      Edit
+                      {t("profile.edit")}
                     </button>
                     <button
                       className={styles.button}
                       onClick={() => handleDelete(listing.id)}
                     >
-                      Delete
+                      {t("community.delete")}
                     </button>
                   </div>
                 </div>
               ))
             ) : (
-              <p>No properties found.</p>
+              <p>{t("mylisting.noProperties")}</p>
             )}
           </div>
         </div>
@@ -168,11 +170,11 @@ const MyListing = () => {
         <CustomModal
           isOpen={true}
           onClose={handleModalClose}
-          title="Edit Listing"
+          title={t("listing.editTitle")}
         >
           <form>
             <label>
-              Name:
+              {t("mylisting.nameLabel")}
               <input
                 type="text"
                 value={selectedListing.name}
@@ -185,7 +187,7 @@ const MyListing = () => {
               />
             </label>
             <label>
-              Description:
+              {t("mylisting.descLabel")}
               <textarea
                 value={selectedListing.description}
                 onChange={(e) =>
@@ -197,7 +199,7 @@ const MyListing = () => {
               />
             </label>
             <button type="submit" className={styles.button}>
-              Save
+              {t("mylisting.save")}
             </button>
           </form>
         </CustomModal>
@@ -207,11 +209,11 @@ const MyListing = () => {
         <CustomModal
           isOpen={true}
           onClose={handleModalClose}
-          title="Booking Details"
+          title={t("mylisting.bookingDetails")}
         >
           <div>
-            <p>Name: {selectedListing.roomName}</p>
-            <p>Description: {selectedListing.notes}</p>
+            <p>{t("mylisting.nameLabel")} {selectedListing.roomName}</p>
+            <p>{t("mylisting.descLabel")} {selectedListing.notes}</p>
           </div>
         </CustomModal>
       )}
