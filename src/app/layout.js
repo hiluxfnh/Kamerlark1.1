@@ -3,6 +3,7 @@ import "./globals.css";
 import FooterGuard from "./components/FooterGuard";
 import RouteProgress from "./components/RouteProgress";
 import AuthGate from "./components/AuthGate";
+import { I18nProvider } from "./lib/i18n";
 const inter = Inter({ subsets: ["latin"] });
 
 // Force dynamic rendering for all routes to avoid serialization issues with Firebase
@@ -18,13 +19,15 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className} data-theme="system">
-        <AuthGate>
-          <>
-            <RouteProgress />
-            {children}
-            <FooterGuard />
-          </>
-        </AuthGate>
+        <I18nProvider>
+          <AuthGate>
+            <>
+              <RouteProgress />
+              {children}
+              <FooterGuard />
+            </>
+          </AuthGate>
+        </I18nProvider>
       </body>
     </html>
   );

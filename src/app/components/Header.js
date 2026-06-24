@@ -20,9 +20,13 @@ import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import LanguageIcon from "@mui/icons-material/Language";
 import Avatar from "./Avatar";
+import { useI18n } from "../lib/i18n";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 const Header = () => {
+  const { t, lang, setLang } = useI18n();
+  const toggleLang = () => setLang(lang === "fr" ? "en" : "fr");
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [user] = useAuthState(auth);
   const [showModal, setShowModal] = useState(false);
@@ -119,7 +123,7 @@ const Header = () => {
             }`}
           >
             <HomeIcon fontSize="18" className="mr-1" />
-            Home
+            {t("nav.home")}
           </Link>
           <Link
             href="/search?view=all"
@@ -129,7 +133,7 @@ const Header = () => {
             }`}
           >
             <FormatListBulletedIcon fontSize="18" className="mr-1" />
-            Explore
+            {t("nav.explore")}
           </Link>
           <Link
             href="/community"
@@ -139,7 +143,7 @@ const Header = () => {
             }`}
           >
             <PeopleIcon fontSize="18" className="mr-1" />
-            Community
+            {t("nav.community")}
           </Link>
           <Link
             href="/help"
@@ -149,7 +153,7 @@ const Header = () => {
             }`}
           >
             <HelpIcon fontSize="18" className="mr-1" />
-            Help
+            {t("nav.help")}
           </Link>
         </nav>
 
@@ -164,14 +168,14 @@ const Header = () => {
                 className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
               >
                 <LoginIcon fontSize="small" />
-                <span className="ml-1 hidden lg:inline">LOGIN</span>
+                <span className="ml-1 hidden lg:inline">{t("nav.login")}</span>
               </Link>
               <Link
                 href="/listing"
                 className="rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-gray-200 sm:px-4"
               >
-                <span className="hidden sm:inline">Post a listing</span>
-                <span className="sm:hidden">Post</span>
+                <span className="hidden sm:inline">{t("nav.postListing")}</span>
+                <span className="sm:hidden">{t("nav.post")}</span>
               </Link>
             </>
           ) : (
@@ -189,7 +193,7 @@ const Header = () => {
                     </span>
                   )}
                 </span>
-                <span className="ml-1 hidden lg:inline">CHAT</span>
+                <span className="ml-1 hidden lg:inline">{t("nav.chat")}</span>
               </Link>
               <Link
                 href="/listing"
@@ -197,7 +201,9 @@ const Header = () => {
                 className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
               >
                 <PlaylistAddCircleIcon fontSize="small" />
-                <span className="ml-1 hidden lg:inline">ADD LISTING</span>
+                <span className="ml-1 hidden lg:inline">
+                  {t("nav.addListing")}
+                </span>
               </Link>
               <Link
                 href="/profile"
@@ -205,10 +211,21 @@ const Header = () => {
                 className="hidden sm:flex items-center rounded-full px-2.5 py-1.5 text-sm font-sans text-white hover:bg-white/10"
               >
                 <PermIdentityIcon fontSize="small" />
-                <span className="ml-1 hidden lg:inline">PROFILE</span>
+                <span className="ml-1 hidden lg:inline">{t("nav.profile")}</span>
               </Link>
             </>
           )}
+
+          {/* Language toggle (EN ⇄ FR) — available to everyone, even logged out */}
+          <button
+            onClick={toggleLang}
+            aria-label={lang === "fr" ? "Switch to English" : "Passer en français"}
+            title={lang === "fr" ? "English" : "Français"}
+            className="flex items-center gap-1 rounded-full px-2 py-1.5 text-xs font-semibold text-white hover:bg-white/10"
+          >
+            <LanguageIcon fontSize="small" />
+            <span>{lang === "fr" ? "FR" : "EN"}</span>
+          </button>
 
           {/* Hamburger — nav links (+ hidden actions on small screens) */}
           <button
@@ -252,32 +269,32 @@ const Header = () => {
                 <p className="truncate text-xs text-white/50">{user.email}</p>
               </div>
               <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] font-medium text-white/70">
-                View
+                {t("common.viewProfile")}
               </span>
             </Link>
           )}
 
           <div className="flex flex-col gap-0.5">
             {[
-              { href: "/", label: "Home", Icon: HomeIcon, match: "/" },
+              { href: "/", label: t("nav.home"), Icon: HomeIcon, match: "/" },
               {
                 href: "/search?view=all",
-                label: "Explore",
+                label: t("nav.explore"),
                 Icon: FormatListBulletedIcon,
                 match: "/search",
               },
               {
                 href: "/community",
-                label: "Community",
+                label: t("nav.community"),
                 Icon: PeopleIcon,
                 match: "/community",
               },
-              { href: "/help", label: "Help", Icon: HelpIcon, match: "/help" },
+              { href: "/help", label: t("nav.help"), Icon: HelpIcon, match: "/help" },
               ...(user
                 ? [
                     {
                       href: "/chat/messagecenter",
-                      label: "Messages",
+                      label: t("nav.chat"),
                       Icon: ForumIcon,
                       match: "/chat/messagecenter",
                       badge: unreadCount,
@@ -329,7 +346,7 @@ const Header = () => {
               className="flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-black transition-colors active:bg-gray-200"
             >
               <PlaylistAddCircleIcon fontSize="small" />
-              {user ? "Add a listing" : "Post a listing — it's free"}
+              {user ? t("nav.addListing") : t("nav.postListing")}
             </Link>
             {!user && (
               <Link
@@ -338,7 +355,7 @@ const Header = () => {
                 className="flex items-center justify-center gap-2 rounded-xl border border-white/25 px-4 py-3 text-sm font-semibold text-white transition-colors active:bg-white/10"
               >
                 <LoginIcon fontSize="small" />
-                Log in
+                {t("nav.login")}
               </Link>
             )}
           </div>

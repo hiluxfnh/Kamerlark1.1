@@ -11,6 +11,7 @@ import RoomCardNew from "./components/roomCard";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Spinner from "./components/Spinner";
+import { useI18n } from "./lib/i18n";
 
 const CardSkeleton = () => (
   <div className="w-full animate-pulse overflow-hidden rounded-2xl border border-gray-200 bg-white">
@@ -26,6 +27,7 @@ const CardSkeleton = () => (
 
 export default function Home() {
   const router = useRouter();
+  const { t } = useI18n();
   const [rooms, setRooms] = useState([]);
   const [visibleCount, setVisibleCount] = useState(8);
   const [loading, setLoading] = useState(true);
@@ -72,10 +74,10 @@ export default function Home() {
         <div className="mt-8 flex items-end justify-between">
           <div>
             <h1 className="text-xl font-semibold text-gray-900 sm:text-2xl">
-              Popular accommodations
+              {t("home.popularTitle")}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Fresh listings near universities across Cameroon.
+              {t("home.popularSubtitle")}
             </p>
           </div>
           <Link
@@ -83,7 +85,7 @@ export default function Home() {
             prefetch
             className="hidden text-sm font-semibold text-[#082e4d] hover:underline sm:block"
           >
-            View all →
+            {t("home.seeMore")} →
           </Link>
         </div>
 
@@ -116,9 +118,9 @@ export default function Home() {
             className={`inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
               navigating ? "pointer-events-none opacity-80" : ""
             }`}
-            aria-label="See more accommodations"
+            aria-label={t("home.seeMore")}
           >
-            See more accommodations
+            {t("home.seeMore")}
             <span aria-hidden>→</span>
           </Link>
         </div>
@@ -129,18 +131,17 @@ export default function Home() {
         <div className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-cyan-950 p-8 sm:flex-row sm:items-center sm:p-10">
           <div>
             <h2 className="text-lg font-semibold text-white sm:text-xl">
-              Have a room to rent out?
+              {t("home.ownerTitle")}
             </h2>
             <p className="mt-1 max-w-md text-sm text-cyan-100">
-              Post it on KamerLark for free and reach thousands of students
-              looking for housing near their university.
+              {t("home.ownerSubtitle")}
             </p>
           </div>
           <Link
             href="/listing"
             className="shrink-0 rounded-full bg-white px-6 py-3 text-sm font-semibold text-cyan-950 transition-colors hover:bg-cyan-50"
           >
-            Post a listing
+            {t("home.ownerCta")}
           </Link>
         </div>
       </section>

@@ -1,4 +1,5 @@
 // components/Footer.js
+"use client";
 import React from "react";
 import Image from "next/image";
 import kl from "../assets/kamerlark.png";
@@ -8,16 +9,18 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import { useI18n } from "../lib/i18n";
 
 const LINKS = [
-  { href: "/search", label: "Search" },
-  { href: "/community", label: "Community" },
-  { href: "/help", label: "Help & FAQ" },
-  { href: "/terms", label: "Terms" },
-  { href: "/privacy", label: "Privacy" },
+  { href: "/search", key: "footer.search" },
+  { href: "/community", key: "footer.community" },
+  { href: "/help", key: "footer.helpFaq" },
+  { href: "/terms", key: "footer.terms" },
+  { href: "/privacy", key: "footer.privacy" },
 ];
 
 const Footer = () => {
+  const { t } = useI18n();
   return (
     <footer
       className="bg-black text-sm text-gray-300"
@@ -38,10 +41,7 @@ const Footer = () => {
               <Image src={kl} alt="KamerLark" width={34} height={34} className="rounded" />
               <span className="text-xl font-semibold text-white">KAMERLARK</span>
             </Link>
-            <p className="mt-3 text-gray-400">
-              Your trusted accommodation platform for students and young
-              professionals.
-            </p>
+            <p className="mt-3 text-gray-400">{t("footer.tagline")}</p>
             <div className="mt-4 space-y-2">
               <a
                 href="mailto:info.kamerlark@gmail.com"
@@ -72,7 +72,7 @@ const Footer = () => {
                   href={l.href}
                   className="hover:text-white transition-colors"
                 >
-                  {l.label}
+                  {t(l.key)}
                 </Link>
               ))}
             </nav>
@@ -105,7 +105,9 @@ const Footer = () => {
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-2 px-4 py-4 text-xs text-gray-400 sm:flex-row sm:px-6">
-          <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
+          <p>
+            &copy; {new Date().getFullYear()} KamerLark. {t("footer.rights")}
+          </p>
           <a
             href="#"
             onClick={(e) => {
@@ -114,7 +116,7 @@ const Footer = () => {
             }}
             className="text-white/80 hover:text-white"
           >
-            Back to top
+            {t("footer.backToTop")}
           </a>
         </div>
       </div>

@@ -43,6 +43,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import EventIcon from "@mui/icons-material/Event";
 import Spinner from "../components/Spinner"; // Import Spinner
+import { useI18n } from "../lib/i18n";
 import TextField from "@mui/material/TextField";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
@@ -101,6 +102,7 @@ function a11yProps(index) {
 }
 
 export default function UserProfile() {
+  const { t } = useI18n();
   const [tab, setTab] = useState("overview");
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -244,7 +246,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("overview")}
             >
-              <DashboardIcon className="mr-3" /> Overview
+              <DashboardIcon className="mr-3" /> {t("nav.overview")}
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
@@ -252,7 +254,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("account")}
             >
-              <ManageAccountsIcon className="mr-3" /> Account Management
+              <ManageAccountsIcon className="mr-3" /> {t("nav.account")}
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
@@ -260,7 +262,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("properties")}
             >
-              <DashboardIcon className="mr-3" /> Dashboard
+              <DashboardIcon className="mr-3" /> {t("nav.dashboard")}
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center ${
@@ -268,7 +270,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("notifications")}
             >
-              <NotificationsActiveIcon className="mr-3" /> Notifications
+              <NotificationsActiveIcon className="mr-3" /> {t("nav.notifications")}
               {unreadChats > 0 ? (
                 <span className="ml-auto text-[10px] bg-red-500 text-white rounded-full px-2 py-0.5">
                   {unreadChats}
@@ -281,7 +283,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("calendar")}
             >
-              <EventIcon className="mr-3" fontSize="small" /> Calendar
+              <EventIcon className="mr-3" fontSize="small" /> {t("nav.calendar")}
               {stats.appointments > 0 ? (
                 <span className="ml-auto text-[10px] bg-gray-800 text-white rounded-full px-2 py-0.5">
                   {stats.appointments}
@@ -294,7 +296,7 @@ export default function UserProfile() {
               }`}
               onClick={() => setTab("settings")}
             >
-              <SettingsIcon className="mr-3" /> Settings
+              <SettingsIcon className="mr-3" /> {t("nav.settings")}
             </li>
             <li
               className={`shrink-0 whitespace-nowrap p-4 cursor-pointer flex flex-row items-center`}
@@ -306,7 +308,7 @@ export default function UserProfile() {
                 });
               }}
             >
-              <MeetingRoomIcon className="mr-3" /> Logout
+              <MeetingRoomIcon className="mr-3" /> {t("nav.logout")}
             </li>
           </ul>
         </nav>
@@ -1448,6 +1450,7 @@ function CalendarView() {
 
 function Settings() {
   const [user] = useAuthState(auth);
+  const { lang, setLang, t } = useI18n();
   const defaultTz = "Africa/Douala";
   const [settings, setSettings] = useState({
     theme: "system",
@@ -1507,6 +1510,8 @@ function Settings() {
         if (typeof document !== "undefined") {
           document.body.setAttribute("data-theme", theme);
         }
+        // Sync the saved language into the live i18n context
+        if (incoming.locale?.language) setLang(incoming.locale.language);
       } catch {}
       setLoading(false);
     };
@@ -1522,9 +1527,9 @@ function Settings() {
       if (typeof document !== "undefined") {
         document.body.setAttribute("data-theme", settings.theme || "system");
       }
-      openSnack("Settings saved");
+      openSnack(t("settings.saved"));
     } catch (e) {
-      openSnack("Failed to save settings", "error");
+      openSnack(t("settings.saveError"), "error");
     } finally {
       setSaving(false);
     }
@@ -1534,13 +1539,13 @@ function Settings() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Settings</h2>
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">{t("settings.title")}</h2>
       <div className="space-y-4">
         {/* Appearance */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Appearance</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("settings.appearance")}</h3>
           <div className="flex items-center gap-3">
-            <label className="text-sm text-gray-700">Theme</label>
+            <label className="text-sm text-gray-700">{t("settings.theme")}</label>
             <Select
               size="small"
               value={settings.theme}
@@ -1552,19 +1557,19 @@ function Settings() {
                 }
               }}
             >
-              <MenuItem value="system">System</MenuItem>
-              <MenuItem value="light">Light</MenuItem>
-              <MenuItem value="dark">Dark</MenuItem>
+              <MenuItem value="system">{t("theme.system")}</MenuItem>
+              <MenuItem value="light">{t("theme.light")}</MenuItem>
+              <MenuItem value="dark">{t("theme.dark")}</MenuItem>
             </Select>
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Theme preference is saved for your account.
+            {t("settings.themeHint")}
           </p>
         </div>
 
         {/* Notifications */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Notifications</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("settings.notifications")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             <FormControlLabel
               control={
@@ -1581,7 +1586,7 @@ function Settings() {
                   }
                 />
               }
-              label="Booking updates"
+              label={t("settings.bookingUpdates")}
             />
             <FormControlLabel
               control={
@@ -1598,7 +1603,7 @@ function Settings() {
                   }
                 />
               }
-              label="Appointment updates"
+              label={t("settings.appointmentUpdates")}
             />
             <FormControlLabel
               control={
@@ -1615,21 +1620,20 @@ function Settings() {
                   }
                 />
               }
-              label="Weekly activity summary"
+              label={t("settings.weeklyDigest")}
             />
           </div>
           <p className="text-xs text-gray-500 mt-2">
-            Email delivery depends on your verified email and may require future
-            configuration.
+            {t("settings.notifHint")}
           </p>
         </div>
 
         {/* Calendar defaults */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">Calendar</h3>
+          <h3 className="text-lg font-semibold mb-2">{t("settings.calendar")}</h3>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Default export</label>
+              <label className="text-sm text-gray-700">{t("settings.defaultExport")}</label>
               <Select
                 size="small"
                 value={settings.calendar.defaultProvider}
@@ -1648,7 +1652,7 @@ function Settings() {
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Reminder (min)</label>
+              <label className="text-sm text-gray-700">{t("settings.reminder")}</label>
               <input
                 type="number"
                 className="border rounded px-2 py-1 text-sm w-24"
@@ -1669,24 +1673,25 @@ function Settings() {
 
         {/* Language */}
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-          <h3 className="mb-1 text-base font-semibold text-gray-900">Language</h3>
+          <h3 className="mb-1 text-base font-semibold text-gray-900">{t("common.language")}</h3>
           <p className="mb-3 text-xs text-gray-500">
-            Your preferred language for the interface.
+            {t("settings.languageHint")}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-700">Language</label>
+              <label className="text-sm text-gray-700">{t("common.language")}</label>
               <Select
                 size="small"
                 value={settings.locale.language}
                 onChange={(e) => {
-                  const lang = e.target.value;
+                  const next = e.target.value;
                   setSettings((s) => ({
                     ...s,
-                    locale: { ...s.locale, language: lang },
+                    locale: { ...s.locale, language: next },
                   }));
-                  if (typeof document !== "undefined")
-                    document.documentElement.lang = lang;
+                  // Switch the interface immediately (also persists to
+                  // localStorage); "Save changes" stores it on the account.
+                  setLang(next);
                 }}
               >
                 <MenuItem value="en">English</MenuItem>
@@ -1703,7 +1708,7 @@ function Settings() {
             variant="contained"
             style={{ backgroundColor: "black" }}
           >
-            {saving ? "Saving…" : "Save changes"}
+            {saving ? t("settings.saving") : t("settings.save")}
           </Button>
         </div>
       </div>
