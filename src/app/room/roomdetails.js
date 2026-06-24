@@ -39,6 +39,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useI18n } from "../lib/i18n";
 import ChatRoomHandler from "../components/ChatRoomHandler";
 import Avatar from "../components/Avatar";
 import { useRouter } from "next/navigation";
@@ -63,6 +64,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 // Removed demo reviews; we persist reviews on the roomdetails document
 
 const RoomDetails = ({ room }) => {
+  const { t } = useI18n();
   const router = useRouter();
   const [user] = useAuthState(auth);
   const MapComponent = dynamic(() => import("../components/MapComponent"), {
@@ -163,7 +165,7 @@ const RoomDetails = ({ room }) => {
       setRating(0);
     } catch (error) {
       console.error("Error adding review: ", error);
-      notify("Couldn't submit your review. Please try again.", "error");
+      notify(t("room.reviewError"), "error");
     }
   };
 
@@ -286,14 +288,11 @@ const RoomDetails = ({ room }) => {
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
     if (!bookingDetails.agreeTerms) {
-      notify(
-        "Please agree to the leasing contract and KamerLark policies to continue.",
-        "warning"
-      );
+      notify(t("room.agreeWarn"), "warning");
       return;
     }
     if (!auth.currentUser) {
-      notify("You must be signed in to book.", "error");
+      notify(t("room.signInToBookErr"), "error");
       return;
     }
     const ownerId = room.ownerId || null;
@@ -313,10 +312,7 @@ const RoomDetails = ({ room }) => {
           ["pending", "completed", "accepted"].includes(d.data().status)
       );
       if (already) {
-        notify(
-          "You already have a booking request for this room. Check it in your profile.",
-          "warning"
-        );
+        notify(t("room.dupBooking"), "warning");
         setIsBooking(false);
         return;
       }
@@ -381,15 +377,15 @@ const RoomDetails = ({ room }) => {
         }
       }
 
-      notify("Booking request sent! The owner will respond in your chat.", "success");
+      notify(t("room.bookingSent"), "success");
       setIsBookNowOpen(false);
       setAddBookingSuccess(true);
     } catch (error) {
       console.error("Booking error:", error?.code, error?.message, error);
       notify(
         error?.code === "permission-denied"
-          ? "Permission denied — please sign out and sign back in, then try again."
-          : `Booking failed: ${error?.message || "unknown error"}`,
+          ? t("room.permDenied")
+          : `${t("room.bookingFailed")}${error?.message || "unknown error"}`,
         "error"
       );
     } finally {
@@ -400,7 +396,7 @@ const RoomDetails = ({ room }) => {
   const handleAppointmentSubmit = async (e) => {
     e.preventDefault();
     if (!auth.currentUser) {
-      notify("You must be signed in to request a visit.", "error");
+      notify(t("room.signInToVisit"), "error");
       return;
     }
     const ownerId = room.ownerId || null;
@@ -474,15 +470,15 @@ const RoomDetails = ({ room }) => {
         }
       }
 
-      notify("Visit request sent! Confirm the time with the owner in your chat.", "success");
+      notify(t("room.visitSent"), "success");
       setIsAppointmentOpen(false);
       setAddAppointmentSuccess(true);
     } catch (error) {
       console.error("Appointment error:", error?.code, error?.message, error);
       notify(
         error?.code === "permission-denied"
-          ? "Permission denied — please sign out and sign back in, then try again."
-          : `Visit request failed: ${error?.message || "unknown error"}`,
+          ? t("room.permDenied")
+          : `${t("room.visitFailed")}${error?.message || "unknown error"}`,
         "error"
       );
     } finally {
@@ -578,7 +574,7 @@ const RoomDetails = ({ room }) => {
             </div>
             <div
               className="flex items-center gap-1 text-gray-600 text-sm"
-              title="Views"
+              title={t("room.views")}
             >
               <VisibilityIcon fontSize="small" />
               <span>{views || 0}</span>
@@ -628,7 +624,7 @@ const RoomDetails = ({ room }) => {
               <p className="text-2xl font-bold">
                 {new Intl.NumberFormat("fr-FR").format(Number(room.price) || 0)}{" "}
                 <span className="text-sm font-medium text-gray-500">
-                  {room.currency || "XAF"}/month · taxes included
+                  {room.currency || "XAF"}{t("room.perMonthTaxes")}
                 </span>
               </p>
 
@@ -636,12 +632,12 @@ const RoomDetails = ({ room }) => {
               {room.available === false ? (
                 <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
                   <span className="h-2 w-2 rounded-full bg-red-500" />
-                  No longer available — this place has been booked.
+                  {t("room.notAvailable")}
                 </div>
               ) : (
                 <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600">
                   <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  Available now
+                  {t("room.availableNow")}
                 </div>
               )}
 
@@ -649,8 +645,7 @@ const RoomDetails = ({ room }) => {
                 room.available === false ? (
                   <div className="mt-4 flex flex-col gap-2">
                     <p className="text-sm text-gray-600">
-                      This place isn&apos;t taking new booking requests, but you
-                      can still message the owner.
+                      {t("room.notTakingBookings")}
                     </p>
                     <Button
                       onClick={() => setIsChatOpen(true)}
@@ -658,7 +653,7 @@ const RoomDetails = ({ room }) => {
                       fullWidth
                       style={{ borderColor: "black", color: "black" }}
                     >
-                      Chat with owner
+                      {t("room.chatWithOwner")}
                     </Button>
                   </div>
                 ) : (
@@ -669,7 +664,7 @@ const RoomDetails = ({ room }) => {
                       fullWidth
                       style={{ backgroundColor: "black", padding: "10px 0" }}
                     >
-                      Book now
+                      {t("room.bookNow")}
                     </Button>
                     <div className="grid grid-cols-2 gap-2">
                       <Button
@@ -678,7 +673,7 @@ const RoomDetails = ({ room }) => {
                         fullWidth
                         style={{ borderColor: "black", color: "black" }}
                       >
-                        Visit first
+                        {t("room.visitFirst")}
                       </Button>
                       <Button
                         onClick={() => setIsChatOpen(true)}
@@ -686,7 +681,7 @@ const RoomDetails = ({ room }) => {
                         fullWidth
                         style={{ borderColor: "black", color: "black" }}
                       >
-                        Chat
+                        {t("room.chat")}
                       </Button>
                     </div>
                     <button
@@ -694,7 +689,7 @@ const RoomDetails = ({ room }) => {
                       className="mt-1 text-sm text-gray-600 underline underline-offset-2 hover:text-black"
                       type="button"
                     >
-                      View contract terms
+                      {t("room.viewContractTerms")}
                     </button>
                   </div>
                 )
@@ -708,19 +703,19 @@ const RoomDetails = ({ room }) => {
                     fullWidth
                     style={{ backgroundColor: "black", padding: "10px 0" }}
                   >
-                    Sign in to book or chat
+                    {t("room.signInToBook")}
                   </Button>
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Free account — book, visit, or message the owner directly.
+                    {t("room.freeAccount")}
                   </p>
                 </div>
               ) : null}
 
               {user && room.ownerId === user.uid ? (
                 <p className="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
-                  This is your listing. Manage it from{" "}
+                  {t("room.yourListingManage")}{" "}
                   <a href="/mylisting" className="font-semibold underline">
-                    My Listings
+                    {t("room.myListings")}
                   </a>
                   .
                 </p>
@@ -728,7 +723,7 @@ const RoomDetails = ({ room }) => {
             </div>
 
             <div className="mt-6">
-              <h2 className="text-base font-semibold">Amenities</h2>
+              <h2 className="text-base font-semibold">{t("room.amenities")}</h2>
               <div className="mt-2 flex flex-row flex-wrap gap-2 text-sm">
                 {room.amenities.map((amenity, index) => (
                   <span
@@ -743,14 +738,14 @@ const RoomDetails = ({ room }) => {
                     className="rounded-full border border-gray-200 px-3 py-1 text-gray-600"
                     key={`u-${index}`}
                   >
-                    {utility} included
+                    {utility} {t("room.included")}
                   </span>
                 ))}
               </div>
             </div>
 
             <div className="mt-5">
-              <h2 className="text-base font-semibold">Description</h2>
+              <h2 className="text-base font-semibold">{t("room.description")}</h2>
               <p className="mt-2 text-sm leading-relaxed text-gray-700">
                 {room.description}
               </p>
@@ -792,19 +787,19 @@ const RoomDetails = ({ room }) => {
             <p className="text-black">
               {(room.bedType || "").slice(0, 1).toUpperCase() +
                 (room.bedType || "").slice(1)}{" "}
-              Bed
+              {t("room.bed")}
             </p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-orange-700">
             <PeopleOutlineOutlinedIcon fontSize="small" />
-            <p className="text-black">{room.capacity} People</p>
+            <p className="text-black">{room.capacity} {t("room.people")}</p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-green-800">
             <BathtubOutlinedIcon fontSize="small" />
             <p className="text-black">
               {(room.washrooms || "").slice(0, 1).toUpperCase() +
                 (room.washrooms || "").slice(1)}{" "}
-              washroom
+              {t("room.washroom")}
             </p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-pink-800">
@@ -829,7 +824,7 @@ const RoomDetails = ({ room }) => {
             >
               <div className="flex flex-row justify-between items-center gap-3">
                 <LockOpenOutlinedIcon fontSize="small" />
-                <p>Safety Features</p>
+                <p>{t("room.safetyFeatures")}</p>
               </div>
               <div>
                 {dropDownMenu.safetyFeatures ? (
@@ -863,7 +858,7 @@ const RoomDetails = ({ room }) => {
             >
               <div className="flex flex-row justify-between items-center gap-3">
                 <SwitchAccessShortcutAddOutlinedIcon fontSize="small" />
-                <p>Accessibility Features</p>
+                <p>{t("room.accessibilityFeatures")}</p>
               </div>
               <div>
                 {dropDownMenu.accessibilityFeatures ? (
@@ -897,7 +892,7 @@ const RoomDetails = ({ room }) => {
             >
               <div className="flex flex-row justify-between items-center gap-3">
                 <GavelOutlinedIcon fontSize="small" />
-                <p>Rules</p>
+                <p>{t("room.rules")}</p>
               </div>
               <div>
                 {dropDownMenu.rules ? (
@@ -931,7 +926,7 @@ const RoomDetails = ({ room }) => {
             >
               <div className="flex flex-row justify-between items-center gap-3">
                 <FamilyRestroomOutlinedIcon fontSize="small" />
-                <p>Neighborhood Info</p>
+                <p>{t("room.neighborhoodInfo")}</p>
               </div>
               <div>
                 {dropDownMenu.neighborhoodInfo ? (
@@ -950,7 +945,7 @@ const RoomDetails = ({ room }) => {
         </div>
 
         <div className="p-4 py-6 rounded-md border my-3 theme-card">
-          <h2 className="text-base font-medium my-3">Location</h2>
+          <h2 className="text-base font-medium my-3">{t("room.location")}</h2>
           <div className="w-full">
             <MapComponent
               latitude={
@@ -966,7 +961,7 @@ const RoomDetails = ({ room }) => {
 
         <div className="p-4 py-6 rounded-md border my-3 theme-card">
           <h2 className="text-base font-medium my-3">
-            Reviews ({reviews.length})
+            {t("room.reviews")} ({reviews.length})
           </h2>
           <div className="w-full mx-auto overflow-x-scroll no-scrollbar">
             <div
@@ -997,7 +992,7 @@ const RoomDetails = ({ room }) => {
 
           {/* Add Review */}
           <div className="mt-4 border-t pt-4">
-            <h3 className="text-sm font-medium mb-2">Add your review</h3>
+            <h3 className="text-sm font-medium mb-2">{t("room.addYourReview")}</h3>
             <div className="flex items-center gap-2 mb-2">
               {[1, 2, 3, 4, 5].map((i) => (
                 <button
@@ -1018,7 +1013,7 @@ const RoomDetails = ({ room }) => {
             </div>
             <textarea
               className="w-full border rounded-md p-2 text-sm"
-              placeholder="Share your experience..."
+              placeholder={t("room.shareExperience")}
               value={newReview}
               onChange={(e) => setNewReview(e.target.value)}
               rows={3}
@@ -1029,7 +1024,7 @@ const RoomDetails = ({ room }) => {
                 onClick={handleAddReview}
                 style={{ backgroundColor: "black", color: "white" }}
               >
-                Submit Review
+                {t("room.submitReview")}
               </Button>
             </div>
           </div>
@@ -1039,11 +1034,9 @@ const RoomDetails = ({ room }) => {
       <CustomModal
         isOpen={addBookingSuccess}
         onClose={() => setAddBookingSuccess(false)}
-        title="Booking Successful"
+        title={t("room.bookingSuccessTitle")}
       >
-        <p>
-          Your booking has been submitted for approval. Wait for the owner&apos;s response.
-        </p>
+        <p>{t("room.bookingSuccessBody")}</p>
         {/* Offer calendar options for planned move-in date */}
         {bookingDetails?.moveInDate ? (
           <div className="mt-3 flex gap-2">
@@ -1065,7 +1058,7 @@ const RoomDetails = ({ room }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Add to Google Calendar
+              {t("room.addToGoogle")}
             </a>
             <button
               className="px-3 py-1 rounded-md border"
@@ -1083,7 +1076,7 @@ const RoomDetails = ({ room }) => {
                 });
               }}
             >
-              Download .ics
+              {t("room.downloadIcs")}
             </button>
           </div>
         ) : null}
@@ -1092,19 +1085,16 @@ const RoomDetails = ({ room }) => {
             router.push("/chat/messagecenter");
           }}
         >
-          Go to Message center
+          {t("room.goToMessages")}
         </button>
       </CustomModal>
 
       <CustomModal
         isOpen={addAppointmentSuccess}
         onClose={() => setAddAppointmentSuccess(false)}
-        title="Appointment Request Sent"
+        title={t("room.apptSentTitle")}
       >
-        <p>
-          Your appointment request has been submitted. Wait for the owner&apos;s
-          response.
-        </p>
+        <p>{t("room.apptSentBody")}</p>
         {/* Offer calendar options for appointment */}
         {appointmentDetails?.date && appointmentDetails?.time ? (
           <div className="mt-3 flex gap-2">
@@ -1126,7 +1116,7 @@ const RoomDetails = ({ room }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Add to Google Calendar
+              {t("room.addToGoogle")}
             </a>
             <button
               className="px-3 py-1 rounded-md border"
@@ -1145,7 +1135,7 @@ const RoomDetails = ({ room }) => {
                 });
               }}
             >
-              Download .ics
+              {t("room.downloadIcs")}
             </button>
           </div>
         ) : null}
@@ -1154,21 +1144,21 @@ const RoomDetails = ({ room }) => {
             router.push("/chat/messagecenter");
           }}
         >
-          Go to Message center
+          {t("room.goToMessages")}
         </button>
       </CustomModal>
 
       <CustomModal
         isOpen={isBookNowOpen}
         onClose={() => setIsBookNowOpen(false)}
-        title="Book Now"
+        title={t("room.bookNowTitle")}
       >
         <p className="text-base font-sans mb-3">
-          Fill in the details to book the room
+          {t("room.bookNowSubtitle")}
         </p>
         <div className="grid grid-cols-12 gap-4">
           <InputFieldCustom
-            label={"Name"}
+            label={t("room.name")}
             name="name"
             value={bookingDetails.name}
             onChange={handleInputChange}
@@ -1176,7 +1166,7 @@ const RoomDetails = ({ room }) => {
             colEnd={6}
           />
           <InputFieldCustom
-            label={"Email"}
+            label={t("room.email")}
             name="email"
             value={bookingDetails.email}
             onChange={handleInputChange}
@@ -1184,7 +1174,7 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <InputFieldCustom
-            label={"Phone"}
+            label={t("room.phone")}
             name="phone"
             value={bookingDetails.phone}
             onChange={handleInputChange}
@@ -1194,7 +1184,7 @@ const RoomDetails = ({ room }) => {
           <div className="col-start-8 col-end-13">
             <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
               <DatePicker
-                label="Move in date"
+                label={t("room.moveInDate")}
                 value={bookingDetails.moveInDate}
                 onChange={(newValue) =>
                   setBookingDetails((prevDetails) => ({
@@ -1206,7 +1196,7 @@ const RoomDetails = ({ room }) => {
             </LocalizationProvider>
           </div>
           <InputFieldCustom
-            label={"Address"}
+            label={t("room.address")}
             name="address"
             value={bookingDetails.address}
             onChange={handleInputChange}
@@ -1214,7 +1204,7 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <InputFieldCustom
-            label={"Notes"}
+            label={t("room.notes")}
             name="notes"
             value={bookingDetails.notes}
             onChange={handleInputChange}
@@ -1231,12 +1221,11 @@ const RoomDetails = ({ room }) => {
               inputProps={{ "aria-label": "controlled" }}
             />
             <p className="text-base font-sans">
-              I agree to the terms of the leasing contract and policies of
-              KamerLark.
+              {t("room.agreeTerms")}
             </p>
           </div>
           <CustomButton
-            label={isBooking ? "Sending…" : "Submit"}
+            label={isBooking ? t("common.sending") : t("common.submit")}
             onClick={handleBookingSubmit}
             disabled={isBooking}
             colStart={1}
@@ -1248,14 +1237,14 @@ const RoomDetails = ({ room }) => {
       <CustomModal
         isOpen={isAppointmentOpen}
         onClose={() => setIsAppointmentOpen(false)}
-        title="Book an Appointment"
+        title={t("room.bookApptTitle")}
       >
         <p className="text-base font-sans mb-3">
-          Fill in the details to book an appointment
+          {t("room.bookApptSubtitle")}
         </p>
         <div className="grid grid-cols-12 gap-4">
           <InputFieldCustom
-            label={"Name"}
+            label={t("room.name")}
             name="name"
             value={appointmentDetails.name}
             onChange={handleAppointmentInputChange}
@@ -1263,7 +1252,7 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <InputFieldCustom
-            label={"Email"}
+            label={t("room.email")}
             name="email"
             value={appointmentDetails.email}
             onChange={handleAppointmentInputChange}
@@ -1271,7 +1260,7 @@ const RoomDetails = ({ room }) => {
             colEnd={7}
           />
           <InputFieldCustom
-            label={"Phone"}
+            label={t("room.phone")}
             name="phone"
             value={appointmentDetails.phone}
             onChange={handleAppointmentInputChange}
@@ -1281,7 +1270,7 @@ const RoomDetails = ({ room }) => {
           <div className="col-start-1 col-end-13">
             <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
               <DatePicker
-                label="Preferred Date"
+                label={t("room.preferredDate")}
                 fullWidth
                 value={appointmentDetails.date}
                 onChange={(newValue) =>
@@ -1310,22 +1299,22 @@ const RoomDetails = ({ room }) => {
           </div>
           <FormControl fullWidth className="col-start-1 col-end-13 mt-2">
             <InputLabel id="demo-simple-select-label">
-              Appointment Type
+              {t("room.appointmentType")}
             </InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={appointmentDetails.appointmenttype}
-              label="Appoinment Type"
+              label={t("room.appointmentType")}
               name="appointmenttype"
               onChange={handleAppointmentInputChange}
             >
-              <MenuItem value={"inperson"}>In Person</MenuItem>
-              <MenuItem value={"virtual"}>Virtual</MenuItem>
+              <MenuItem value={"inperson"}>{t("room.inPerson")}</MenuItem>
+              <MenuItem value={"virtual"}>{t("room.virtual")}</MenuItem>
             </Select>
           </FormControl>
           <InputFieldCustom
-            label={"Message"}
+            label={t("room.message")}
             name="message"
             value={appointmentDetails.message}
             onChange={handleAppointmentInputChange}
@@ -1335,7 +1324,7 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <CustomButton
-            label={isRequestingAppt ? "Sending…" : "Submit"}
+            label={isRequestingAppt ? t("common.sending") : t("common.submit")}
             onClick={handleAppointmentSubmit}
             disabled={isRequestingAppt}
             colStart={1}
@@ -1347,12 +1336,12 @@ const RoomDetails = ({ room }) => {
       <CustomModal
         isOpen={isChatOpen}
         onClose={() => setIsChatOpen(false)}
-        title="Chat with Owner"
+        title={t("room.chatOwnerTitle")}
       >
-        <p>Fill in the details to start a chat with the owner:</p>
+        <p>{t("room.chatOwnerBody")}</p>
         <form>
           <label>
-            Full Name:
+            {t("room.fullName")}
             <input
               type="text"
               name="name"
@@ -1362,9 +1351,9 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Email:{" "}
+            {t("room.emailColon")}{" "}
             <span className={styles.email_note}>
-              (Must be changed via profile)
+              {t("room.mustChangeProfile")}
             </span>
             <input
               type="email"
@@ -1375,7 +1364,7 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Phone:
+            {t("room.phoneColon")}
             <input
               type="tel"
               name="phone"
@@ -1385,22 +1374,22 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Your Message:
+            {t("room.yourMessage")}
             <textarea name="message" required></textarea>
           </label>
-          <button type="submit">Submit</button>
+          <button type="submit">{t("common.submit")}</button>
         </form>
       </CustomModal>
 
       <CustomModal
         isOpen={isVideoConfOpen}
         onClose={() => setIsVideoConfOpen(false)}
-        title="Video Conferencing"
+        title={t("room.videoConfTitle")}
       >
-        <p>Fill in the details to schedule a video conference:</p>
+        <p>{t("room.videoConfBody")}</p>
         <form>
           <label>
-            Full Name:
+            {t("room.fullName")}
             <input
               type="text"
               name="name"
@@ -1410,9 +1399,9 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Email:{" "}
+            {t("room.emailColon")}{" "}
             <span className={styles.email_note}>
-              (Must be changed via profile)
+              {t("room.mustChangeProfile")}
             </span>
             <input
               type="email"
@@ -1423,7 +1412,7 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Phone:
+            {t("room.phoneColon")}
             <input
               type="tel"
               name="phone"
@@ -1433,44 +1422,44 @@ const RoomDetails = ({ room }) => {
             />
           </label>
           <label>
-            Preferred Date:
+            {t("room.preferredDate")}
             <input type="date" name="date" required />
           </label>
           <label>
-            Preferred Time:
+            {t("room.preferredTime")}
             <input type="time" name="time" required />
           </label>
           <label>
-            Your Message:
+            {t("room.yourMessage")}
             <textarea name="message" required></textarea>
           </label>
-          <button type="submit">Submit</button>
+          <button type="submit">{t("common.submit")}</button>
         </form>
       </CustomModal>
 
       <CustomModal
         isOpen={isContractTermsOpen}
         onClose={() => setIsContractTermsOpen(false)}
-        title="View Contract Terms"
+        title={t("room.contractTitle")}
       >
         <div className="space-y-5">
           <div className="border rounded-lg p-4 theme-card">
-            <h3 className="text-lg font-semibold">Leasing Contract Terms</h3>
+            <h3 className="text-lg font-semibold">{t("room.leaseTerms")}</h3>
             <p className="text-xs text-gray-500 mt-1">
-              for {room?.name} • {room?.location}
+              {t("room.forLabel")} {room?.name} • {room?.location}
             </p>
             <div className="mt-3 text-sm leading-6 whitespace-pre-wrap">
               {room?.leaseTerms && room.leaseTerms.trim().length > 0 ? (
                 room.leaseTerms
               ) : (
                 <span className="text-gray-500">
-                  No lease terms provided by the owner.
+                  {t("room.noLeaseTerms")}
                 </span>
               )}
             </div>
             {Array.isArray(room?.rules) && room.rules.length > 0 ? (
               <div className="mt-4">
-                <h4 className="text-base font-medium">House Rules</h4>
+                <h4 className="text-base font-medium">{t("room.houseRules")}</h4>
                 <ul className="list-disc pl-5 mt-2 text-sm space-y-1">
                   {room.rules.map((r, i) => (
                     <li key={i}>{r}</li>
@@ -1482,7 +1471,7 @@ const RoomDetails = ({ room }) => {
 
           {/* Signature Section */}
           <div className="border rounded-lg p-4 theme-card">
-            <h4 className="text-base font-semibold mb-3">Signature</h4>
+            <h4 className="text-base font-semibold mb-3">{t("room.signature")}</h4>
             <div className="space-y-3">
               <div className="relative h-16 border-b">
                 <span
@@ -1497,12 +1486,12 @@ const RoomDetails = ({ room }) => {
                 </span>
               </div>
               <div>
-                <p className="text-sm font-medium">Owner</p>
+                <p className="text-sm font-medium">{t("room.owner")}</p>
                 {room?.ownerEmail ? (
                   <p className="text-xs text-gray-500">{room.ownerEmail}</p>
                 ) : null}
                 <p className="text-xs text-gray-500 mt-1">
-                  Date: {uploadedDate || "—"}
+                  {t("room.dateLabel")} {uploadedDate || "—"}
                 </p>
               </div>
             </div>

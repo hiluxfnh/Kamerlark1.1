@@ -16,6 +16,7 @@ import RoomCardNew from "../components/roomCard";
 import { Box, Slider, Typography } from "@mui/material";
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useI18n } from "../lib/i18n";
 import dynamic from "next/dynamic";
 const SearchMapView = dynamic(() => import("../components/SearchMapView"), { ssr: false });
 function valuetext(value: number) {
@@ -48,6 +49,7 @@ const washroomTypes = [
 ];
 
 const SearchPage = () => {
+  const { t } = useI18n();
   const params = useSearchParams();
   const [rooms, setRooms] = useState([]);
   const [visibleCount, setVisibleCount] = useState(24);
@@ -326,14 +328,14 @@ const SearchPage = () => {
               type="text"
               value={location}
               onChange={(e: any) => setLocation(e.target.value)}
-              placeholder="Search city, area, university or property…"
+              placeholder={t("search.placeholder")}
               className="w-full rounded-full border border-gray-300 py-2.5 pl-10 pr-10 text-sm outline-none transition-colors focus:border-black"
             />
             {location ? (
               <button
                 type="button"
                 onClick={() => setLocation("")}
-                aria-label="Clear search"
+                aria-label={t("search.clear")}
                 className="absolute right-2.5 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700"
               >
                 <CloseIcon style={{ fontSize: 16 }} />
@@ -357,7 +359,7 @@ const SearchPage = () => {
                 setBedTypeModal(false);
               }}
             >
-              <SortIcon fontSize="small" /> Sort by
+              <SortIcon fontSize="small" /> {t("search.sortBy")}
             </p>
             {sortByModal && (
               <div
@@ -367,7 +369,7 @@ const SearchPage = () => {
                 }}
                 onMouseLeave={() => { setSortByModal(false); setBackground(false); }}
               >
-                <h1 className="text-base font-medium mb-3">Sort by</h1>
+                <h1 className="text-base font-medium mb-3">{t("search.sortBy")}</h1>
                 <form>
                   <input
                     type="radio"
@@ -381,7 +383,7 @@ const SearchPage = () => {
                     checked={sortBy === "none"}
                   />
                   <label className="text-sm" htmlFor="none">
-                    Default
+                    {t("search.sortDefault")}
                   </label>
                   <br />
                   <input
@@ -396,7 +398,7 @@ const SearchPage = () => {
                     checked={sortBy === "lowToHigh"}
                   />
                   <label className="text-sm" htmlFor="lowToHigh">
-                    Low to High
+                    {t("search.sortLowHigh")}
                   </label>
                   <br />
                   <input
@@ -411,7 +413,7 @@ const SearchPage = () => {
                     checked={sortBy === "highToLow"}
                   />
                   <label className="text-sm" htmlFor="highToLow">
-                    High to Low
+                    {t("search.sortHighLow")}
                   </label>
                   <br />
                   <input
@@ -426,7 +428,7 @@ const SearchPage = () => {
                     checked={sortBy === "newest"}
                   />
                   <label className="text-sm" htmlFor="newest">
-                    Newest
+                    {t("search.sortNewest")}
                   </label>
                   <br />
                 </form>
@@ -448,7 +450,7 @@ const SearchPage = () => {
                 setBedTypeModal(false);
               }}
             >
-              <SchoolIcon fontSize="small" /> University
+              <SchoolIcon fontSize="small" /> {t("search.university")}
             </p>
             {universityModal && (
               <div
@@ -458,7 +460,7 @@ const SearchPage = () => {
                 }}
                 onMouseLeave={() => { setUniversityModal(false); setBackground(false); }}
               >
-                <h1 className="text-base font-medium mb-3">University</h1>
+                <h1 className="text-base font-medium mb-3">{t("search.university")}</h1>
                 <form className="grid grid-cols-1 sm:grid-cols-2">
                   {universities.map((uni) => (
                     <div key={uni.value}>
@@ -475,7 +477,11 @@ const SearchPage = () => {
                         checked={university === uni.value}
                       />
                       <label className="text-sm" htmlFor={uni.value}>
-                        {uni.label}
+                        {uni.value === ""
+                          ? t("common.all")
+                          : uni.value === "other"
+                          ? t("common.other")
+                          : uni.label}
                       </label>
                       <br />
                     </div>
@@ -483,11 +489,11 @@ const SearchPage = () => {
                 </form>
     {university === 'other' && (
                   <div className="mt-2">
-                    <p className="text-xs mb-1">Specify other university</p>
+                    <p className="text-xs mb-1">{t("search.specifyOtherUni")}</p>
                     <input
                       type="text"
                       className="border p-2 px-3 outline-none rounded-md w-full"
-                      placeholder="Enter university name"
+                      placeholder={t("search.enterUniName")}
                       value={universityOther}
                       onChange={(e: any) => {
       const val = e.target.value;
@@ -515,7 +521,7 @@ const SearchPage = () => {
                 setBedTypeModal(false);
               }}
             >
-              <AttachMoneyIcon fontSize="small" /> Budget
+              <AttachMoneyIcon fontSize="small" /> {t("search.budget")}
             </p>
             {budgetModal && (
               <div
@@ -525,11 +531,11 @@ const SearchPage = () => {
                 }}
                 onMouseLeave={() => { setBudgetModal(false); setBackground(false); }}
               >
-                <h1 className="text-base font-medium mb-3">Budget</h1>
+                <h1 className="text-base font-medium mb-3">{t("search.budget")}</h1>
                 <div className="max-w-fit mx-auto">
                   <div className="grid grid-cols- gap-3 max-w-full">
                     <div className="col-start-1 col-end-2">
-                      <p className="text-xs">Min</p>
+                      <p className="text-xs">{t("search.min")}</p>
                       <input
                         type="text"
                         className="border p-1 w-40 rounded-md text-sm"
@@ -540,7 +546,7 @@ const SearchPage = () => {
                       />
                     </div>
                     <div className="col-start-2 col-end-3">
-                      <p className="text-xs">Min</p>
+                      <p className="text-xs">{t("search.max")}</p>
                       <input
                         type="text"
                         className="border p-1 w-40 rounded-md text-sm"
@@ -620,7 +626,7 @@ const SearchPage = () => {
               setBackground(true);
             }}
           >
-            <SingleBedIcon fontSize="small" /> Room Type
+            <SingleBedIcon fontSize="small" /> {t("search.roomType")}
           </p>
           {
             bedTypeModal && (
@@ -631,7 +637,7 @@ const SearchPage = () => {
                 }}
                 onMouseLeave={() => { setBedTypeModal(false); setBackground(false); }}
               >
-                <h1 className="text-base font-medium mb-1">Room Type</h1>
+                <h1 className="text-base font-medium mb-1">{t("search.roomType")}</h1>
                 <form className="mb-3">
                 <input
                     type="radio"
@@ -645,7 +651,7 @@ const SearchPage = () => {
                     checked={bedType === "all"}
                   />
                   <label className="text-sm" htmlFor="all">
-                    All
+                    {t("common.all")}
                   </label>
                   <br />
                   <input
@@ -660,7 +666,7 @@ const SearchPage = () => {
                     checked={bedType === "single"}
                   />
                   <label className="text-sm" htmlFor="single">
-                    Single
+                    {t("search.single")}
                   </label>
                   <br />
                   <input
@@ -675,7 +681,7 @@ const SearchPage = () => {
                     checked={bedType === "double"}
                   />
                   <label className="text-sm" htmlFor="double">
-                    Double
+                    {t("search.double")}
                   </label>
                   <br />
                   <input
@@ -690,7 +696,7 @@ const SearchPage = () => {
                     checked={bedType === "triple"}
                   />
                   <label className="text-sm" htmlFor="triple">
-                    Triple
+                    {t("search.triple")}
                   </label>
                   <br />
                   <input
@@ -705,7 +711,7 @@ const SearchPage = () => {
                     checked={bedType === "quadruple"}
                   />
                   <label className="text-sm" htmlFor="quadruple">
-                    Quadruple
+                    {t("search.quadruple")}
                   </label>
                   <br />
                   <input 
@@ -721,16 +727,16 @@ const SearchPage = () => {
                     checked={bedType === "other"}
                     />
                     <label className="text-sm" htmlFor="other">
-                        Other
+                        {t("common.other")}
                     </label>
                 </form>
     {bedType === 'other' && (
                   <div className="mb-3">
-                    <p className="text-xs mb-1">Specify other room type</p>
+                    <p className="text-xs mb-1">{t("search.specifyOtherRoom")}</p>
                     <input
                       type="text"
                       className="border p-2 px-3 outline-none rounded-md w-full"
-                      placeholder="Enter room type"
+                      placeholder={t("search.enterRoomType")}
                       value={bedTypeOther}
                       onChange={(e: any) => {
       const val = e.target.value;
@@ -740,7 +746,7 @@ const SearchPage = () => {
                     />
                   </div>
                 )}
-                <h1 className="text-base font-medium mb-1">Furnished</h1>
+                <h1 className="text-base font-medium mb-1">{t("search.furnished")}</h1>
                 <form className="mb-3">
                 <input
                         type="radio"
@@ -754,7 +760,7 @@ const SearchPage = () => {
                         checked={furnishedStatus === "all"}
                     />
                     <label className="text-sm" htmlFor="all">
-                        All
+                        {t("common.all")}
                     </label>
                     <br />
                     <input
@@ -769,7 +775,7 @@ const SearchPage = () => {
                         checked={furnishedStatus === "furnished"}
                     />
                     <label className="text-sm" htmlFor="furnished">
-                        Furnished
+                        {t("search.furnished")}
                     </label>
                     <br />
                     <input
@@ -784,7 +790,7 @@ const SearchPage = () => {
                         checked={furnishedStatus === "unfurnished"}
                     />
                     <label className="text-sm" htmlFor="unfurnished">
-                        Unfurnished
+                        {t("search.unfurnished")}
                     </label>
                     <br />
                     <input
@@ -799,11 +805,11 @@ const SearchPage = () => {
                         checked={furnishedStatus === "semiFurnished"}
                     />
                     <label className="text-sm" htmlFor="semiFurnished">
-                        Semi-Furnished
+                        {t("search.semiFurnished")}
                     </label>
                     <br />
                 </form>
-                <h1 className="text-base font-medium mb-1">Washroom Type</h1>
+                <h1 className="text-base font-medium mb-1">{t("search.washroomType")}</h1>
                 <form>
                 <input
                         type="radio"
@@ -817,7 +823,7 @@ const SearchPage = () => {
                         checked={washroomStatus === "all"}
                     />
                     <label className="text-sm" htmlFor="all">
-                        All
+                        {t("common.all")}
                     </label>
                     <br />
                     <input
@@ -832,7 +838,7 @@ const SearchPage = () => {
                         checked={washroomStatus === "attached"}
                     />
                     <label className="text-sm" htmlFor="attached">
-                        Attached
+                        {t("search.attached")}
                     </label>
                     <br />
                     <input
@@ -847,7 +853,7 @@ const SearchPage = () => {
                         checked={washroomStatus === "common"}
                     />
                     <label className="text-sm" htmlFor="common">
-                        Common
+                        {t("search.commonWashroom")}
                     </label>
                     <br />
                     <input
@@ -863,17 +869,17 @@ const SearchPage = () => {
                         checked={washroomStatus === "other"}
                     />
                     <label className="text-sm" htmlFor="other">
-                        Other
+                        {t("common.other")}
                     </label>
                     <br />
                 </form>
       {washroomStatus === 'other' && (
                     <div className="mb-1">
-                      <p className="text-xs mb-1">Specify other washroom type</p>
+                      <p className="text-xs mb-1">{t("search.specifyOtherWashroom")}</p>
                       <input
                         type="text"
                         className="border p-2 px-3 outline-none rounded-md w-full"
-                        placeholder="Enter washroom type"
+                        placeholder={t("search.enterWashroomType")}
                         value={washroomOther}
                         onChange={(e: any) => {
         const val = e.target.value;
@@ -898,18 +904,18 @@ const SearchPage = () => {
             setWashroomStatus("all");
             setWashroomOther("");
             setLocation("");
-          }}><DeleteSweepIcon fontSize="small"/>Clear all</p>
+          }}><DeleteSweepIcon fontSize="small"/>{t("search.clearAll")}</p>
           <button
             className="ml-auto flex items-center gap-1 p-2 px-3 rounded-2xl text-sm border border-gray-300 hover:bg-gray-100 transition-colors"
             onClick={() => setMapView((v) => !v)}
-            title={mapView ? "Switch to grid view" : "Switch to map view"}
+            title={mapView ? t("search.switchToGrid") : t("search.switchToMap")}
           >
             {mapView ? <ViewModuleIcon fontSize="small" /> : <MapIcon fontSize="small" />}
-            {mapView ? "Grid" : "Map"}
+            {mapView ? t("search.grid") : t("search.map")}
           </button>
           {viewParam === 'all' && !(location && location.trim()) && (
             <span className="ml-auto inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-700 border">
-              All listings
+              {t("search.allListings")}
             </span>
           )}
         </div>
@@ -938,7 +944,11 @@ const SearchPage = () => {
                     <span
                       className={`absolute top-2 left-2 text-[10px] px-2 py-1 rounded-full text-white ${badgeClass}`}
                     >
-                      {room.origin}
+                      {room.origin === "Location"
+                        ? t("search.originLocation")
+                        : room.origin === "University"
+                        ? t("search.originUniversity")
+                        : t("search.originProperty")}
                     </span>
                   )}
                 </div>
@@ -947,7 +957,7 @@ const SearchPage = () => {
           </div>
           ) : (
           <div className="w-full flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-gray-600 mb-3">No accommodations found for the selected filters.</p>
+            <p className="text-gray-600 mb-3">{t("search.noResults")}</p>
             <button
               className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
               onClick={() => {
@@ -963,7 +973,7 @@ const SearchPage = () => {
                 setLocation("");
               }}
             >
-              Clear all filters
+              {t("search.clearAllFilters")}
             </button>
           </div>
         )}
@@ -973,7 +983,7 @@ const SearchPage = () => {
               className="inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors"
               onClick={() => setVisibleCount((v) => v + 24)}
             >
-              Load more
+              {t("common.loadMore")}
             </button>
           </div>
   )}

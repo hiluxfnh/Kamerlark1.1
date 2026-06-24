@@ -5,8 +5,10 @@ import { db } from "../../firebase/Config"; // Adjust the import as necessary
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import RoomDetails from "../roomdetails";
 import Spinner from "../../components/Spinner"; // Import Spinner
+import { useI18n } from "../../lib/i18n";
 
 export default function Roomid({ params }) {
+  const { t } = useI18n();
   // Room pages are publicly browsable — no login redirect here. Booking,
   // appointments and chat inside RoomDetails handle auth themselves.
   const [room, setRoom] = useState(null);
@@ -44,7 +46,7 @@ export default function Roomid({ params }) {
         <>
           <Header />
           <div>
-            {room ? <RoomDetails room={room} /> : <div>Room not found</div>}
+            {room ? <RoomDetails room={room} /> : <div>{t("room.notFound")}</div>}
           </div>
           {/* Footer is included globally via RootLayout */}
         </>

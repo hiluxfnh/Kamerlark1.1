@@ -7,6 +7,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Link from "next/link";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../firebase/Config";
+import { useI18n } from "../lib/i18n";
 
 // Strip any trailing m²/m2 the owner typed so we control the unit display
 const cleanSize = (raw) => {
@@ -22,6 +23,7 @@ const formatPrice = (price) => {
 };
 
 const RoomCardNew = ({ room }) => {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const isOwner = user && room?.ownerId && user.uid === room.ownerId;
   const imgSrc =
@@ -52,7 +54,7 @@ const RoomCardNew = ({ room }) => {
         />
         {isOwner ? (
           <span className="absolute right-3 top-3 rounded-full bg-green-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm">
-            Your listing
+            {t("card.yourListing")}
           </span>
         ) : null}
         {room?.furnishedStatus ? (
@@ -64,7 +66,7 @@ const RoomCardNew = ({ room }) => {
           <>
             <div className="absolute inset-0 bg-black/45" />
             <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-900 shadow">
-              No longer available
+              {t("card.noLongerAvailable")}
             </span>
           </>
         ) : null}
@@ -120,11 +122,11 @@ const RoomCardNew = ({ room }) => {
           <p className="text-base font-bold text-gray-900">
             {formatPrice(room?.price)}{" "}
             <span className="text-xs font-medium text-gray-500">
-              {room?.currency || "XAF"}/month
+              {room?.currency || "XAF"}{t("card.perMonth")}
             </span>
           </p>
           <span className="text-xs font-semibold text-[#082e4d] opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-            View →
+            {t("card.view")} →
           </span>
         </div>
       </div>
