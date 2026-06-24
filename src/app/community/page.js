@@ -18,41 +18,42 @@ import {
 } from "firebase/firestore";
 import Avatar from "../components/Avatar";
 import ChatRoomHandler from "../components/ChatRoomHandler";
+import { useI18n } from "../lib/i18n";
 
 // Post categories — the things this audience actually comes here to do.
 const CATEGORIES = [
   {
     key: "roommate",
-    label: "Looking for a roommate",
-    short: "Roommate",
+    labelKey: "community.catRoommate",
+    shortKey: "community.shortRoommate",
     emoji: "🤝",
     badge: "bg-violet-100 text-violet-700",
   },
   {
     key: "room",
-    label: "Room available / sublet",
-    short: "Room",
+    labelKey: "community.catRoom",
+    shortKey: "community.shortRoom",
     emoji: "🔑",
     badge: "bg-emerald-100 text-emerald-700",
   },
   {
     key: "market",
-    label: "For sale / giveaway",
-    short: "Market",
+    labelKey: "community.catMarket",
+    shortKey: "community.shortMarket",
     emoji: "🛋️",
     badge: "bg-amber-100 text-amber-700",
   },
   {
     key: "question",
-    label: "Question / advice",
-    short: "Question",
+    labelKey: "community.catQuestion",
+    shortKey: "community.shortQuestion",
     emoji: "💬",
     badge: "bg-sky-100 text-sky-700",
   },
   {
     key: "tip",
-    label: "Tip / recommendation",
-    short: "Tip",
+    labelKey: "community.catTip",
+    shortKey: "community.shortTip",
     emoji: "💡",
     badge: "bg-rose-100 text-rose-700",
   },
@@ -75,6 +76,7 @@ const timeAgo = (ts) => {
 };
 
 export default function CommunityPage() {
+  const { t } = useI18n();
   const router = useRouter();
   const [user, authLoading] = useAuthState(auth);
   const [tab, setTab] = useState("feed"); // 'feed' | 'members'
@@ -182,14 +184,14 @@ export default function CommunityPage() {
       await loadPosts();
     } catch (e) {
       console.error("Failed to post", e);
-      alert("Couldn't share your post. Please try again.");
+      alert(t("community.postError"));
     } finally {
       setPosting(false);
     }
   };
 
   const deletePost = async (id) => {
-    if (!confirm("Delete this post?")) return;
+    if (!confirm(t("community.deleteConfirm"))) return;
     try {
       await deleteDoc(doc(db, "communityPosts", id));
       setPosts((p) => p.filter((x) => x.id !== id));
@@ -281,28 +283,27 @@ export default function CommunityPage() {
       <main className="theme-surface min-h-screen pt-16">
         <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6">
           {/* Hero */}
-          <h1 className="text-2xl font-bold tracking-tight">Community</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("community.title")}</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Find a roommate, sublet a room, buy &amp; sell, or ask the locals —
-            then message them in one tap.
+            {t("community.subtitle")}
           </p>
 
           {/* Tabs */}
           <div className="mt-4 flex gap-1 rounded-full bg-gray-100 p-1 text-sm font-medium">
             {[
-              { k: "feed", label: "Feed" },
-              { k: "members", label: "Members" },
-            ].map((t) => (
+              { k: "feed", label: t("community.feed") },
+              { k: "members", label: t("community.members") },
+            ].map((tabItem) => (
               <button
-                key={t.k}
-                onClick={() => setTab(t.k)}
+                key={tabItem.k}
+                onClick={() => setTab(tabItem.k)}
                 className={`flex-1 rounded-full py-2 transition-colors ${
-                  tab === t.k
+                  tab === tabItem.k
                     ? "bg-white text-gray-900 shadow-sm"
                     : "text-gray-500 hover:text-gray-800"
                 }`}
               >
-                {t.label}
+                {tabItem.label}
               </button>
             ))}
           </div>
@@ -323,7 +324,7 @@ export default function CommunityPage() {
                       size={40}
                     />
                     <span className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 text-sm text-gray-500">
-                      Share something with the community…
+                      {t("community.shareSomething")}
                     </span>
                   </button>
                 ) : (
@@ -341,7 +342,7 @@ export default function CommunityPage() {
                               : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                           }`}
                         >
-                          {c.emoji} {c.short}
+                          {c.emoji} {t(c.shortKey)}
                         </button>
                       ))}
                     </div>
@@ -355,10 +356,10 @@ export default function CommunityPage() {
                       maxLength={2000}
                       placeholder={
                         draft.category === "roommate"
-                          ? "e.g. Looking for a female roommate near Uni of Dschang, move-in September, non-smoker…"
+                          ? t("community.phRoommate")
                           : draft.category === "market"
-                          ? "e.g. Selling a desk and mini-fridge, great condition, must collect from Biyem-Assi…"
-                          : "What would you like to share?"
+                          ? t("community.phMarket")
+                          : t("community.phDefault")
                       }
                       className="w-full resize-none rounded-xl border border-gray-200 p-3 text-sm outline-none focus:border-gray-400"
                     />
@@ -368,7 +369,7 @@ export default function CommunityPage() {
                         onChange={(e) =>
                           setDraft((d) => ({ ...d, location: e.target.value }))
                         }
-                        placeholder="Area / neighbourhood (optional)"
+                        placeholder={t("community.areaOptional")}
                         className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
                       />
                       {(draft.category === "roommate" ||
@@ -378,7 +379,7 @@ export default function CommunityPage() {
                           onChange={(e) =>
                             setDraft((d) => ({ ...d, budget: e.target.value }))
                           }
-                          placeholder="Budget / rent (optional)"
+                          placeholder={t("community.budgetOptional")}
                           className="rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-gray-400"
                         />
                       )}
@@ -396,14 +397,14 @@ export default function CommunityPage() {
                         }}
                         className="rounded-full px-4 py-2 text-sm font-medium text-gray-500 hover:bg-gray-100"
                       >
-                        Cancel
+                        {t("common.cancel")}
                       </button>
                       <button
                         onClick={submitPost}
                         disabled={!draft.text.trim() || posting}
                         className="rounded-full bg-[#082e4d] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-40"
                       >
-                        {posting ? "Posting…" : "Post"}
+                        {posting ? t("community.posting") : t("community.post")}
                       </button>
                     </div>
                   </div>
@@ -412,7 +413,7 @@ export default function CommunityPage() {
 
               {/* Category filter */}
               <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto pb-1">
-                {[{ key: "all", short: "All", emoji: "" }, ...CATEGORIES].map(
+                {[{ key: "all", shortKey: "common.all", emoji: "" }, ...CATEGORIES].map(
                   (c) => (
                     <button
                       key={c.key}
@@ -423,7 +424,7 @@ export default function CommunityPage() {
                           : "border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
                       }`}
                     >
-                      {c.emoji} {c.short}
+                      {c.emoji} {t(c.shortKey)}
                     </button>
                   )
                 )}
@@ -433,15 +434,15 @@ export default function CommunityPage() {
               <div className="mt-4 flex flex-col gap-3">
                 {postsLoading ? (
                   <p className="py-10 text-center text-sm text-gray-400">
-                    Loading posts…
+                    {t("community.loadingPosts")}
                   </p>
                 ) : shownPosts.length === 0 ? (
                   <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center">
                     <p className="text-sm font-medium text-gray-600">
-                      Nothing here yet
+                      {t("community.nothingYet")}
                     </p>
                     <p className="mt-1 text-xs text-gray-400">
-                      Be the first to post — find a roommate or share a tip.
+                      {t("community.beFirst")}
                     </p>
                   </div>
                 ) : (
@@ -481,7 +482,7 @@ export default function CommunityPage() {
                             <span
                               className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${c.badge}`}
                             >
-                              {c.emoji} {c.label}
+                              {c.emoji} {t(c.labelKey)}
                             </span>
                           </div>
                           {own && (
@@ -489,7 +490,7 @@ export default function CommunityPage() {
                               onClick={() => deletePost(p.id)}
                               className="shrink-0 text-xs text-gray-400 hover:text-red-600"
                             >
-                              Delete
+                              {t("community.delete")}
                             </button>
                           )}
                         </div>
@@ -526,8 +527,8 @@ export default function CommunityPage() {
                               className="inline-flex items-center gap-1.5 rounded-full bg-[#082e4d] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
                             >
                               {busyChat === p.authorId
-                                ? "Opening…"
-                                : "💬 Message"}
+                                ? t("community.opening")
+                                : t("community.message")}
                             </button>
                           </div>
                         )}
@@ -545,18 +546,18 @@ export default function CommunityPage() {
               <input
                 value={memberSearch}
                 onChange={(e) => setMemberSearch(e.target.value)}
-                placeholder="Search members by name, university or area…"
+                placeholder={t("community.searchMembers")}
                 className="w-full rounded-full border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-black"
               />
 
               <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {usersLoading ? (
                   <p className="col-span-full py-10 text-center text-sm text-gray-400">
-                    Loading members…
+                    {t("community.loadingMembers")}
                   </p>
                 ) : filteredMembers.length === 0 ? (
                   <p className="col-span-full py-10 text-center text-sm text-gray-400">
-                    No members found.
+                    {t("community.noMembers")}
                   </p>
                 ) : (
                   filteredMembers.slice(0, visibleCount).map((m) => {
@@ -578,7 +579,7 @@ export default function CommunityPage() {
                           />
                         </button>
                         <h3 className="mt-3 line-clamp-1 text-sm font-semibold text-gray-900">
-                          {m.userName || "Member"}
+                          {m.userName || t("community.memberFallback")}
                         </h3>
                         <p className="line-clamp-1 text-xs text-gray-500">
                           {m.university || m.uni || "—"}
@@ -589,12 +590,12 @@ export default function CommunityPage() {
                         <div className="mt-2 flex flex-wrap justify-center gap-1">
                           {sameUni && (
                             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] text-blue-700">
-                              Same university
+                              {t("community.sameUni")}
                             </span>
                           )}
                           {nearby && (
                             <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
-                              Nearby
+                              {t("community.nearby")}
                             </span>
                           )}
                         </div>
@@ -604,21 +605,21 @@ export default function CommunityPage() {
                             disabled={busyChat === m.id}
                             className="flex-1 rounded-full bg-[#082e4d] py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61] disabled:opacity-50"
                           >
-                            Chat
+                            {t("community.chat")}
                           </button>
                           {followingSet.has(m.id) ? (
                             <button
                               onClick={() => unfollowUser(m.id)}
                               className="flex-1 rounded-full border border-gray-300 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                             >
-                              Following
+                              {t("community.following")}
                             </button>
                           ) : (
                             <button
                               onClick={() => followUser(m.id)}
                               className="flex-1 rounded-full border border-[#082e4d] py-1.5 text-xs font-semibold text-[#082e4d] hover:bg-[#082e4d]/5"
                             >
-                              Follow
+                              {t("community.follow")}
                             </button>
                           )}
                         </div>
@@ -634,7 +635,7 @@ export default function CommunityPage() {
                     onClick={() => setVisibleCount((c) => c + 24)}
                     className="rounded-full bg-black px-6 py-2 text-sm font-semibold text-white hover:bg-gray-900"
                   >
-                    Load more
+                    {t("common.loadMore")}
                   </button>
                 </div>
               )}
