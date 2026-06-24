@@ -26,6 +26,7 @@ import Button from "@mui/material/Button";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CustomButton from "../../../components/CustomButton";
 import InputFieldCustom from "../../../components/InputField";
+import { useI18n } from "../../../lib/i18n";
 import Image from "next/image";
 import {
   Checkbox,
@@ -55,6 +56,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 const EditIdPage = ({ params }) => {
+  const { t } = useI18n();
   const { notify, toast } = useToast();
   const { roomId } = params;
   const roomDocRef = doc(db, "roomdetails", roomId);
@@ -152,10 +154,10 @@ const EditIdPage = ({ params }) => {
         },
         { merge: true }
       );
-      notify("Changes saved.", "success");
+      notify(t("listing.changesSaved"), "success");
     } catch (error) {
       console.error("Error updating room details: ", error);
-      notify("Couldn't save changes. Please try again.", "error");
+      notify(t("listing.changesError"), "error");
     }
     setLoading(false);
   };
@@ -209,7 +211,7 @@ const EditIdPage = ({ params }) => {
       <Header />
       <div className="w-screen theme-surface min-h-screen">
         <div className="w-256 mx-auto pt-10 mb-5">
-          <h1 className="text-2xl font-medium text-left mb-2">Edit Listing</h1>
+          <h1 className="text-2xl font-medium text-left mb-2">{t("listing.editTitle")}</h1>
           <div
             className="bg-black mb-3"
             style={{ height: "3px", width: "80px" }}
@@ -217,7 +219,7 @@ const EditIdPage = ({ params }) => {
           <div className="grid grid-cols-12 gap-2 my-4">
             <InputFieldCustom
               name={"name"}
-              label={"Room Name"}
+              label={t("listing.roomName")}
               value={roomDetails.name}
               onChange={handleChange}
               colStart={1}
@@ -225,7 +227,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name={"location"}
-              label={"Location"}
+              label={t("room.location")}
               value={roomDetails.location}
               onChange={handleChange}
               colStart={1}
@@ -238,13 +240,13 @@ const EditIdPage = ({ params }) => {
                   className="text-xs px-3 py-1 rounded-full border border-gray-300 hover:bg-gray-50"
                   onClick={() => setShowLocationEditor(true)}
                 >
-                  Change location on map
+                  {t("listing.changeLocation")}
                 </button>
               </div>
             )}
             <InputFieldCustom
               name={"ownerFirstName"}
-              label={"Owner's First Name"}
+              label={t("listing.ownerFirstName")}
               value={roomDetails.ownerFirstName}
               onChange={handleChange}
               colStart={1}
@@ -252,7 +254,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name={"ownerLastName"}
-              label={"Owner's Last Name"}
+              label={t("listing.ownerLastName")}
               value={roomDetails.ownerLastName}
               onChange={handleChange}
               colStart={5}
@@ -260,7 +262,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name={"ownerEmail"}
-              label={"Owner's Email"}
+              label={t("listing.ownerEmail")}
               value={roomDetails.ownerEmail}
               onChange={handleChange}
               colStart={9}
@@ -268,7 +270,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name={"phno"}
-              label={"Phone Number"}
+              label={t("listing.phoneNumber")}
               value={roomDetails.phno}
               onChange={handleChange}
               colStart={1}
@@ -276,14 +278,14 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name={"price"}
-              label={"Price"}
+              label={t("listing.price")}
               value={roomDetails.price}
               onChange={handleChange}
               colStart={5}
               colEnd={9}
             />
             <FormControl fullWidth className="col-start-9 col-end-13 mt-2">
-              <InputLabel id="demo-simple-select-label">Currency</InputLabel>
+              <InputLabel id="demo-simple-select-label">{t("listing.currency")}</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
@@ -297,14 +299,14 @@ const EditIdPage = ({ params }) => {
             </FormControl>
             <InputFieldCustom
               name="capacity"
-              label="Capacity"
+              label={t("listing.capacity")}
               value={roomDetails.capacity}
               onChange={handleChange}
               colStart={1}
               colEnd={3}
             />
             <FormControl fullWidth className="col-start-3 col-end-8 mt-2">
-              <InputLabel id="demo-simple-select-label">Bed Type</InputLabel>
+              <InputLabel id="demo-simple-select-label">{t("listing.bedType")}</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
@@ -313,13 +315,13 @@ const EditIdPage = ({ params }) => {
                 name="bedType"
                 onChange={handleChange}
               >
-                <MenuItem value={"single"}>Single</MenuItem>
-                <MenuItem value={"double"}>Double</MenuItem>
-                <MenuItem value={"other"}>Other</MenuItem>
+                <MenuItem value={"single"}>{t("search.single")}</MenuItem>
+                <MenuItem value={"double"}>{t("search.double")}</MenuItem>
+                <MenuItem value={"other"}>{t("common.other")}</MenuItem>
               </Select>
             </FormControl>
             <FormControl fullWidth className=" col-start-8 col-end-13 mt-2">
-              <InputLabel id="demo-simple-select-label">Washrooms</InputLabel>
+              <InputLabel id="demo-simple-select-label">{t("listing.washrooms")}</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
@@ -328,9 +330,9 @@ const EditIdPage = ({ params }) => {
                 name="washrooms"
                 onChange={handleChange}
               >
-                <MenuItem value={"attached"}>Attached</MenuItem>
-                <MenuItem value={"common"}>Common</MenuItem>
-                <MenuItem value={"other"}>Other</MenuItem>
+                <MenuItem value={"attached"}>{t("search.attached")}</MenuItem>
+                <MenuItem value={"common"}>{t("search.commonWashroom")}</MenuItem>
+                <MenuItem value={"other"}>{t("common.other")}</MenuItem>
               </Select>
             </FormControl>
             <Autocomplete
@@ -339,13 +341,13 @@ const EditIdPage = ({ params }) => {
               options={universities}
               className="col-start-1 col-end-6 mt-2"
               renderInput={(params) => (
-                <TextField {...params} label="University" />
+                <TextField {...params} label={t("search.university")} />
               )}
               fillWidth
             />
             <InputFieldCustom
               name="roomSize"
-              label="Room Size"
+              label={t("listing.roomSize")}
               value={roomDetails.roomSize}
               onChange={handleChange}
               colStart={6}
@@ -353,7 +355,7 @@ const EditIdPage = ({ params }) => {
             />
             <FormControl fullWidth className="col-start-9 col-end-13 mt-2">
               <InputLabel id="demo-simple-select-label">
-                Furnished Status
+                {t("listing.furnishedStatus")}
               </InputLabel>
               <Select
                 labelId="demo-simple-select-label"
@@ -363,17 +365,17 @@ const EditIdPage = ({ params }) => {
                 name="furnishedStatus"
                 onChange={handleChange}
               >
-                <MenuItem value={"furnished"}>Furnished</MenuItem>
+                <MenuItem value={"furnished"}>{t("search.furnished")}</MenuItem>
                 <MenuItem value={"partiallyFurnished"}>
-                  Partially Furnished
+                  {t("listing.partiallyFurnished")}
                 </MenuItem>
-                <MenuItem value={"unfurnished"}>Unfurnished</MenuItem>
+                <MenuItem value={"unfurnished"}>{t("search.unfurnished")}</MenuItem>
               </Select>
             </FormControl>
             <div className="col-start-1 col-end-6">
               <FormControl fullWidth>
                 <InputLabel id="demo-multiple-checkbox-label">
-                  Utilities
+                  {t("listing.utilities")}
                 </InputLabel>
                 <Select
                   labelId="demo-multiple-checkbox-label"
@@ -391,7 +393,7 @@ const EditIdPage = ({ params }) => {
                         typeof value === "string" ? value.split(",") : value,
                     });
                   }}
-                  input={<OutlinedInput label="Amenities" />}
+                  input={<OutlinedInput label={t("room.amenities")} />}
                   renderValue={(selected) => selected.join(", ")}
                   MenuProps={MenuProps}
                 >
@@ -411,7 +413,7 @@ const EditIdPage = ({ params }) => {
             <div className="col-start-6 col-end-13">
               <FormControl fullWidth>
                 <InputLabel id="demo-multiple-checkbox-label">
-                  Amenities
+                  {t("room.amenities")}
                 </InputLabel>
                 <Select
                   labelId="demo-multiple-checkbox-label"
@@ -428,7 +430,7 @@ const EditIdPage = ({ params }) => {
                         typeof value === "string" ? value.split(",") : value,
                     });
                   }}
-                  input={<OutlinedInput label="Amenities" />}
+                  input={<OutlinedInput label={t("room.amenities")} />}
                   renderValue={(selected) => selected.join(", ")}
                   MenuProps={MenuProps}
                 >
@@ -445,7 +447,7 @@ const EditIdPage = ({ params }) => {
             </div>
             <InputFieldCustom
               name="publicTransportAccess"
-              label="Public Transport Access"
+              label={t("listing.publicTransport")}
               value={roomDetails.publicTransportAccess}
               onChange={handleChange}
               colStart={1}
@@ -453,7 +455,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name="energyEfficiencyRating"
-              label="Energy Efficiency Rating"
+              label={t("listing.energyRating")}
               value={roomDetails.energyEfficiencyRating}
               onChange={handleChange}
               colStart={8}
@@ -461,7 +463,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name="description"
-              label="Description"
+              label={t("room.description")}
               value={roomDetails.description}
               onChange={handleChange}
               colStart={1}
@@ -471,7 +473,7 @@ const EditIdPage = ({ params }) => {
             />
             <InputFieldCustom
               name="neighborhoodInfo"
-              label="Neighborhood Info"
+              label={t("room.neighborhoodInfo")}
               value={roomDetails.neighborhoodInfo}
               onChange={handleChange}
               colStart={1}
@@ -493,14 +495,14 @@ const EditIdPage = ({ params }) => {
                   }}
                   position="end"
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="outlined-weight-helper-text"
               inputProps={{
                 "aria-label": "weight",
               }}
-              placeholder="Rules"
+              placeholder={t("room.rules")}
               className="col-start-1 col-end-13"
               value={rule}
               onChange={(e) => {
@@ -509,7 +511,7 @@ const EditIdPage = ({ params }) => {
             />
             <div className="col-start-1 col-end-12">
               {roomDetails.rules.length > 0 ? (
-                <h3 className="text-lg font-medium my-3">Rules</h3>
+                <h3 className="text-lg font-medium my-3">{t("room.rules")}</h3>
               ) : null}
               {roomDetails.rules.length > 0 ? (
                 <div className="ml-2 mb-3 flex flex-wrap gap-2">
@@ -554,14 +556,14 @@ const EditIdPage = ({ params }) => {
                   }}
                   position="end"
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="outlined-weight-helper-text"
               inputProps={{
                 "aria-label": "weight",
               }}
-              placeholder="Safety Features"
+              placeholder={t("room.safetyFeatures")}
               className="col-start-1 col-end-13"
               value={safetyFeature}
               onChange={(e) => {
@@ -570,7 +572,7 @@ const EditIdPage = ({ params }) => {
             />
             <div className="col-start-1 col-end-12">
               {roomDetails.safetyFeatures.length > 0 ? (
-                <h3 className="text-lg font-medium my-3">Safety Features</h3>
+                <h3 className="text-lg font-medium my-3">{t("room.safetyFeatures")}</h3>
               ) : null}
               {roomDetails.safetyFeatures.length > 0 ? (
                 <div className="ml-2 mb-3 flex flex-wrap gap-2">
@@ -617,14 +619,14 @@ const EditIdPage = ({ params }) => {
                   }}
                   position="end"
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="outlined-weight-helper-text"
               inputProps={{
                 "aria-label": "weight",
               }}
-              placeholder="Accessibility Features"
+              placeholder={t("room.accessibilityFeatures")}
               className="col-start-1 col-end-13"
               value={accessibilityFeature}
               onChange={(e) => {
@@ -634,7 +636,7 @@ const EditIdPage = ({ params }) => {
             <div className="col-start-1 col-end-12">
               {roomDetails.accessibilityFeatures.length > 0 ? (
                 <h3 className="text-lg font-medium my-3">
-                  Accessibility Features
+                  {t("room.accessibilityFeatures")}
                 </h3>
               ) : null}
               {roomDetails.accessibilityFeatures.length > 0 ? (
@@ -668,7 +670,7 @@ const EditIdPage = ({ params }) => {
             </div>
             <InputFieldCustom
               name="leaseTerms"
-              label="Lease Terms"
+              label={t("listing.leaseTerms")}
               value={roomDetails.leaseTerms}
               onChange={handleChange}
               colStart={1}
@@ -686,7 +688,7 @@ const EditIdPage = ({ params }) => {
               startIcon={<CloudUploadIcon />}
               className="col-start-1 col-end-13 h-32 border-black text-black"
             >
-              Upload files
+              {t("listing.uploadFiles")}
               <VisuallyHiddenInput type="file" onChange={handleFileChange} />
             </Button>
           </div>
@@ -720,7 +722,7 @@ const EditIdPage = ({ params }) => {
               : null}
           </div>
           <CustomButton
-            label="Submit"
+            label={t("common.submit")}
             onClick={handleSubmit}
             colStart={1}
             colEnd={13}
@@ -734,7 +736,7 @@ const EditIdPage = ({ params }) => {
             onClick={() => setShowLocationEditor(false)}
           />
           <div className="relative rounded-lg shadow-xl w-11/12 md:w-3/4 lg:w-1/2 p-4 border theme-card">
-            <h2 className="text-lg font-semibold mb-2">Update location</h2>
+            <h2 className="text-lg font-semibold mb-2">{t("listing.updateLocation")}</h2>
             <MapPicker
               value={{
                 address: roomDetails.location,
@@ -761,7 +763,7 @@ const EditIdPage = ({ params }) => {
                 <span>
                   {roomDetails.location?.trim()
                     ? roomDetails.location
-                    : "Location selected"}
+                    : t("listing.locationSelected")}
                 </span>
                 <span className="text-gray-500">
                   ({Number(roomDetails.latitude).toFixed(5)},{" "}
@@ -774,7 +776,7 @@ const EditIdPage = ({ params }) => {
                 className="px-4 py-2 rounded-md border"
                 onClick={() => setShowLocationEditor(false)}
               >
-                Cancel
+                {t("common.cancel")}
               </button>
               <button
                 className="px-4 py-2 rounded-md bg-black text-white"
@@ -794,14 +796,14 @@ const EditIdPage = ({ params }) => {
                       { merge: true }
                     );
                     setShowLocationEditor(false);
-                    notify("Location updated.", "success");
+                    notify(t("listing.locationUpdated"), "success");
                   } catch (e) {
                     console.error(e);
-                    notify("Couldn't update location. Please try again.", "error");
+                    notify(t("listing.locationUpdateError"), "error");
                   }
                 }}
               >
-                Save location
+                {t("listing.saveLocation")}
               </button>
             </div>
           </div>

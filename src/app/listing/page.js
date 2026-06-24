@@ -19,6 +19,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CustomButton from "../components/CustomButton";
 import InputFieldCustom from "../components/InputField";
+import { useI18n } from "../lib/i18n";
 import {
   Checkbox,
   InputAdornment,
@@ -86,6 +87,7 @@ const Section = ({ title, subtitle, defaultOpen = true, children }) => {
 };
 
 const AddListing = () => {
+  const { t } = useI18n();
   const { notify, toast } = useToast();
   const [safetyFeature, setSafetyFeature] = useState("");
   const [rule, setRule] = useState("");
@@ -188,19 +190,18 @@ const AddListing = () => {
   const handleSubmit = async () => {
     if (loading) return;
     const newErrors = {};
-    if (!roomDetails.name) newErrors.name = "Name is required";
+    if (!roomDetails.name) newErrors.name = t("listing.errName");
     // Accept either typed address or picked map coordinates; coordinates are the source of truth
     if (!roomDetails.latitude || !roomDetails.longitude) {
-      newErrors.location =
-        'Select a point on the map or use "Use my location".';
+      newErrors.location = t("listing.errLocation");
     }
     if (!roomDetails.price || isNaN(Number(roomDetails.price)))
-      newErrors.price = "Valid price is required";
+      newErrors.price = t("listing.errPrice");
     setErrors(newErrors);
     if (Object.keys(newErrors).length) return;
     const user = auth.currentUser;
     if (!user) {
-      notify("Please log in to add a listing.", "warning");
+      notify(t("listing.loginRequired"), "warning");
       return;
     }
     setLoading(true);
@@ -251,7 +252,7 @@ const AddListing = () => {
         createdAt: serverTimestamp(),
         roomId: `${user.uid}-${Date.now()}`,
       });
-      notify("Listing published! It's now live on KamerLark.", "success");
+      notify(t("listing.published"), "success");
       setRoomDetails({
         roomId: "",
         name: "",
@@ -285,7 +286,7 @@ const AddListing = () => {
       setPreviews([]);
     } catch (error) {
       console.error("Error adding room details: ", error);
-      notify("Couldn't publish the listing. Please try again.", "error");
+      notify(t("listing.publishError"), "error");
     } finally {
       setLoading(false);
     }
@@ -381,7 +382,7 @@ const AddListing = () => {
       <Header />
       <div className="w-screen theme-surface min-h-screen pt-16">
         <div className="mx-auto w-full max-w-5xl px-4 pt-10 mb-5 sm:px-6">
-          <h1 className="text-2xl font-medium text-left mb-2">Add Listing</h1>
+          <h1 className="text-2xl font-medium text-left mb-2">{t("listing.title")}</h1>
           <div
             className="bg-black mb-3"
             style={{
@@ -390,14 +391,13 @@ const AddListing = () => {
             }}
           ></div>
           <p className="mb-4 text-sm text-gray-500">
-            Fill in your room&apos;s details. Tap any section header to collapse
-            it.
+            {t("listing.intro")}
           </p>
-          <Section title="The basics" subtitle="Name and location">
+          <Section title={t("listing.secBasics")} subtitle={t("listing.secBasicsSub")}>
             <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"name"}
-              label={"Room Name"}
+              label={t("listing.roomName")}
               value={roomDetails.name}
               onChange={handleChange}
               colStart={1}
@@ -406,7 +406,7 @@ const AddListing = () => {
               helperText={errors.name}
             />
             <div className="col-start-1 col-end-13">
-              <p className="text-sm font-medium mb-1">Location</p>
+              <p className="text-sm font-medium mb-1">{t("room.location")}</p>
               <MapPicker
                 value={{
                   address: roomDetails.location,
@@ -434,7 +434,7 @@ const AddListing = () => {
                   <span>
                     {roomDetails.location?.trim()
                       ? roomDetails.location
-                      : "Location selected"}
+                      : t("listing.locationSelected")}
                   </span>
                   <span className="text-gray-500">
                     ({Number(roomDetails.latitude).toFixed(5)},{" "}
@@ -466,11 +466,11 @@ const AddListing = () => {
             </div>
           </Section>
 
-          <Section title="Owner & contact" subtitle="Who renters reach out to">
+          <Section title={t("listing.secOwner")} subtitle={t("listing.secOwnerSub")}>
             <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"ownerFirstName"}
-              label={"Owner's First Name"}
+              label={t("listing.ownerFirstName")}
               value={roomDetails.ownerFirstName}
               onChange={handleChange}
               colStart={1}
@@ -478,7 +478,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name={"ownerLastName"}
-              label={"Owner's Last Name"}
+              label={t("listing.ownerLastName")}
               value={roomDetails.ownerLastName}
               onChange={handleChange}
               colStart={7}
@@ -486,7 +486,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name={"ownerEmail"}
-              label={"Owner's Email"}
+              label={t("listing.ownerEmail")}
               value={roomDetails.ownerEmail}
               onChange={handleChange}
               colStart={1}
@@ -494,7 +494,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name={"phno"}
-              label={"Phone Number"}
+              label={t("listing.phoneNumber")}
               value={roomDetails.phno}
               onChange={handleChange}
               colStart={7}
@@ -503,11 +503,11 @@ const AddListing = () => {
             </div>
           </Section>
 
-          <Section title="Pricing & room details" subtitle="Rent, type, size and furnishing">
+          <Section title={t("listing.secPricing")} subtitle={t("listing.secPricingSub")}>
             <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <InputFieldCustom
               name={"price"}
-              label={"Price"}
+              label={t("listing.price")}
               value={roomDetails.price}
               onChange={handleChange}
               colStart={1}
@@ -516,7 +516,7 @@ const AddListing = () => {
               helperText={errors.price}
             />
             <FormControl fullWidth className="col-start-7 col-end-13">
-              <InputLabel id="currency-select-label">Currency</InputLabel>
+              <InputLabel id="currency-select-label">{t("listing.currency")}</InputLabel>
               <Select
                 labelId="currency-select-label"
                 id="currency-select"
@@ -530,14 +530,14 @@ const AddListing = () => {
             </FormControl>
             <InputFieldCustom
               name="capacity"
-              label="Capacity"
+              label={t("listing.capacity")}
               value={roomDetails.capacity}
               onChange={handleChange}
               colStart={1}
               colEnd={7}
             />
             <FormControl fullWidth className="col-start-7 col-end-13">
-              <InputLabel id="bedtype-select-label">Bed Type</InputLabel>
+              <InputLabel id="bedtype-select-label">{t("listing.bedType")}</InputLabel>
               <Select
                 labelId="bedtype-select-label"
                 id="bedtype-select"
@@ -546,13 +546,13 @@ const AddListing = () => {
                 name="bedType"
                 onChange={handleChange}
               >
-                <MenuItem value={"single"}>Single</MenuItem>
-                <MenuItem value={"double"}>Double</MenuItem>
-                <MenuItem value={"other"}>Other</MenuItem>
+                <MenuItem value={"single"}>{t("search.single")}</MenuItem>
+                <MenuItem value={"double"}>{t("search.double")}</MenuItem>
+                <MenuItem value={"other"}>{t("common.other")}</MenuItem>
               </Select>
             </FormControl>
             <FormControl fullWidth className="col-start-1 col-end-7">
-              <InputLabel id="washrooms-select-label">Washrooms</InputLabel>
+              <InputLabel id="washrooms-select-label">{t("listing.washrooms")}</InputLabel>
               <Select
                 labelId="washrooms-select-label"
                 id="washrooms-select"
@@ -561,9 +561,9 @@ const AddListing = () => {
                 name="washrooms"
                 onChange={handleChange}
               >
-                <MenuItem value={"attached"}>Attached</MenuItem>
-                <MenuItem value={"common"}>Common</MenuItem>
-                <MenuItem value={"other"}>Other</MenuItem>
+                <MenuItem value={"attached"}>{t("search.attached")}</MenuItem>
+                <MenuItem value={"common"}>{t("search.commonWashroom")}</MenuItem>
+                <MenuItem value={"other"}>{t("common.other")}</MenuItem>
               </Select>
             </FormControl>
             <Autocomplete
@@ -572,7 +572,7 @@ const AddListing = () => {
               options={universities}
               className="col-start-7 col-end-13"
               renderInput={(params) => (
-                <TextField {...params} label="University" />
+                <TextField {...params} label={t("search.university")} />
               )}
               fullWidth
               value={
@@ -593,7 +593,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name="roomSize"
-              label="Room Size"
+              label={t("listing.roomSize")}
               value={roomDetails.roomSize}
               onChange={handleChange}
               colStart={1}
@@ -601,7 +601,7 @@ const AddListing = () => {
             />
             <FormControl fullWidth className="col-start-7 col-end-13">
               <InputLabel id="furnished-select-label">
-                Furnished Status
+                {t("listing.furnishedStatus")}
               </InputLabel>
               <Select
                 labelId="furnished-select-label"
@@ -611,21 +611,21 @@ const AddListing = () => {
                 name="furnishedStatus"
                 onChange={handleChange}
               >
-                <MenuItem value={"furnished"}>Furnished</MenuItem>
+                <MenuItem value={"furnished"}>{t("search.furnished")}</MenuItem>
                 <MenuItem value={"partiallyFurnished"}>
-                  Partially Furnished
+                  {t("listing.partiallyFurnished")}
                 </MenuItem>
-                <MenuItem value={"unfurnished"}>Unfurnished</MenuItem>
+                <MenuItem value={"unfurnished"}>{t("search.unfurnished")}</MenuItem>
               </Select>
             </FormControl>
             </div>
           </Section>
 
-          <Section title="Description, features & rules" subtitle="What makes your room stand out">
+          <Section title={t("listing.secDesc")} subtitle={t("listing.secDescSub")}>
             <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <div className="col-start-1 col-end-6">
               <FormControl fullWidth>
-                <InputLabel id="utilities-multi-label">Utilities</InputLabel>
+                <InputLabel id="utilities-multi-label">{t("listing.utilities")}</InputLabel>
                 <Select
                   labelId="utilities-multi-label"
                   id="utilities-multi"
@@ -645,7 +645,7 @@ const AddListing = () => {
                         : [],
                     });
                   }}
-                  input={<OutlinedInput label="Utilities" />}
+                  input={<OutlinedInput label={t("listing.utilities")} />}
                   renderValue={(selected) => selected.join(", ")}
                   MenuProps={MenuProps}
                 >
@@ -691,7 +691,7 @@ const AddListing = () => {
             </div>
             <div className="col-start-6 col-end-13">
               <FormControl fullWidth>
-                <InputLabel id="amenities-multi-label">Amenities</InputLabel>
+                <InputLabel id="amenities-multi-label">{t("room.amenities")}</InputLabel>
                 <Select
                   labelId="amenities-multi-label"
                   id="amenities-multi"
@@ -710,7 +710,7 @@ const AddListing = () => {
                         : [],
                     });
                   }}
-                  input={<OutlinedInput label="Amenities" />}
+                  input={<OutlinedInput label={t("room.amenities")} />}
                   renderValue={(selected) => selected.join(", ")}
                   MenuProps={MenuProps}
                 >
@@ -754,7 +754,7 @@ const AddListing = () => {
             </div>
             <InputFieldCustom
               name="publicTransportAccess"
-              label="Public Transport Access"
+              label={t("listing.publicTransport")}
               value={roomDetails.publicTransportAccess}
               onChange={handleChange}
               colStart={1}
@@ -762,7 +762,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name="energyEfficiencyRating"
-              label="Energy Efficiency Rating"
+              label={t("listing.energyRating")}
               value={roomDetails.energyEfficiencyRating}
               onChange={handleChange}
               colStart={8}
@@ -770,7 +770,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name="description"
-              label="Description"
+              label={t("room.description")}
               value={roomDetails.description}
               onChange={handleChange}
               colStart={1}
@@ -780,7 +780,7 @@ const AddListing = () => {
             />
             <InputFieldCustom
               name="neighborhoodInfo"
-              label="Neighborhood Info"
+              label={t("room.neighborhoodInfo")}
               value={roomDetails.neighborhoodInfo}
               onChange={handleChange}
               colStart={1}
@@ -803,19 +803,19 @@ const AddListing = () => {
                     setRule("");
                   }}
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="rules-helper-text"
               inputProps={{ "aria-label": "rules" }}
-              placeholder="Rules"
+              placeholder={t("room.rules")}
               className="col-start-1 col-end-13"
               value={rule}
               onChange={(e) => setRule(e.target.value)}
             />
             <div className="col-start-1 col-end-12">
               {roomDetails.rules.length > 0 ? (
-                <h3 className="text-lg font-medium my-3">Rules</h3>
+                <h3 className="text-lg font-medium my-3">{t("room.rules")}</h3>
               ) : null}
               {roomDetails.rules.length > 0 ? (
                 <div className="ml-2 mb-3 flex flex-wrap gap-2">
@@ -861,19 +861,19 @@ const AddListing = () => {
                     setSafetyFeature("");
                   }}
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="safety-helper-text"
               inputProps={{ "aria-label": "safety" }}
-              placeholder="Safety Features"
+              placeholder={t("room.safetyFeatures")}
               className="col-start-1 col-end-13"
               value={safetyFeature}
               onChange={(e) => setSafetyFeature(e.target.value)}
             />
             <div className="col-start-1 col-end-12">
               {roomDetails.safetyFeatures.length > 0 ? (
-                <h3 className="text-lg font-medium my-3">Safety Features</h3>
+                <h3 className="text-lg font-medium my-3">{t("room.safetyFeatures")}</h3>
               ) : null}
               {roomDetails.safetyFeatures.length > 0 ? (
                 <div className="ml-2 mb-3 flex flex-wrap gap-2">
@@ -921,12 +921,12 @@ const AddListing = () => {
                     setAccessibilityFeature("");
                   }}
                 >
-                  ADD
+                  {t("listing.add")}
                 </InputAdornment>
               }
               aria-describedby="accessibility-helper-text"
               inputProps={{ "aria-label": "accessibility" }}
-              placeholder="Accessibility Features"
+              placeholder={t("room.accessibilityFeatures")}
               className="col-start-1 col-end-13"
               value={accessibilityFeature}
               onChange={(e) => setAccessibilityFeature(e.target.value)}
@@ -934,7 +934,7 @@ const AddListing = () => {
             <div className="col-start-1 col-end-12">
               {roomDetails.accessibilityFeatures.length > 0 ? (
                 <h3 className="text-lg font-medium my-3">
-                  Accessibility Features
+                  {t("room.accessibilityFeatures")}
                 </h3>
               ) : null}
               {roomDetails.accessibilityFeatures.length > 0 ? (
@@ -968,7 +968,7 @@ const AddListing = () => {
             </div>
             <InputFieldCustom
               name="leaseTerms"
-              label="Lease Terms"
+              label={t("listing.leaseTerms")}
               value={roomDetails.leaseTerms}
               onChange={handleChange}
               colStart={1}
@@ -979,7 +979,7 @@ const AddListing = () => {
             </div>
           </Section>
 
-          <Section title="Photos" subtitle="Add up to 10 — the first is your cover photo">
+          <Section title={t("listing.secPhotos")} subtitle={t("listing.secPhotosSub")}>
           <div className="stack-on-mobile grid grid-cols-12 gap-2">
             <Button
               component="label"
@@ -989,7 +989,7 @@ const AddListing = () => {
               startIcon={<CloudUploadIcon />}
               className="col-start-1 col-end-13 h-32 border-black text-black"
             >
-              Upload files
+              {t("listing.uploadFiles")}
               <VisuallyHiddenInput
                 type="file"
                 accept="image/*"
@@ -999,8 +999,9 @@ const AddListing = () => {
             </Button>
             <div className="col-start-1 col-end-13">
               <p className="text-sm text-gray-500">
-                Upload photos of the room — {files.length}/{MAX_PHOTOS} added
-                {files.length >= MAX_PHOTOS ? " (limit reached)" : ""}
+                {t("listing.uploadPhotos")} {files.length}/{MAX_PHOTOS}{" "}
+                {t("listing.added")}
+                {files.length >= MAX_PHOTOS ? ` ${t("listing.limitReached")}` : ""}
               </p>
             </div>
           </div>
@@ -1045,7 +1046,7 @@ const AddListing = () => {
                   padding: "15px 0",
                 }}
               >
-                {loading ? "Submitting…" : "Submit"}
+                {loading ? t("listing.submitting") : t("common.submit")}
               </Button>
             </div>
           </div>
