@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/Config";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { useI18n } from "../lib/i18n";
 const universities = [
   { label: "University of Dschang", value: "University of Dschang" },
   { label: "University of Douala", value: "University of Douala" },
@@ -38,7 +39,30 @@ const washroomTypes = [
 ];
 
 const ImageSlider = () => {
+  const { t } = useI18n();
   const router = useRouter();
+  // Translate the option labels at render (values stay stable for the query).
+  const uniLabel = (u) => (u.value === "other" ? t("common.other") : u.label);
+  const furnishedLabel = (v) =>
+    ({
+      furnished: t("search.furnished"),
+      unfurnished: t("search.unfurnished"),
+      semiFurnished: t("search.semiFurnished"),
+    }[v] || v);
+  const bedLabel = (v) =>
+    ({
+      single: `${t("search.single")} ${t("room.bed")}`,
+      double: `${t("search.double")} ${t("room.bed")}`,
+      triple: `${t("search.triple")} ${t("room.bed")}`,
+      quadruple: `${t("search.quadruple")} ${t("room.bed")}`,
+      other: t("common.other"),
+    }[v] || v);
+  const washroomLabel = (v) =>
+    ({
+      attached: t("search.attached"),
+      common: t("search.commonWashroom"),
+      other: t("common.other"),
+    }[v] || v);
   const [searchedUniversity, setSearchedUniversity] = useState("");
   const [searchedFurnishedStatus, setSearchedFurnishedStatus] = useState("");
   const [searchedBedType, setSearchedBedType] = useState("");
@@ -154,11 +178,10 @@ const ImageSlider = () => {
         >
           <div className="mx-auto w-full max-w-2xl">
             <h2 className="text-center text-3xl font-bold tracking-tight text-white sm:text-5xl">
-              Find your perfect student home
+              {t("home.heroTitle")}
             </h2>
             <p className="my-4 text-center text-sm text-gray-300 sm:text-base">
-              Rooms, studios and apartments near universities across Cameroon —
-              verified owners, direct chat, no agency fees.
+              {t("home.heroSubtitle")}
             </p>
           </div>
           <div className="z-50 mx-auto w-full max-w-2xl">
@@ -167,7 +190,7 @@ const ImageSlider = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 type="text"
-                placeholder="Search by city, neighbourhood or university…"
+                placeholder={t("home.searchPlaceholder")}
                 className="w-full rounded-xl border border-gray-300 p-4 pr-28 text-sm text-black shadow-xl outline-none focus:ring-2 focus:ring-cyan-700"
                 onFocus={() => {
                   setShowSearch(true);
@@ -229,7 +252,7 @@ const ImageSlider = () => {
                 }}
                 className="p-2 px-5 rounded-md bg-cyan-950 text-sm text-white shadow-lg font-sans absolute right-2 top-2"
               >
-                SEARCH
+                {t("home.search")}
               </button>
               {showSearch && search.length === 0 ? (
                 <div className="w-full h-80 bg-white rounded-xl shadow-md mt-2 overflow-y-scroll no-scrollbar relative">
@@ -238,7 +261,7 @@ const ImageSlider = () => {
                   </div>
                   <div className="text-black text-xs">
                     <h1 className="min-w-full bg-gray-100 text-sm px-8 py-2 mb-3 font-medium">
-                      University
+                      {t("search.university")}
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
                       {universities.map((uni, index) =>
@@ -253,7 +276,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {uni.label}
+                            {uniLabel(uni)}
                           </p>
                         ) : (
                           <p
@@ -263,7 +286,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {uni.label}
+                            {uniLabel(uni)}
                           </p>
                         )
                       )}
@@ -271,7 +294,7 @@ const ImageSlider = () => {
                   </div>
                   <div className="text-black text-xs">
                     <h1 className="min-w-full bg-gray-100 text-sm px-8 py-2 mb-3 font-medium">
-                      Furnished Status
+                      {t("listing.furnishedStatus")}
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
                       {funishedStatus.map((status, index) =>
@@ -286,7 +309,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {status.label}
+                            {furnishedLabel(status.value)}
                           </p>
                         ) : (
                           <p
@@ -296,7 +319,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {status.label}
+                            {furnishedLabel(status.value)}
                           </p>
                         )
                       )}
@@ -304,7 +327,7 @@ const ImageSlider = () => {
                   </div>
                   <div className="text-black text-xs">
                     <h1 className="min-w-full bg-gray-100 text-sm px-8 py-2 mb-3 font-medium">
-                      Bed Type
+                      {t("listing.bedType")}
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
                       {bedTypes.map((bed, index) =>
@@ -319,7 +342,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {bed.label}
+                            {bedLabel(bed.value)}
                           </p>
                         ) : (
                           <p
@@ -329,7 +352,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {bed.label}
+                            {bedLabel(bed.value)}
                           </p>
                         )
                       )}
@@ -338,7 +361,7 @@ const ImageSlider = () => {
 
                   <div className="text-black text-xs">
                     <h1 className="min-w-full bg-gray-100 text-sm px-8 py-2 mb-3 font-medium">
-                      Washroom Type
+                      {t("search.washroomType")}
                     </h1>
                     <div className="flex flex-row flex-wrap mb-5 mx-7">
                       {washroomTypes.map((washroom, index) =>
@@ -353,7 +376,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {washroom.label}
+                            {washroomLabel(washroom.value)}
                           </p>
                         ) : (
                           <p
@@ -363,7 +386,7 @@ const ImageSlider = () => {
                             }}
                             key={index}
                           >
-                            {washroom.label}
+                            {washroomLabel(washroom.value)}
                           </p>
                         )
                       )}
@@ -380,7 +403,7 @@ const ImageSlider = () => {
                 >
                   {rooms.length === 0 ? (
                     <div className="p-3 text-sm text-gray-600">
-                      No matches. Press Enter to search all results.
+                      {t("home.noMatches")}
                     </div>
                   ) : (
                     rooms.map((room, index) => (

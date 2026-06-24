@@ -596,6 +596,7 @@ const translations = {
     "home.ownerSubtitle":
       "Post it on KamerLark for free and reach thousands of students looking for housing near their university.",
     "home.ownerCta": "Post a listing",
+    "home.noMatches": "No matches. Press Enter to search all results.",
     // Settings
     "settings.title": "Settings",
     "settings.appearance": "Appearance",
@@ -1216,6 +1217,7 @@ const translations = {
     "home.ownerSubtitle":
       "Publiez-la gratuitement sur KamerLark et touchez des milliers d'étudiants à la recherche d'un logement près de leur université.",
     "home.ownerCta": "Publier une annonce",
+    "home.noMatches": "Aucun résultat. Appuyez sur Entrée pour tout rechercher.",
     // Settings
     "settings.title": "Paramètres",
     "settings.appearance": "Apparence",
