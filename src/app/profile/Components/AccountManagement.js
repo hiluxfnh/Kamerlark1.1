@@ -29,6 +29,7 @@ import { auth, db } from "../../firebase/Config";
 import { uploadImage } from "../../lib/uploadImage";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import { useI18n } from "../../lib/i18n";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -60,6 +61,7 @@ function a11yProps(index) {
 }
 
 export default function AccountManagement({ personalInfo }) {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const router = useRouter();
   const [value, setValue] = React.useState(0);
@@ -116,9 +118,9 @@ export default function AccountManagement({ personalInfo }) {
         { merge: true }
       );
       setPersonalInfoState((prev) => ({ ...prev, profileImage: url }));
-      openSnack("Profile photo updated");
+      openSnack(t("account.photoUpdated"));
     } catch (e) {
-      openSnack(e?.message || "Failed to upload photo", "error");
+      openSnack(e?.message || t("account.photoFailed"), "error");
     } finally {
       setAvatarUploading(false);
       if (e?.target) e.target.value = null;
@@ -161,23 +163,23 @@ export default function AccountManagement({ personalInfo }) {
           await updateEmail(user, personalInfoState.email);
         } catch (err) {
           openSnack(
-            err?.message || "Email update failed; recent login required",
+            err?.message || t("account.emailUpdateFailed"),
             "warning"
           );
         }
       }
       await setDoc(userDocRef, personalInfoState, { merge: true });
-      openSnack("Personal information updated");
+      openSnack(t("account.personalUpdated"));
     } catch (error) {
       console.error("Error updating personal information:", error);
-      openSnack("Error updating personal information", "error");
+      openSnack(t("account.personalError"), "error");
     }
   };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (password.newPassword !== password.confirmPassword) {
-      openSnack("New password and confirm password do not match", "warning");
+      openSnack(t("account.passwordMismatch"), "warning");
       return;
     }
 
@@ -188,7 +190,7 @@ export default function AccountManagement({ personalInfo }) {
       );
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, password.newPassword);
-      openSnack("Password updated successfully");
+      openSnack(t("account.passwordUpdated"));
       setPassword({
         currentPassword: "",
         newPassword: "",
@@ -196,10 +198,7 @@ export default function AccountManagement({ personalInfo }) {
       });
     } catch (error) {
       console.error("Error updating password:", error);
-      openSnack(
-        "Error updating password. Please check current password.",
-        "error"
-      );
+      openSnack(t("account.passwordError"), "error");
     }
   };
 
@@ -214,10 +213,10 @@ export default function AccountManagement({ personalInfo }) {
       await reauthenticateWithCredential(user, cred);
       await deleteDoc(doc(db, "Users", user.uid)).catch(() => {});
       await deleteUser(user);
-      openSnack("Account deleted");
+      openSnack(t("account.accountDeleted"));
       router.push("/login");
     } catch (e) {
-      openSnack(e?.message || "Failed to delete account", "error");
+      openSnack(e?.message || t("account.deleteFailed"), "error");
     } finally {
       setDeleteOpen(false);
       setDeletePassword("");
@@ -227,7 +226,7 @@ export default function AccountManagement({ personalInfo }) {
   return (
     <div className="mx-auto max-w-3xl">
       <h2 className="mb-4 text-lg font-semibold text-gray-900">
-        Account Management
+        {t("nav.account")}
       </h2>
       {/* Profile summary and avatar */}
       <div className="mb-6 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -237,9 +236,9 @@ export default function AccountManagement({ personalInfo }) {
           size={64}
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-gray-600">Signed in as</p>
+          <p className="text-sm text-gray-600">{t("account.signedInAs")}</p>
           <p className="text-base font-medium truncate">
-            {personalInfoState.userName || user?.displayName || "User"}
+            {personalInfoState.userName || user?.displayName || t("chat.userFallback")}
           </p>
           <p className="text-xs text-gray-500 truncate">
             {personalInfoState.email || user?.email}
@@ -259,7 +258,7 @@ export default function AccountManagement({ personalInfo }) {
               component="span"
               disabled={avatarUploading}
             >
-              Change photo
+              {t("account.changePhoto")}
             </Button>
           </label>
         </div>
@@ -268,23 +267,23 @@ export default function AccountManagement({ personalInfo }) {
       <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-base font-semibold text-gray-900">
-            Personal Information
+            {t("account.personalInfo")}
           </h3>
           <p className="mt-1 max-w-2xl text-sm text-gray-500">
-            Details about your account.
+            {t("account.detailsAbout")}
           </p>
         </div>
         <div className="border-t border-gray-200">
           <dl>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Full name</dt>
+              <dt className="text-sm font-medium text-gray-500">{t("account.fullName")}</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {personalInfoState.userName}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">
-                Email address
+                {t("account.emailAddress")}
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {personalInfoState.email}
@@ -292,14 +291,14 @@ export default function AccountManagement({ personalInfo }) {
             </div>
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">
-                Phone number
+                {t("account.phoneNumberLabel")}
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {personalInfoState.phoneNumber}
               </dd>
             </div>
             <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt className="text-sm font-medium text-gray-500">Address</dt>
+              <dt className="text-sm font-medium text-gray-500">{t("account.addressLabel")}</dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {personalInfoState.address}
               </dd>
@@ -314,20 +313,20 @@ export default function AccountManagement({ personalInfo }) {
             onChange={handleChange}
             aria-label="basic tabs example"
           >
-            <Tab label="Personal Information" {...a11yProps(0)} />
-            <Tab label="Change Password" {...a11yProps(1)} />
-            <Tab label="Delete Account" {...a11yProps(2)} />
+            <Tab label={t("account.personalInfo")} {...a11yProps(0)} />
+            <Tab label={t("account.tabPassword")} {...a11yProps(1)} />
+            <Tab label={t("account.tabDelete")} {...a11yProps(2)} />
           </Tabs>
         </Box>
         <CustomTabPanel value={value} index={0}>
           <div className="w-full max-w-3xl">
             <h3 className="text-lg font-semibold mb-2">
-              Update Personal Information
+              {t("account.updatePersonal")}
             </h3>
             <div className="grid grid-cols-12 gap-4">
               <TextField
                 id="outlined-required"
-                label="User Name"
+                label={t("account.userName")}
                 className="col-start-1 col-end-13 w-full"
                 value={personalInfoState.userName}
                 name="userName"
@@ -338,7 +337,7 @@ export default function AccountManagement({ personalInfo }) {
             <div className="grid grid-cols-12 gap-4 mt-5">
               <TextField
                 id="outlined-required"
-                label="Email"
+                label={t("account.email")}
                 className="col-start-1 col-end-5 w-full"
                 value={personalInfoState.email}
                 name="email"
@@ -346,7 +345,7 @@ export default function AccountManagement({ personalInfo }) {
               />
               <TextField
                 id="outlined-required"
-                label="Phone Number"
+                label={t("account.phoneNumber")}
                 className="col-start-5 col-end-8 w-full"
                 value={personalInfoState.phoneNumber}
                 name="phoneNumber"
@@ -354,7 +353,7 @@ export default function AccountManagement({ personalInfo }) {
               />
               <TextField
                 id="outlined-required"
-                label="Address"
+                label={t("account.address")}
                 className="col-start-8 col-end-13 w-full"
                 value={personalInfoState.address}
                 name="address"
@@ -373,14 +372,14 @@ export default function AccountManagement({ personalInfo }) {
                 color="primary"
                 fullWidth
               >
-                Save Changes
+                {t("account.saveChanges")}
               </Button>
             </div>
           </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={1}>
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Change Password</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("account.changePassword")}</h3>
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
               <div className="grid grid-cols-12 gap-4">
                 <TextField
@@ -388,7 +387,7 @@ export default function AccountManagement({ personalInfo }) {
                   name="currentPassword"
                   value={password.currentPassword}
                   onChange={handlePasswordChange}
-                  label="Current Password"
+                  label={t("account.currentPassword")}
                   className="col-start-1 col-end-5 w-full"
                   fullWidth
                 />
@@ -398,7 +397,7 @@ export default function AccountManagement({ personalInfo }) {
                   value={password.newPassword}
                   className="col-start-5 col-end-9 w-full"
                   onChange={handlePasswordChange}
-                  label="New Password"
+                  label={t("account.newPassword")}
                   fullWidth
                 />
                 <TextField
@@ -407,7 +406,7 @@ export default function AccountManagement({ personalInfo }) {
                   className="col-start-9 col-end-13 w-full"
                   value={password.confirmPassword}
                   onChange={handlePasswordChange}
-                  label="Confirm New Password"
+                  label={t("account.confirmNewPassword")}
                   fullWidth
                 />
               </div>
@@ -422,22 +421,22 @@ export default function AccountManagement({ personalInfo }) {
                 color="primary"
                 fullWidth
               >
-                Change Password
+                {t("account.changePassword")}
               </Button>
             </form>
           </div>
         </CustomTabPanel>
         <CustomTabPanel value={value} index={2}>
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">Delete Account</h3>
+            <h3 className="text-lg font-semibold mb-2">{t("account.deleteAccount")}</h3>
             <p className="text-sm text-gray-600">
-              Warning: This action cannot be undone.
+              {t("account.deleteWarning")}
             </p>
             <button
               onClick={handleAccountDeletion}
               className="mt-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
             >
-              Delete Account
+              {t("account.deleteAccount")}
             </button>
           </div>
         </CustomTabPanel>
@@ -456,14 +455,14 @@ export default function AccountManagement({ personalInfo }) {
           </Alert>
         </Snackbar>
         <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
-          <DialogTitle>Confirm account deletion</DialogTitle>
+          <DialogTitle>{t("account.confirmDeletion")}</DialogTitle>
           <DialogContent>
             <DialogContentText>
-              Please enter your current password to confirm account deletion.
+              {t("account.enterPasswordConfirm")}
             </DialogContentText>
             <TextField
               margin="dense"
-              label="Current Password"
+              label={t("account.currentPassword")}
               type="password"
               fullWidth
               value={deletePassword}
@@ -471,9 +470,9 @@ export default function AccountManagement({ personalInfo }) {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDeleteOpen(false)}>Cancel</Button>
+            <Button onClick={() => setDeleteOpen(false)}>{t("common.cancel")}</Button>
             <Button color="error" variant="contained" onClick={confirmDelete}>
-              Delete
+              {t("account.delete")}
             </Button>
           </DialogActions>
         </Dialog>

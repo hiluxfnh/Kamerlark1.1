@@ -4,12 +4,14 @@ import { useRouter } from "next/navigation";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../../firebase/Config";
+import { useI18n } from "../../lib/i18n";
 
 const AppointmentCard = ({
   appointment,
   fetchAppointments,
   fromChat = false,
 }) => {
+  const { t } = useI18n();
   const router = useRouter();
   const appointmentRef = doc(db, "appointments", appointment.id);
   const handleAccept = async () => {
@@ -37,7 +39,7 @@ const AppointmentCard = ({
     >
       <div className="grid grid-cols-4 gap-3">
         <InputFieldCustom
-          label={"User Name"}
+          label={t("appt.userName")}
           name={"userName"}
           value={appointment.userName}
           onChange={() => {}}
@@ -48,7 +50,7 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Status"}
+          label={t("appt.status")}
           name={"status"}
           value={appointment.status}
           onChange={() => {}}
@@ -59,7 +61,7 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Email"}
+          label={t("appt.email")}
           name={"userEmail"}
           value={appointment.userEmail}
           onChange={() => {}}
@@ -70,7 +72,7 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Phone"}
+          label={t("appt.phone")}
           name={"userPhone"}
           value={appointment.userPhone}
           onChange={() => {}}
@@ -81,10 +83,10 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Date & Time"}
+          label={t("appt.dateTime")}
           name={"time"}
           value={
-            appointment.appointmentDate + " at " + appointment.appointmentTime
+            appointment.appointmentDate + ` ${t("appt.at")} ` + appointment.appointmentTime
           }
           onChange={() => {}}
           colStart={1}
@@ -94,7 +96,7 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Appointment Type"}
+          label={t("appt.type")}
           name={"appointmentType"}
           value={appointment.appointmentType}
           onChange={() => {}}
@@ -105,7 +107,7 @@ const AppointmentCard = ({
           my={1}
         />
         <InputFieldCustom
-          label={"Message"}
+          label={t("appt.message")}
           name={"message"}
           value={appointment.message}
           onChange={() => {}}
@@ -126,7 +128,7 @@ const AppointmentCard = ({
             router.push(`/room/${appointment.roomId}`);
           }}
         >
-          VIEW ROOM DETAILS
+          {t("appt.viewRoom")}
         </Button>
         {appointment.status === "pending" ? (
           <div className="col-start-1 col-end-5 grid grid-cols-3 gap-2">
@@ -138,7 +140,7 @@ const AppointmentCard = ({
               fullWidth
               onClick={handleDecline}
             >
-              Decline
+              {t("appt.decline")}
             </Button>
             <Button
               variant="contained"
@@ -158,7 +160,7 @@ const AppointmentCard = ({
                 fetch();
               }}
             >
-              CHAT
+              {t("appt.chat")}
             </Button>
             <Button
               variant="contained"
@@ -168,7 +170,7 @@ const AppointmentCard = ({
               fullWidth
               onClick={handleAccept}
             >
-              Accept
+              {t("appt.accept")}
             </Button>
           </div>
         ) : (
@@ -190,7 +192,7 @@ const AppointmentCard = ({
               fetch();
             }}
           >
-            CHAT
+            {t("appt.chat")}
           </Button>
         )}
       </div>

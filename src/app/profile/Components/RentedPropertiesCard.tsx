@@ -13,8 +13,10 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase/Config";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
 import { useRouter } from "next/navigation";
+import { useI18n } from "../../lib/i18n";
 
 const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
+  const { t } = useI18n();
   const router = useRouter();
   const [show, setShow] = useState(false);
   const [open, setOpen] = useState(false); // State for modal
@@ -36,8 +38,8 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
 
   const handleReviewSubmit = async () => {
     try {
-      if (!user) return openSnack('You must be signed in to submit a review', 'warning');
-      if (!reviewText.trim() || !rating) return openSnack('Rating and review are required', 'warning');
+      if (!user) return openSnack(t('booking.signInReview'), 'warning');
+      if (!reviewText.trim() || !rating) return openSnack(t('booking.ratingRequired'), 'warning');
       setSubmitting(true);
       const review = {
         name: user.displayName || "Anonymous",
@@ -53,11 +55,11 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
       setReviewText("");
       setRating(0);
       setOpen(false);
-      openSnack('Review submitted');
+      openSnack(t('booking.reviewSubmitted'));
       refresher();
     } catch (error) {
       console.error("Error submitting review: ", error);
-      openSnack('Failed to submit review', 'error');
+      openSnack(t('booking.reviewFailed'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +103,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
         <div className="col-start-4 col-end-10">
           <div className="flex flex-row justify-between">
             <h3 className="font-semibold">{listing.roomDetails.name}</h3>
-            <p>Status : {listing.status}</p>
+            <p>{t("booking.statusLabel")} {listing.status}</p>
           </div>
           <div className="overflow-scroll no-scrollbar my-2">
             <div
@@ -116,7 +118,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
             </div>
           </div>
           <button onClick={() => setShow(!show)} className="text-gray-600 mt-5">
-            View Details
+            {t("booking.viewDetails")}
             {show ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
           </button>
         </div>
@@ -147,7 +149,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
                     fetch();
                   }}
                 >
-                  Chat
+                  {t("booking.chat")}
                 </Button>
                 <br />
                 <br />
@@ -161,7 +163,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
                   fullWidth
                   onClick={handleClickOpen} // Open the modal
                 >
-                  Review
+                  {t("booking.review")}
                 </Button>
               </div>
             )}
@@ -176,13 +178,13 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
                   }}
                   fullWidth
                 >
-                  Cancel
+                  {t("booking.cancel")}
                 </Button>
               </div>
             ) : null}
             <div className="flex flex-row ml-auto">
               <p className="text-base font-medium">
-                Price: {listing.roomDetails.price}
+                {t("booking.price")} {listing.roomDetails.price}
               </p>
               <p className="texl-sm font-normal mt-1 ml-1">
                 {listing.roomDetails.currency}
@@ -193,10 +195,10 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
       </div>
       {show ? (
         <div className="pt-3 border-t-2 mt-3">
-          <h1 className="font-semibold text-sm">Contract</h1>
+          <h1 className="font-semibold text-sm">{t("booking.contract")}</h1>
           <div className="grid grid-cols-12 gap-4 my-3">
             <InputFieldCustom
-              label={"User Name"}
+              label={t("booking.userName")}
               name={"userName"}
               value={listing.userName}
               onChange={() => {}}
@@ -207,7 +209,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
               my={1}
             />
             <InputFieldCustom
-              label={"User Email"}
+              label={t("booking.userEmail")}
               name={"userEmail"}
               value={listing.userEmail}
               onChange={() => {}}
@@ -218,7 +220,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
               my={1}
             />
             <InputFieldCustom
-              label={"Move In Date"}
+              label={t("booking.moveInDate")}
               name={"moveInDate"}
               value={listing.moveInDate}
               onChange={() => {}}
@@ -229,7 +231,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
               my={1}
             />
             <InputFieldCustom
-              label={"Phone Number"}
+              label={t("booking.phoneNumber")}
               name={"userPhone"}
               value={listing.userPhone}
               onChange={() => {}}
@@ -240,7 +242,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
               my={1}
             />
             <InputFieldCustom
-              label={"User Address"}
+              label={t("booking.userAddress")}
               name={"userAddress"}
               value={listing.userAddress}
               onChange={() => {}}
@@ -251,7 +253,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
               my={1}
             />
             <InputFieldCustom
-              label={"Notes"}
+              label={t("booking.notes")}
               name={"notes"}
               value={listing.notes}
               onChange={() => {}}
@@ -272,9 +274,9 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
         sx={{ "& .MuiDialog-paper": { borderRadius: 2, padding: 1, width: "600px" } }} // Style for Dialog
       >
         <DialogTitle sx={{ m: 0, p: 2 }}>
-          Submit Your Review on {listing.roomDetails.name}
+          {t("booking.submitReviewOn")} {listing.roomDetails.name}
           <IconButton
-            aria-label="close"
+            aria-label={t("booking.close")}
             onClick={handleClose}
             sx={{
               position: "absolute",
@@ -293,7 +295,7 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
           <TextField
             autoFocus
             margin="dense"
-            label="Review"
+            label={t("booking.reviewLabel")}
             type="text"
             fullWidth
             multiline
@@ -305,10 +307,10 @@ const RentedPropertiesCard = ({ listing, refresher, fromChat = false }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
-            Cancel
+            {t("booking.cancel")}
           </Button>
           <Button onClick={handleReviewSubmit} color="primary" disabled={submitting}>
-            {submitting ? <CircularProgress size={18} sx={{ color: 'white' }} /> : 'Submit'}
+            {submitting ? <CircularProgress size={18} sx={{ color: 'white' }} /> : t("common.submit")}
           </Button>
         </DialogActions>
       </Dialog>

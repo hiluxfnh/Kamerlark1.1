@@ -18,7 +18,9 @@ import {
 import { db } from "../../firebase/Config";
 import { useRouter } from "next/navigation";
 import ChatRoomHandler from "../../components/ChatRoomHandler";
+import { useI18n } from "../../lib/i18n";
 const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
+  const { t } = useI18n();
   const [show, setShow] = useState(false);
   const bookingDocRef = doc(db, "bookings", listing.id);
   const router = useRouter();
@@ -106,13 +108,13 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
             <h3 className="text-sm font-semibold">
               {listing.roomDetails.name}
             </h3>
-            <p>Status : {listing.status}</p>
+            <p>{t("booking.statusLabel")} {listing.status}</p>
           </div>
           <div className="pt-3 border-t-2 mt-3">
-            <h1 className="font-semibold text-sm">Contract</h1>
+            <h1 className="font-semibold text-sm">{t("booking.contract")}</h1>
             <div className="grid grid-cols-12 gap-4 my-3">
               <InputFieldCustom
-                label={"User Name"}
+                label={t("booking.userName")}
                 name={"userName"}
                 value={listing.userName}
                 onChange={() => {}}
@@ -123,7 +125,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 my={1}
               />
               <InputFieldCustom
-                label={"User Email"}
+                label={t("booking.userEmail")}
                 name={"userEmail"}
                 value={listing.userEmail}
                 onChange={() => {}}
@@ -134,7 +136,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 my={1}
               />
               <InputFieldCustom
-                label={"Move In Date"}
+                label={t("booking.moveInDate")}
                 name={"moveInDate"}
                 value={listing.moveInDate}
                 onChange={() => {}}
@@ -145,7 +147,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 my={1}
               />
               <InputFieldCustom
-                label={"Phone Number"}
+                label={t("booking.phoneNumber")}
                 name={"userPhone"}
                 value={listing.userPhone}
                 onChange={() => {}}
@@ -156,7 +158,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 my={1}
               />
               <InputFieldCustom
-                label={"User Address"}
+                label={t("booking.userAddress")}
                 name={"userAddress"}
                 value={listing.userAddress}
                 onChange={() => {}}
@@ -167,7 +169,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                 my={1}
               />
               <InputFieldCustom
-                label={"Notes"}
+                label={t("booking.notes")}
                 name={"notes"}
                 value={listing.notes}
                 onChange={() => {}}
@@ -194,7 +196,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
               fullWidth
               onClick={() => listing.userId && router.push(`/profile/${listing.userId}`)}
             >
-              View User Profile
+              {t("booking.viewUserProfile")}
             </Button>
             <Button
               variant="contained"
@@ -206,7 +208,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
               fullWidth
               onClick={() => listing.roomId && router.push(`/room/${listing.roomId}`)}
             >
-              Room Details
+              {t("booking.roomDetails")}
             </Button>
             {fromChat ? (
               <></>
@@ -232,7 +234,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                   fetch();
                 }}
               >
-                Chat with User
+                {t("booking.chatWithUser")}
               </Button>
             )}
             {listing.status === "pending" ? (
@@ -247,7 +249,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                   fullWidth
                   onClick={onAccept}
                 >
-                  Accept
+                  {t("booking.accept")}
                 </Button>
                 <Button
                   variant="contained"
@@ -259,7 +261,7 @@ const CustomerBookings = ({ listing, refresher, fromChat = false }) => {
                   fullWidth
                   onClick={onDecline}
                 >
-                  Decline
+                  {t("booking.decline")}
                 </Button>
               </>
             ) : null}

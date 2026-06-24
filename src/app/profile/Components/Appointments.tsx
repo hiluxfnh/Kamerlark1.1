@@ -7,6 +7,7 @@ import OutgoingAppointmentCard from "./OutgoingAppointmentCard";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth, db } from "../../firebase/Config";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { useI18n } from "../../lib/i18n";
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -38,6 +39,7 @@ function a11yProps(index) {
 }
 
 const Appointments = () => {
+  const { t } = useI18n();
   const [value, setValue] = useState(0);
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -91,8 +93,8 @@ const Appointments = () => {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="In coming" {...a11yProps(0)} />
-          <Tab label="Out going" {...a11yProps(1)} />
+          <Tab label={t("appt.incoming")} {...a11yProps(0)} />
+          <Tab label={t("appt.outgoing")} {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
