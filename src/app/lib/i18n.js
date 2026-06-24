@@ -233,6 +233,101 @@ const translations = {
     "listing.saveLocation": "Save location",
     "listing.locationUpdated": "Location updated.",
     "listing.locationUpdateError": "Couldn't update location. Please try again.",
+    // Auth (login / signup)
+    "auth.loginTitle": "Login to your account",
+    "auth.signupTitle": "Sign up for an account",
+    "auth.continueGoogle": "Continue with Google",
+    "auth.signingIn": "Signing in…",
+    "auth.firstName": "First Name",
+    "auth.lastName": "Last Name",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.phoneNumber": "Phone Number",
+    "auth.login": "Login",
+    "auth.signup": "Sign Up",
+    "auth.loggingIn": "Logging in…",
+    "auth.signingUp": "Signing up…",
+    "auth.noAccount": "Don't have an account? Sign up here.",
+    "auth.haveAccount": "Already have an account? Login here.",
+    "auth.fillAllFields": "Please fill in all fields.",
+    "auth.errorPrefix": "Error: ",
+    "auth.errIncorrect": "Incorrect email or password.",
+    "auth.errNoAccount": "No account found with that email.",
+    "auth.errEmailInUse": "An account with that email already exists.",
+    "auth.errWeakPassword": "Password should be at least 6 characters.",
+    "auth.errInvalidEmail": "Please enter a valid email address.",
+    "auth.errTooMany": "Too many attempts. Please wait a moment and try again.",
+    "auth.errNetwork": "Network error — check your connection and try again.",
+    "auth.errGeneric": "Something went wrong. Please try again.",
+    // Help / support
+    "help.title": "How can we help?",
+    "help.subtitle": "Search the FAQs, browse safety tips, or reach our team directly.",
+    "help.searchPlaceholder":
+      "Search for an answer (e.g. booking, roommate, listing)…",
+    "help.emailUs": "Email us",
+    "help.emailReply": "We reply within 1 business day.",
+    "help.copy": "Copy",
+    "help.copied": "Copied",
+    "help.whatsapp": "WhatsApp",
+    "help.whatsappChat": "Chat with support.",
+    "help.safetyPolicies": "Safety & policies",
+    "help.safetyTips": "Safety tips",
+    "help.faqTitle": "Frequently asked questions",
+    "help.noMatches": "No matches. Try another keyword, or contact us below.",
+    "help.stayingSafe": "Staying safe on KamerLark",
+    "help.tip1":
+      "Chat and arrange everything inside KamerLark — keep a record of your conversations.",
+    "help.tip2": "Never share passwords, bank PINs or one-time codes with anyone.",
+    "help.tip3":
+      "Visit the room (in person or by video call) and verify the owner before paying anything.",
+    "help.tip4":
+      "Be wary of prices that look too good to be true, or pressure to pay quickly.",
+    "help.tip5":
+      "Report anything suspicious using the form below — we investigate every report.",
+    "help.stillNeedHelp": "Still need help? Report it",
+    "help.errSubjDesc": "Please add a subject and a description.",
+    "help.submitError": "Couldn't submit. Please try again.",
+    "help.ticketThanks": "Thanks — your ticket is in. We'll get back to you by",
+    "help.byEmail": "email",
+    "help.byWhatsapp": "WhatsApp",
+    "help.subjPlaceholder": "Subject — a short summary",
+    "help.descPlaceholder":
+      "What happened? Include the listing, steps, and what you expected.",
+    "help.replyBy": "Reply by:",
+    "help.email": "Email",
+    "help.submitTicket": "Submit ticket",
+    "help.submitting": "Submitting…",
+    "help.or": "or",
+    "faq.q1": "How do I book a room?",
+    "faq.a1":
+      "Open a listing from Explore, then tap “Book now”. The owner gets your request and a chat opens automatically so you can agree the details. Prefer to see it first? Use “Visit first” to request an in-person or video viewing.",
+    "faq.q2": "How do viewings / appointments work?",
+    "faq.a2":
+      "On a listing, choose “Visit first”, pick a date, time and whether it’s in-person or virtual. We notify the owner and add it to your dashboard under Appointments — you’ll confirm the final time together in chat.",
+    "faq.q3": "How do I message an owner or another student?",
+    "faq.a3":
+      "Tap “Chat” on any listing to message the owner, or “Message” on a Community post to reach the poster. All your conversations live in the Chat (message centre).",
+    "faq.q4": "How do I find a roommate?",
+    "faq.a4":
+      "Go to Community → Feed and post under “Looking for a roommate” with your budget, university and move-in date. Browse others’ posts and message anyone that’s a good fit. You can also find people in the Members tab.",
+    "faq.q5": "I'm an owner — how do I post a listing?",
+    "faq.a5":
+      "Tap “Add listing” in the menu, fill in the sections (basics, location on the map, pricing, photos — up to 10), then Submit. Manage or edit it anytime from My Listings.",
+    "faq.q6": "Can I edit or remove my listing?",
+    "faq.a6":
+      "Yes. Open My Listings, then Edit to change details or Delete to take it down. Changes appear immediately.",
+    "faq.q7": "What about cancellations?",
+    "faq.a7":
+      "Most bookings can be cancelled up to 24 hours before move-in. Some listings set their own terms — check the Lease Terms section on the listing before you book.",
+    "faq.q8": "Payments & safety",
+    "faq.a8":
+      "Only arrange payment through channels you trust, and never pay before you’ve verified the room and the owner. Never share passwords or one-time codes. If something feels off, report it below.",
+    "faq.q9": "How do I edit my profile or reset my password?",
+    "faq.a9":
+      "Go to Profile → Account Management to update your name, photo and contact details. To reset a password, use “Forgot password” on the login screen; email changes may ask you to sign in again.",
+    "faq.q10": "How do I report a listing or user?",
+    "faq.a10":
+      "Use the “Report it” form at the bottom of this page with the listing or person’s details. We review every report and act on anything that breaks our policies.",
     // Footer
     "footer.tagline":
       "Your trusted accommodation platform for students and young professionals.",
@@ -503,6 +598,104 @@ const translations = {
     "listing.saveLocation": "Enregistrer l'emplacement",
     "listing.locationUpdated": "Emplacement mis à jour.",
     "listing.locationUpdateError": "Impossible de mettre à jour l'emplacement. Veuillez réessayer.",
+    // Auth (login / signup)
+    "auth.loginTitle": "Connectez-vous à votre compte",
+    "auth.signupTitle": "Créez un compte",
+    "auth.continueGoogle": "Continuer avec Google",
+    "auth.signingIn": "Connexion…",
+    "auth.firstName": "Prénom",
+    "auth.lastName": "Nom",
+    "auth.email": "E-mail",
+    "auth.password": "Mot de passe",
+    "auth.phoneNumber": "Numéro de téléphone",
+    "auth.login": "Se connecter",
+    "auth.signup": "S'inscrire",
+    "auth.loggingIn": "Connexion…",
+    "auth.signingUp": "Inscription…",
+    "auth.noAccount": "Pas encore de compte ? Inscrivez-vous ici.",
+    "auth.haveAccount": "Vous avez déjà un compte ? Connectez-vous ici.",
+    "auth.fillAllFields": "Veuillez remplir tous les champs.",
+    "auth.errorPrefix": "Erreur : ",
+    "auth.errIncorrect": "E-mail ou mot de passe incorrect.",
+    "auth.errNoAccount": "Aucun compte trouvé avec cet e-mail.",
+    "auth.errEmailInUse": "Un compte existe déjà avec cet e-mail.",
+    "auth.errWeakPassword": "Le mot de passe doit comporter au moins 6 caractères.",
+    "auth.errInvalidEmail": "Veuillez saisir une adresse e-mail valide.",
+    "auth.errTooMany": "Trop de tentatives. Veuillez patienter un instant et réessayer.",
+    "auth.errNetwork": "Erreur réseau — vérifiez votre connexion et réessayez.",
+    "auth.errGeneric": "Une erreur est survenue. Veuillez réessayer.",
+    // Help / support
+    "help.title": "Comment pouvons-nous vous aider ?",
+    "help.subtitle":
+      "Consultez la FAQ, parcourez les conseils de sécurité ou contactez notre équipe directement.",
+    "help.searchPlaceholder":
+      "Rechercher une réponse (ex. réservation, colocataire, annonce)…",
+    "help.emailUs": "Écrivez-nous",
+    "help.emailReply": "Nous répondons sous 1 jour ouvré.",
+    "help.copy": "Copier",
+    "help.copied": "Copié",
+    "help.whatsapp": "WhatsApp",
+    "help.whatsappChat": "Discutez avec le support.",
+    "help.safetyPolicies": "Sécurité & règles",
+    "help.safetyTips": "Conseils de sécurité",
+    "help.faqTitle": "Questions fréquentes",
+    "help.noMatches": "Aucun résultat. Essayez un autre mot-clé ou contactez-nous ci-dessous.",
+    "help.stayingSafe": "Rester en sécurité sur KamerLark",
+    "help.tip1":
+      "Discutez et organisez tout au sein de KamerLark — gardez une trace de vos conversations.",
+    "help.tip2":
+      "Ne partagez jamais vos mots de passe, codes bancaires ou codes à usage unique.",
+    "help.tip3":
+      "Visitez le logement (en personne ou par appel vidéo) et vérifiez le propriétaire avant tout paiement.",
+    "help.tip4":
+      "Méfiez-vous des prix trop beaux pour être vrais ou des pressions pour payer rapidement.",
+    "help.tip5":
+      "Signalez tout élément suspect via le formulaire ci-dessous — nous enquêtons sur chaque signalement.",
+    "help.stillNeedHelp": "Besoin d'aide ? Signalez-le",
+    "help.errSubjDesc": "Veuillez ajouter un objet et une description.",
+    "help.submitError": "Échec de l'envoi. Veuillez réessayer.",
+    "help.ticketThanks":
+      "Merci — votre demande a été enregistrée. Nous vous répondrons par",
+    "help.byEmail": "e-mail",
+    "help.byWhatsapp": "WhatsApp",
+    "help.subjPlaceholder": "Objet — un bref résumé",
+    "help.descPlaceholder":
+      "Que s'est-il passé ? Indiquez l'annonce, les étapes et ce que vous attendiez.",
+    "help.replyBy": "Répondre par :",
+    "help.email": "E-mail",
+    "help.submitTicket": "Envoyer la demande",
+    "help.submitting": "Envoi…",
+    "help.or": "ou",
+    "faq.q1": "Comment réserver une chambre ?",
+    "faq.a1":
+      "Ouvrez une annonce depuis Explorer, puis touchez « Réserver ». Le propriétaire reçoit votre demande et une discussion s'ouvre automatiquement pour convenir des détails. Vous préférez la voir d'abord ? Utilisez « Visiter d'abord » pour demander une visite en personne ou en vidéo.",
+    "faq.q2": "Comment fonctionnent les visites / rendez-vous ?",
+    "faq.a2":
+      "Sur une annonce, choisissez « Visiter d'abord », sélectionnez une date, une heure et le mode (en personne ou virtuel). Nous prévenons le propriétaire et l'ajoutons à votre tableau de bord sous Rendez-vous — vous confirmerez l'heure finale ensemble dans la discussion.",
+    "faq.q3": "Comment contacter un propriétaire ou un autre étudiant ?",
+    "faq.a3":
+      "Touchez « Discuter » sur une annonce pour écrire au propriétaire, ou « Message » sur une publication de la communauté pour joindre son auteur. Toutes vos conversations se trouvent dans la messagerie.",
+    "faq.q4": "Comment trouver un colocataire ?",
+    "faq.a4":
+      "Allez dans Communauté → Fil et publiez sous « Recherche de colocataire » avec votre budget, votre université et votre date d'emménagement. Parcourez les autres publications et écrivez à qui vous convient. Vous pouvez aussi trouver des personnes dans l'onglet Membres.",
+    "faq.q5": "Je suis propriétaire — comment publier une annonce ?",
+    "faq.a5":
+      "Touchez « Ajouter une annonce » dans le menu, remplissez les sections (l'essentiel, l'emplacement sur la carte, le prix, les photos — jusqu'à 10), puis Envoyer. Gérez-la ou modifiez-la à tout moment depuis Mes annonces.",
+    "faq.q6": "Puis-je modifier ou supprimer mon annonce ?",
+    "faq.a6":
+      "Oui. Ouvrez Mes annonces, puis Modifier pour changer les détails ou Supprimer pour la retirer. Les changements apparaissent immédiatement.",
+    "faq.q7": "Qu'en est-il des annulations ?",
+    "faq.a7":
+      "La plupart des réservations peuvent être annulées jusqu'à 24 heures avant l'emménagement. Certaines annonces fixent leurs propres conditions — vérifiez la section Conditions du bail avant de réserver.",
+    "faq.q8": "Paiements & sécurité",
+    "faq.a8":
+      "N'organisez les paiements que via des canaux de confiance, et ne payez jamais avant d'avoir vérifié le logement et le propriétaire. Ne partagez jamais vos mots de passe ni vos codes à usage unique. Si quelque chose vous semble douteux, signalez-le ci-dessous.",
+    "faq.q9": "Comment modifier mon profil ou réinitialiser mon mot de passe ?",
+    "faq.a9":
+      "Allez dans Profil → Gestion du compte pour mettre à jour votre nom, votre photo et vos coordonnées. Pour réinitialiser un mot de passe, utilisez « Mot de passe oublié » sur l'écran de connexion ; un changement d'e-mail peut nécessiter une nouvelle connexion.",
+    "faq.q10": "Comment signaler une annonce ou un utilisateur ?",
+    "faq.a10":
+      "Utilisez le formulaire « Signalez-le » en bas de cette page avec les détails de l'annonce ou de la personne. Nous examinons chaque signalement et agissons sur tout ce qui enfreint nos règles.",
     // Footer
     "footer.tagline":
       "Votre plateforme de logement de confiance pour les étudiants et jeunes professionnels.",

@@ -12,6 +12,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useI18n } from "../lib/i18n";
 
 const SUPPORT_EMAIL = "info.kamerlark@gmail.com";
 const WHATSAPP_E164 = "+919108553983";
@@ -19,6 +20,7 @@ const WHATSAPP_DISPLAY = "+91 91085 53983";
 const WA_LINK = `https://wa.me/${WHATSAPP_E164.replace("+", "")}`;
 
 export default function HelpPage() {
+  const { t, lang } = useI18n();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(0);
   const [user] = useAuthState(auth);
@@ -30,6 +32,16 @@ export default function HelpPage() {
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // Build the FAQ from translation keys so it follows the chosen language.
+  const FAQ_ITEMS = useMemo(
+    () =>
+      Array.from({ length: 10 }, (_, i) => ({
+        question: t(`faq.q${i + 1}`),
+        answer: t(`faq.a${i + 1}`),
+      })),
+    [lang]
+  );
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return FAQ_ITEMS;
@@ -38,14 +50,14 @@ export default function HelpPage() {
         f.question.toLowerCase().includes(q) ||
         f.answer.toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, FAQ_ITEMS]);
 
   const submitTicket = async (e) => {
     e?.preventDefault?.();
     setErr("");
     setSent(false);
     if (!subj.trim() || !desc.trim()) {
-      setErr("Please add a subject and a description.");
+      setErr(t("help.errSubjDesc"));
       return;
     }
     try {
@@ -64,7 +76,7 @@ export default function HelpPage() {
       setSubj("");
       setDesc("");
     } catch (e2) {
-      setErr(e2?.message || "Couldn't submit. Please try again.");
+      setErr(e2?.message || t("help.submitError"));
     } finally {
       setSending(false);
     }
@@ -77,10 +89,10 @@ export default function HelpPage() {
         <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
           {/* Hero + search */}
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            How can we help?
+            {t("help.title")}
           </h1>
           <p className="mt-1 text-sm text-gray-500">
-            Search the FAQs, browse safety tips, or reach our team directly.
+            {t("help.subtitle")}
           </p>
           <div className="relative mt-4">
             <SearchIcon
@@ -91,7 +103,7 @@ export default function HelpPage() {
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for an answer (e.g. booking, roommate, listing)…"
+              placeholder={t("help.searchPlaceholder")}
               className="w-full rounded-full border border-gray-300 py-2.5 pl-10 pr-4 text-sm outline-none transition-colors focus:border-black"
             />
           </div>
@@ -102,9 +114,9 @@ export default function HelpPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-100 text-sky-700">
                 <EmailIcon fontSize="small" />
               </div>
-              <p className="mt-3 text-sm font-semibold text-gray-900">Email us</p>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{t("help.emailUs")}</p>
               <p className="mt-0.5 text-xs text-gray-500">
-                We reply within 1 business day.
+                {t("help.emailReply")}
               </p>
               <div className="mt-3 flex items-center gap-2">
                 <span className="truncate text-xs text-gray-700">
@@ -121,7 +133,7 @@ export default function HelpPage() {
                   }}
                   className="shrink-0 rounded-full border border-gray-300 px-3 py-1 text-xs font-medium hover:bg-gray-100"
                 >
-                  {copied ? "Copied" : "Copy"}
+                  {copied ? t("help.copied") : t("help.copy")}
                 </button>
               </div>
             </div>
@@ -135,8 +147,8 @@ export default function HelpPage() {
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
                 <WhatsAppIcon fontSize="small" />
               </div>
-              <p className="mt-3 text-sm font-semibold text-gray-900">WhatsApp</p>
-              <p className="mt-0.5 text-xs text-gray-500">Chat with support.</p>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{t("help.whatsapp")}</p>
+              <p className="mt-0.5 text-xs text-gray-500">{t("help.whatsappChat")}</p>
               <p className="mt-3 text-xs font-medium text-emerald-700">
                 {WHATSAPP_DISPLAY} →
               </p>
@@ -147,14 +159,14 @@ export default function HelpPage() {
                 <GppGoodIcon fontSize="small" />
               </div>
               <p className="mt-3 text-sm font-semibold text-gray-900">
-                Safety &amp; policies
+                {t("help.safetyPolicies")}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs">
                 <Link href="/privacy" className="text-gray-600 underline hover:text-black">
-                  Privacy
+                  {t("footer.privacy")}
                 </Link>
                 <Link href="/terms" className="text-gray-600 underline hover:text-black">
-                  Terms
+                  {t("footer.terms")}
                 </Link>
                 <a
                   href="#safety"
@@ -166,7 +178,7 @@ export default function HelpPage() {
                       ?.scrollIntoView({ behavior: "smooth", block: "start" });
                   }}
                 >
-                  Safety tips
+                  {t("help.safetyTips")}
                 </a>
               </div>
             </div>
@@ -174,12 +186,12 @@ export default function HelpPage() {
 
           {/* FAQ */}
           <h2 className="mt-10 text-lg font-semibold text-gray-900">
-            Frequently asked questions
+            {t("help.faqTitle")}
           </h2>
           <div className="mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white">
             {filtered.length === 0 ? (
               <p className="p-5 text-sm text-gray-500">
-                No matches. Try another keyword, or contact us below.
+                {t("help.noMatches")}
               </p>
             ) : (
               filtered.map((item, idx) => {
@@ -215,15 +227,15 @@ export default function HelpPage() {
           {/* Safety tips */}
           <section id="safety" className="mt-10 scroll-mt-20">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-              <LockIcon fontSize="small" /> Staying safe on KamerLark
+              <LockIcon fontSize="small" /> {t("help.stayingSafe")}
             </h2>
             <ul className="mt-3 space-y-2 rounded-2xl border border-gray-200 bg-white p-5 text-sm text-gray-700">
               {[
-                "Chat and arrange everything inside KamerLark — keep a record of your conversations.",
-                "Never share passwords, bank PINs or one-time codes with anyone.",
-                "Visit the room (in person or by video call) and verify the owner before paying anything.",
-                "Be wary of prices that look too good to be true, or pressure to pay quickly.",
-                "Report anything suspicious using the form below — we investigate every report.",
+                t("help.tip1"),
+                t("help.tip2"),
+                t("help.tip3"),
+                t("help.tip4"),
+                t("help.tip5"),
               ].map((tip) => (
                 <li key={tip} className="flex gap-2">
                   <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#082e4d]" />
@@ -236,34 +248,34 @@ export default function HelpPage() {
           {/* Report an issue */}
           <section className="mt-10">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-              <ReportProblemIcon fontSize="small" /> Still need help? Report it
+              <ReportProblemIcon fontSize="small" /> {t("help.stillNeedHelp")}
             </h2>
             <div className="mt-3 rounded-2xl border border-gray-200 bg-white p-5">
               <form onSubmit={submitTicket} className="space-y-3">
                 {err ? <p className="text-xs text-red-600">{err}</p> : null}
                 {sent ? (
                   <div className="rounded-xl bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
-                    Thanks — your ticket is in. We&apos;ll get back to you by{" "}
-                    {pref === "email" ? "email" : "WhatsApp"}.
+                    {t("help.ticketThanks")}{" "}
+                    {pref === "email" ? t("help.byEmail") : t("help.byWhatsapp")}.
                   </div>
                 ) : null}
                 <input
                   type="text"
                   value={subj}
                   onChange={(e) => setSubj(e.target.value)}
-                  placeholder="Subject — a short summary"
+                  placeholder={t("help.subjPlaceholder")}
                   className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400"
                 />
                 <textarea
                   value={desc}
                   onChange={(e) => setDesc(e.target.value)}
                   rows={4}
-                  placeholder="What happened? Include the listing, steps, and what you expected."
+                  placeholder={t("help.descPlaceholder")}
                   className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm outline-none focus:border-gray-400"
                 />
                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                   <span className="text-xs font-medium text-gray-500">
-                    Reply by:
+                    {t("help.replyBy")}
                   </span>
                   {["email", "whatsapp"].map((p) => (
                     <label key={p} className="inline-flex items-center gap-1.5">
@@ -274,7 +286,7 @@ export default function HelpPage() {
                         checked={pref === p}
                         onChange={() => setPref(p)}
                       />
-                      {p === "email" ? "Email" : "WhatsApp"}
+                      {p === "email" ? t("help.email") : t("help.whatsapp")}
                     </label>
                   ))}
                 </div>
@@ -284,9 +296,9 @@ export default function HelpPage() {
                     disabled={sending}
                     className="rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
                   >
-                    {sending ? "Submitting…" : "Submit ticket"}
+                    {sending ? t("help.submitting") : t("help.submitTicket")}
                   </button>
-                  <span className="text-xs text-gray-400">or</span>
+                  <span className="text-xs text-gray-400">{t("help.or")}</span>
                   <a
                     className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
                     href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
@@ -295,7 +307,7 @@ export default function HelpPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    Email
+                    {t("help.email")}
                   </a>
                   <a
                     className="rounded-full border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
@@ -305,7 +317,7 @@ export default function HelpPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    WhatsApp
+                    {t("help.whatsapp")}
                   </a>
                 </div>
               </form>
@@ -316,56 +328,3 @@ export default function HelpPage() {
     </>
   );
 }
-
-const FAQ_ITEMS = [
-  {
-    question: "How do I book a room?",
-    answer:
-      "Open a listing from Explore, then tap “Book now”. The owner gets your request and a chat opens automatically so you can agree the details. Prefer to see it first? Use “Visit first” to request an in-person or video viewing.",
-  },
-  {
-    question: "How do viewings / appointments work?",
-    answer:
-      "On a listing, choose “Visit first”, pick a date, time and whether it’s in-person or virtual. We notify the owner and add it to your dashboard under Appointments — you’ll confirm the final time together in chat.",
-  },
-  {
-    question: "How do I message an owner or another student?",
-    answer:
-      "Tap “Chat” on any listing to message the owner, or “Message” on a Community post to reach the poster. All your conversations live in the Chat (message centre).",
-  },
-  {
-    question: "How do I find a roommate?",
-    answer:
-      "Go to Community → Feed and post under “Looking for a roommate” with your budget, university and move-in date. Browse others’ posts and message anyone that’s a good fit. You can also find people in the Members tab.",
-  },
-  {
-    question: "I'm an owner — how do I post a listing?",
-    answer:
-      "Tap “Add listing” in the menu, fill in the sections (basics, location on the map, pricing, photos — up to 10), then Submit. Manage or edit it anytime from My Listings.",
-  },
-  {
-    question: "Can I edit or remove my listing?",
-    answer:
-      "Yes. Open My Listings, then Edit to change details or Delete to take it down. Changes appear immediately.",
-  },
-  {
-    question: "What about cancellations?",
-    answer:
-      "Most bookings can be cancelled up to 24 hours before move-in. Some listings set their own terms — check the Lease Terms section on the listing before you book.",
-  },
-  {
-    question: "Payments & safety",
-    answer:
-      "Only arrange payment through channels you trust, and never pay before you’ve verified the room and the owner. Never share passwords or one-time codes. If something feels off, report it below.",
-  },
-  {
-    question: "How do I edit my profile or reset my password?",
-    answer:
-      "Go to Profile → Account Management to update your name, photo and contact details. To reset a password, use “Forgot password” on the login screen; email changes may ask you to sign in again.",
-  },
-  {
-    question: "How do I report a listing or user?",
-    answer:
-      "Use the “Report it” form at the bottom of this page with the listing or person’s details. We review every report and act on anything that breaks our policies.",
-  },
-];

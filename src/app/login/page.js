@@ -18,6 +18,7 @@ import Image from "next/image";
 import kl from "../assets/kamerlark.png";
 import { useRouter, useSearchParams } from "next/navigation";
 import Message from "../components/Message";
+import { useI18n } from "../lib/i18n";
 
 // Official multicolor Google "G" — the red G+ icon was retired years ago
 const GoogleIcon = () => (
@@ -29,31 +30,27 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Map raw Firebase auth errors to short, friendly messages.
-const friendlyAuthError = (err) => {
+// Map raw Firebase auth errors to a translation key; the caller runs it
+// through t() so the message follows the user's language.
+const friendlyAuthErrorKey = (err) => {
   const code = String(err?.code || err?.message || "").toLowerCase();
   if (
     code.includes("wrong-password") ||
     code.includes("invalid-credential") ||
     code.includes("invalid-login")
   )
-    return "Incorrect email or password.";
-  if (code.includes("user-not-found"))
-    return "No account found with that email.";
-  if (code.includes("email-already-in-use"))
-    return "An account with that email already exists.";
-  if (code.includes("weak-password"))
-    return "Password should be at least 6 characters.";
-  if (code.includes("invalid-email"))
-    return "Please enter a valid email address.";
-  if (code.includes("too-many-requests"))
-    return "Too many attempts. Please wait a moment and try again.";
-  if (code.includes("network"))
-    return "Network error — check your connection and try again.";
-  return "Something went wrong. Please try again.";
+    return "auth.errIncorrect";
+  if (code.includes("user-not-found")) return "auth.errNoAccount";
+  if (code.includes("email-already-in-use")) return "auth.errEmailInUse";
+  if (code.includes("weak-password")) return "auth.errWeakPassword";
+  if (code.includes("invalid-email")) return "auth.errInvalidEmail";
+  if (code.includes("too-many-requests")) return "auth.errTooMany";
+  if (code.includes("network")) return "auth.errNetwork";
+  return "auth.errGeneric";
 };
 
 const LoginSignup = () => {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -86,14 +83,14 @@ const LoginSignup = () => {
         !isLogin &&
         (!firstName || !lastName || !email || !password || !phoneNumber)
       ) {
-        setErrorMessage("Please fill in all fields.");
+        setErrorMessage(t("auth.fillAllFields"));
         return;
       }
 
       if (isLogin) {
         const userCredential = await signInWithFirebase(email, password);
         if (!userCredential) {
-          setErrorMessage(friendlyAuthError(signInError));
+          setErrorMessage(t(friendlyAuthErrorKey(signInError)));
           return;
         }
         sessionStorage.setItem("user", true);
@@ -102,7 +99,7 @@ const LoginSignup = () => {
       } else {
         const userCredential = await createUserWithFirebase(email, password);
         if (!userCredential) {
-          setErrorMessage(friendlyAuthError(createUserError));
+          setErrorMessage(t(friendlyAuthErrorKey(createUserError)));
           return;
         }
         const user = userCredential.user;
@@ -129,7 +126,7 @@ const LoginSignup = () => {
       }
     } catch (error) {
       console.error("Auth Error:", error?.code, error?.message);
-      setErrorMessage(friendlyAuthError(error));
+      setErrorMessage(t(friendlyAuthErrorKey(error)));
     } finally {
       setIsSubmitting(false);
       setSubmittingSource(null);
@@ -163,7 +160,7 @@ const LoginSignup = () => {
           ? error.message
           : String(error || "Unknown error");
       console.error("Google Sign-in Error:", msg);
-      setErrorMessage(`Error: ${msg}`);
+      setErrorMessage(`${t("auth.errorPrefix")}${msg}`);
     } finally {
       setIsSubmitting(false);
       setSubmittingSource(null);
@@ -204,7 +201,7 @@ const LoginSignup = () => {
           />
           <br />
           <p className={styles.subtitle}>
-            {isLogin ? "Login to your account" : "Sign up for an account"}
+            {isLogin ? t("auth.loginTitle") : t("auth.signupTitle")}
           </p>
 
           <div className={styles.google}>
@@ -224,8 +221,8 @@ const LoginSignup = () => {
                 )}
                 <span>
                   {submittingSource === "google"
-                    ? "Signing in…"
-                    : "Continue with Google"}
+                    ? t("auth.signingIn")
+                    : t("auth.continueGoogle")}
                 </span>
               </span>
             </button>
@@ -237,7 +234,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder="First Name"
+                  placeholder={t("auth.firstName")}
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
@@ -248,7 +245,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder="Last Name"
+                  placeholder={t("auth.lastName")}
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
@@ -261,7 +258,7 @@ const LoginSignup = () => {
             <input
               className={styles.input}
               type="email"
-              placeholder="Email"
+              placeholder={t("auth.email")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -272,7 +269,7 @@ const LoginSignup = () => {
             <input
               className={styles.input}
               type="password"
-              placeholder="Password"
+              placeholder={t("auth.password")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -285,7 +282,7 @@ const LoginSignup = () => {
                 <input
                   className={styles.input}
                   type="text"
-                  placeholder="Phone Number"
+                  placeholder={t("auth.phoneNumber")}
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   required
@@ -318,11 +315,11 @@ const LoginSignup = () => {
               <span>
                 {isSubmitting && submittingSource === "email"
                   ? isLogin
-                    ? "Logging in…"
-                    : "Signing up…"
+                    ? t("auth.loggingIn")
+                    : t("auth.signingUp")
                   : isLogin
-                  ? "Login"
-                  : "Sign Up"}
+                  ? t("auth.login")
+                  : t("auth.signup")}
               </span>
             </span>
           </button>
@@ -339,14 +336,12 @@ const LoginSignup = () => {
         {/* Success toast removed to avoid flicker; we navigate immediately */}
 
         <p className={styles.link} onClick={() => setIsLogin(!isLogin)}>
-          {isLogin
-            ? "Don't have an account? Sign up here."
-            : "Already have an account? Login here."}
+          {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
         </p>
       </div>
 
       <div className={styles.footer}>
-        <p>&copy; {new Date().getFullYear()} KamerLark. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} KamerLark. {t("footer.rights")}</p>
       </div>
     </>
   );
