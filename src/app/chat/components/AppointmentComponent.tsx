@@ -6,7 +6,9 @@ import RentedPropertiesCard from "../../profile/Components/RentedPropertiesCard"
 import { useAuthState } from "react-firebase-hooks/auth";
 import AppointmentCard from "../../profile/Components/OutgoingAppointmentCard";
 import AppointmentCardIncoming from "../../profile/Components/IncomingAppointmentCard";
+import { useI18n } from "../../lib/i18n";
 const AppointmentComponent = ({ message }) => {
+    const { t } = useI18n();
     const appointmentId = message.appointmentId;
     const [user] = useAuthState(auth);
     const appointmentRef = doc(db, "appointments", appointmentId);
@@ -31,7 +33,7 @@ const AppointmentComponent = ({ message }) => {
     }, []);
 
     if (!appointment) {
-        return <div>Loading...</div>;
+        return <div>{t("chat.loading")}</div>;
     }
 
     return (

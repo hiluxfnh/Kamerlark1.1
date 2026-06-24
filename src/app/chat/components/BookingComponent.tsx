@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import CustomerBookings from "../../profile/Components/CustomerBookings";
 import RentedPropertiesCard from "../../profile/Components/RentedPropertiesCard";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useI18n } from "../../lib/i18n";
 
 const BookingComponent = ({ message }) => {
+    const { t } = useI18n();
     const bookingId = message.bookingId;
     const [user] = useAuthState(auth);
     const bookingRef = doc(db, "bookings", bookingId);
@@ -34,7 +36,7 @@ const BookingComponent = ({ message }) => {
     }, [booking]);
 
     if (!booking) {
-        return <div>Loading...</div>;
+        return <div>{t("chat.loading")}</div>;
     }
 
     return (

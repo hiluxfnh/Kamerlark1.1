@@ -32,6 +32,7 @@ import { onSnapshot, serverTimestamp } from "firebase/firestore";
 import ChatSideBar from "../components/ChatSideBar";
 import message from "../../assets/message.webp";
 import Avatar from "../../components/Avatar";
+import { useI18n } from "../../lib/i18n";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -60,6 +61,7 @@ async function findMyMappingDocs(roomId: string, uid?: string | null) {
 }
 
 const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, currentUser }) => {
+  const { t } = useI18n();
   const roomRef = doc(db, "chatRoom", roomId);
   const messagesRef = collection(roomRef, "messages");
   const initialLimit = 50;
@@ -153,15 +155,14 @@ const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, cur
       if (typeof window !== 'undefined') window.removeEventListener('focus', handleFocus);
     };
   }, [roomId, JSON.stringify((messages || []).slice(-3))]);
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>{t("chat.loading")}</div>;
   if (error) {
     // A permission-denied here almost always means an orphaned conversation
     // (the underlying chatRoom doc is missing). Show a calm message instead of
     // the raw Firebase error string.
     return (
       <div className="p-6 text-center text-sm text-gray-500">
-        This conversation is no longer available. Start a new one from the
-        listing or the member&apos;s profile.
+        {t("chat.unavailable")}
       </div>
     );
   }
@@ -169,6 +170,7 @@ const Messages: React.FC<MessagesProps & { currentUser?: any }> = ({ roomId, cur
   return <MessagesDisplay messages={merged} currentUser={currentUser} lastSeenTimestamp={lastSeen} hasMore={hasMore} onLoadMore={onLoadMore} />;
 };
 const ChatRoom = () => {
+  const { t } = useI18n();
   const [chatRoomId, setChatRoomId] = useState("");
   const [currentUser, setCurrentUser] = useState<any>(null);
   useEffect(() => {
@@ -219,11 +221,10 @@ const ChatRoom = () => {
                 <div className="hidden h-full flex-col items-center justify-center px-6 text-center md:flex">
                   <Image src={message} width={260} height={260} alt="" />
                   <p className="-mt-4 text-base font-semibold text-gray-800">
-                    Select a conversation
+                    {t("chat.selectConversation")}
                   </p>
                   <p className="mt-1 max-w-xs text-sm text-gray-500">
-                    Choose a chat from the list, or start one by booking or
-                    messaging an owner from a listing.
+                    {t("chat.selectHint")}
                   </p>
                 </div>
               )}
@@ -238,6 +239,7 @@ export default ChatRoom;
 
 type ChatBoxProps = { chatRoomId: string; currentUser: any; onBack?: () => void };
 const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) => {
+  const { t } = useI18n();
   const [files, setFiles] = useState<File[]>([]);
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selected = Array.from(event.target.files || []);
@@ -369,7 +371,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
           <button
             onClick={onBack}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 md:hidden"
-            aria-label="Back to conversations"
+            aria-label={t("chat.backToConversations")}
           >
             <ArrowBackIcon fontSize="small" />
           </button>
@@ -378,7 +380,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
           <Avatar src={currentUser?.photoURL} name={currentUser?.userName} size={40} />
         </div>
         <p className="truncate text-sm font-semibold text-white">
-          {currentUser?.userName || "Conversation"}
+          {currentUser?.userName || t("chat.conversation")}
         </p>
       </div>
       {imageUploader === false ? (
@@ -399,7 +401,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
       )}
       {imageUploader === false ? (
          <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between px-2 gap-2">
-          <div className="ml-2 text-xs text-gray-600 min-h-4" aria-live="polite">{oppTyping ? `${currentUser?.userName?.split(' ')?.[0] || 'Someone'} is typing…` : ' '}</div>
+          <div className="ml-2 text-xs text-gray-600 min-h-4" aria-live="polite">{oppTyping ? `${currentUser?.userName?.split(' ')?.[0] || t("chat.someone")} ${t("chat.isTyping")}` : ' '}</div>
            <input
             type="text"
             value={newMessage}
@@ -419,7 +421,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
               }
             }}
              className="border-black p-2 rounded-md flex-1 min-w-0"
-            placeholder="Type a message..."
+            placeholder={t("chat.typePlaceholder")}
             style={{
                border: "1px solid black",
             }}
@@ -436,7 +438,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
             disabled={newMessage.trim() === ''}
             className="text-white bg-black disabled:bg-gray-400 p-2 px-4 rounded-md flex flex-row items-center text-sm font-sans font-bold"
           >
-            Send
+            {t("chat.send")}
             <SendIcon fontSize={"small"} className="ml-1" />
           </button>
         </div>
@@ -447,7 +449,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
       {imageUploader === true ? (
         <div className="row-start-2 row-end-13 p-4">
           <div className="pb-3 border-b-2 flex flex-row justify-between">
-            <h1 className="text-lg font-sans font-semibold">Upload Images</h1>
+            <h1 className="text-lg font-sans font-semibold">{t("chat.uploadImages")}</h1>
             <button
               onClick={() => {
                 setImageUploader(false);
@@ -473,7 +475,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
             <VisuallyHiddenInput accept="image/*" type="file" onChange={handleFileChange} />
           </Button>
           <div>
-            <p>Uploaded Images</p>
+            <p>{t("chat.uploadedImages")}</p>
             <div
               className="w-full max-w-2xl overflow-x-auto"
               style={{
@@ -500,7 +502,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
                 className="p-3 bg-black text-white w-full rounded-md px-10 flex flex-row items-center text-sm font-sans font-bold"
                 onClick={handleAddImages}
               >
-                Send <SendIcon fontSize={"small"} className="ml-1" />
+                {t("chat.send")} <SendIcon fontSize={"small"} className="ml-1" />
               </button>
             </div>
           </div>

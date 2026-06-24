@@ -15,8 +15,10 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import Avatar from "../../components/Avatar";
+import { useI18n } from "../../lib/i18n";
 
 const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [chatRooms, setChatRooms] = useState([]);
   const humanizeTime = (date: any) => {
@@ -28,7 +30,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
       const startOfD = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const diffDays = Math.floor((startOfNow.getTime() - startOfD.getTime()) / 86400000);
       if (diffDays === 0) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      if (diffDays === 1) return 'Yesterday';
+      if (diffDays === 1) return t('chat.yesterday');
       if (diffDays < 7) return d.toLocaleDateString([], { weekday: 'short' });
       return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
     } catch { return ''; }
@@ -78,7 +80,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
               ...mapping,
               date: timeStr.split(',')[0],
               time: timeStr.split(',')[1],
-              lastMessage: lastMsg?.type === 'text' ? String(lastMsg.message) : (lastMsg?.type === 'image' ? '📷 Image' : ''),
+              lastMessage: lastMsg?.type === 'text' ? String(lastMsg.message) : (lastMsg?.type === 'image' ? `📷 ${t('chat.photo')}` : ''),
               unread,
               unreadCount,
               lastMessageTime,
@@ -136,21 +138,21 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
   return (
     <div className="flex h-full flex-col bg-white">
       <h1 className="shrink-0 bg-black px-4 py-4 text-lg font-semibold text-white">
-        Messages
+        {t("chat.messagesTitle")}
       </h1>
       <div className="flex-1 overflow-y-auto">
         {chatRooms.length === 0 ? (
           <div className="px-6 py-12 text-center text-sm text-gray-400">
-            No conversations yet.
+            {t("chat.noConversations")}
             <br />
-            Start one by booking or messaging an owner from a listing.
+            {t("chat.startHint")}
           </div>
         ) : (
           chatRooms.map((room) => {
             const active = room.roomId === chatRoomId;
             const name = room?.user?.userName
               ? String(room.user.userName).split(" ").slice(0, 2).join(" ")
-              : "Unknown";
+              : t("chat.unknown");
             return (
               <button
                 key={room.id}
@@ -186,7 +188,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
                           : "text-gray-500"
                       }`}
                     >
-                      {room.lastMessage || "Tap to open conversation"}
+                      {room.lastMessage || t("chat.tapToOpen")}
                     </p>
                     {room.unread && (
                       <span className="inline-flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full bg-cyan-600 px-1.5 text-[11px] font-semibold text-white">

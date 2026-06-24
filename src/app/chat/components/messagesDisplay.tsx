@@ -6,8 +6,10 @@ import Avatar from "../../components/Avatar";
 import BookingComponent from "./BookingComponent";
 import TimeStampConvertor from "../../components/timestampConvertor";
 import AppointmentComponent from "./AppointmentComponent";
+import { useI18n } from "../../lib/i18n";
 
 const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, onLoadMore }: { messages: any[]; currentUser?: any; lastSeenTimestamp?: any; hasMore?: boolean; onLoadMore?: () => void; }) => {
+  const { t } = useI18n();
   const [user] = useAuthState(auth);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [atBottom, setAtBottom] = useState(true);
@@ -86,7 +88,7 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
               onLoadMore && onLoadMore();
             }}
           >
-            Load older messages
+            {t("chat.loadOlder")}
           </button>
         </div>
       ) : null}
@@ -112,7 +114,7 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
                 (lastOfGroup ? (
                   <Avatar
                     src={msg.photoURL}
-                    name={currentUser?.userName || msg.userName || msg.name || "User"}
+                    name={currentUser?.userName || msg.userName || msg.name || t("chat.userFallback")}
                     size={28}
                   />
                 ) : (
@@ -164,7 +166,7 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
           <button
             onClick={scrollToBottom}
             className="pointer-events-auto flex h-9 w-9 items-center justify-center rounded-full bg-[#082e4d] text-white shadow-lg transition-transform hover:scale-105"
-            aria-label="Scroll to latest messages"
+            aria-label={t("chat.scrollToLatest")}
           >
             ↓
           </button>
