@@ -208,13 +208,11 @@ const RoomDetails = ({ room }) => {
       fetchOwnerDetails();
     }
   }, [room]);
-  if (!room) {
-    return <Spinner />; // Show spinner while loading room data
-  }
 
   // Guard against missing/empty images (older docs, or listings with none).
+  // Computed null-safe so hooks below stay above the early return (Rules of Hooks).
   const FALLBACK_IMG = require("../assets/a1.png");
-  const images = (Array.isArray(room.images) ? room.images : [])
+  const images = (Array.isArray(room?.images) ? room.images : [])
     .filter((u) => typeof u === "string" && u.trim().length > 0)
     .slice(0, 10);
   // Never feed <Image> an empty src — that crashes the whole page.
@@ -222,10 +220,12 @@ const RoomDetails = ({ room }) => {
 
   useEffect(() => {
     if (images.length > 0) setSelectedImage(images[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [room]);
 
   // Increment view counter on mount
   useEffect(() => {
+    if (!room?.id) return;
     const incViews = async () => {
       try {
         const ref = doc(db, "roomdetails", room.id);
@@ -237,7 +237,12 @@ const RoomDetails = ({ room }) => {
     };
     incViews();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room.id]);
+  }, [room?.id]);
+
+  // All hooks are above this guard so they always run in the same order.
+  if (!room) {
+    return <Spinner />; // Show spinner while loading room data
+  }
 
   const averageRating = reviews.length
     ? reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) /
