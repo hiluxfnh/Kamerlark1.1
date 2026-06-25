@@ -1,0 +1,12 @@
+# KamerLark — allow crawling of public browse pages, block private/account areas.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /chat
+Disallow: /mylisting
+Disallow: /profile
+Disallow: /listing
+Disallow: /login
+
+# Add your production sitemap once the domain is live, e.g.:
+# Sitemap: https://www.kamerlark.com/sitemap.xml

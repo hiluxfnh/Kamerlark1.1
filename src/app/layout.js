@@ -10,9 +10,40 @@ const inter = Inter({ subsets: ["latin"] });
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://kamerlark.com";
+
 export const metadata = {
-  title: "KamerLark",
-  description: "KamerLark helps students find housing and roommates.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "KamerLark — Student housing in Cameroon",
+    template: "%s | KamerLark",
+  },
+  description:
+    "Find rooms, studios and apartments near universities across Cameroon. Verified owners, direct chat, no agency fees.",
+  keywords: [
+    "student housing",
+    "Cameroon",
+    "rooms for rent",
+    "university accommodation",
+    "roommate",
+    "KamerLark",
+  ],
+  applicationName: "KamerLark",
+  openGraph: {
+    type: "website",
+    siteName: "KamerLark",
+    title: "KamerLark — Student housing in Cameroon",
+    description:
+      "Rooms, studios and apartments near universities across Cameroon — verified owners, direct chat, no agency fees.",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "KamerLark — Student housing in Cameroon",
+    description:
+      "Rooms, studios and apartments near universities across Cameroon.",
+  },
 };
 
 export default function RootLayout({ children }) {
