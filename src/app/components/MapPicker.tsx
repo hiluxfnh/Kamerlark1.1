@@ -9,6 +9,7 @@ import klLogo from '../assets/kamerlark.png';
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png';
 import iconUrl from 'leaflet/dist/images/marker-icon.png';
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
+import { useI18n } from '../lib/i18n';
 L.Icon.Default.mergeOptions({ iconRetinaUrl, iconUrl, shadowUrl });
 
 // Lazy load leaflet only on client
@@ -44,6 +45,7 @@ const ClickHandler: React.FC<{ onPick: (p: LatLng) => void }> = ({ onPick }) => 
 };
 
 const MapPicker: React.FC<Props> = ({ value, onChange }) => {
+  const { t } = useI18n();
   const [query, setQuery] = useState<string>(value?.address || "");
   const [marker, setMarker] = useState<LatLng>(value?.location || { lat: 3.848, lng: 11.5021 });
   const [searching, setSearching] = useState(false);
@@ -179,10 +181,10 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
   setMarker(p);
   onChange && onChange({ address: first.display_name, location: p, source: 'geocode' });
       } else {
-        setError("No results for that address.");
+        setError(t("map.noResults"));
       }
     } catch (e: any) {
-      setError(e?.message || "Search failed.");
+      setError(e?.message || t("map.searchFailed"));
     } finally {
       setSearching(false);
     }
@@ -213,7 +215,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
   const useMyLocation = async () => {
     setLocError("");
     if (typeof window === 'undefined' || !navigator.geolocation) {
-      setLocError("Geolocation not supported on this device.");
+      setLocError(t("map.geoUnsupported"));
       return;
     }
     setLocating(true);
@@ -229,7 +231,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
       },
       (err) => {
         setLocating(false);
-        setLocError(err?.message || 'Failed to get current location.');
+        setLocError(err?.message || t("map.geoFailed"));
       },
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
     );
@@ -301,7 +303,7 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
         <input
           type="text"
           className="border p-2 rounded-md flex-1 min-w-[55%]"
-          placeholder="Enter area, street, or place"
+          placeholder={t("map.placeholder")}
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -324,16 +326,16 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
           disabled={!query.trim() || searching}
           onClick={() => geocode(query)}
         >
-          {searching ? 'Searching…' : 'Search'}
+          {searching ? t("map.searching") : t("home.search")}
         </button>
         <button
           type="button"
           className="shrink-0 grow sm:grow-0 px-3 py-2 rounded-md border border-gray-300 bg-white text-sm"
           onClick={useMyLocation}
           disabled={locating}
-          title="Use my current location"
+          title={t("map.useMyCurrentLocation")}
         >
-          {locating ? 'Locating…' : 'Use my location'}
+          {locating ? t("map.locating") : t("map.useMyLocation")}
         </button>
         {openSuggest && suggestions.length > 0 && (
           <ul className="absolute left-0 right-0 top-12 z-20 bg-white border rounded-md shadow max-h-60 overflow-auto text-sm">
@@ -389,19 +391,19 @@ const MapPicker: React.FC<Props> = ({ value, onChange }) => {
             disabled={locating}
             className="rounded-full bg-white border border-gray-300 shadow flex items-center justify-center"
             style={{ width: 44, height: 44 }}
-            title="Use my location"
-            aria-label="Use my location"
+            title={t("map.useMyLocation")}
+            aria-label={t("map.useMyLocation")}
           >
             {locating ? (
               <span className="text-xs">…</span>
             ) : (
-              <Image src={klLogo} alt="Locate me" width={24} height={24} />
+              <Image src={klLogo} alt={t("map.locateMe")} width={24} height={24} />
             )}
-            <span className="sr-only">Locate me</span>
+            <span className="sr-only">{t("map.locateMe")}</span>
           </button>
         </div>
       </div>
-      <p className="text-xs text-gray-600 mt-1">Tip: type an area, then click on the map to fine-tune the exact spot.</p>
+      <p className="text-xs text-gray-600 mt-1">{t("map.tip")}</p>
     </div>
   );
 };

@@ -573,6 +573,18 @@ const translations = {
     "pubprofile.listingsBy": "Listings by",
     "pubprofile.userShort": "user",
     "pubprofile.noListings": "No listings yet.",
+    // Map picker
+    "map.placeholder": "Enter area, street, or place",
+    "map.searching": "Searching…",
+    "map.locating": "Locating…",
+    "map.useMyLocation": "Use my location",
+    "map.useMyCurrentLocation": "Use my current location",
+    "map.locateMe": "Locate me",
+    "map.noResults": "No results for that address.",
+    "map.searchFailed": "Search failed.",
+    "map.geoUnsupported": "Geolocation not supported on this device.",
+    "map.geoFailed": "Failed to get current location.",
+    "map.tip": "Tip: type an area, then click on the map to fine-tune the exact spot.",
     // Footer
     "footer.tagline":
       "Your trusted accommodation platform for students and young professionals.",
@@ -1193,6 +1205,18 @@ const translations = {
     "pubprofile.listingsBy": "Annonces de",
     "pubprofile.userShort": "l'utilisateur",
     "pubprofile.noListings": "Aucune annonce pour l'instant.",
+    // Map picker
+    "map.placeholder": "Saisissez un quartier, une rue ou un lieu",
+    "map.searching": "Recherche…",
+    "map.locating": "Localisation…",
+    "map.useMyLocation": "Utiliser ma position",
+    "map.useMyCurrentLocation": "Utiliser ma position actuelle",
+    "map.locateMe": "Me localiser",
+    "map.noResults": "Aucun résultat pour cette adresse.",
+    "map.searchFailed": "Échec de la recherche.",
+    "map.geoUnsupported": "La géolocalisation n'est pas prise en charge sur cet appareil.",
+    "map.geoFailed": "Impossible d'obtenir la position actuelle.",
+    "map.tip": "Astuce : saisissez un quartier, puis cliquez sur la carte pour ajuster l'emplacement exact.",
     // Footer
     "footer.tagline":
       "Votre plateforme de logement de confiance pour les étudiants et jeunes professionnels.",
