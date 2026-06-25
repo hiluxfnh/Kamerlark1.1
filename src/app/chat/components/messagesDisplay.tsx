@@ -99,7 +99,7 @@ const MessagesDisplay = ({ messages, currentUser, lastSeenTimestamp, hasMore, on
         const isSpecial = msg.type === "booking" || msg.type === "appointment";
         return (
           <div
-            key={msg.id}
+            key={msg.id || `msg-${index}`}
             className={`flex w-full ${own ? "justify-end" : "justify-start"} ${
               firstOfGroup ? "mt-3" : "mt-[3px]"
             }`}
