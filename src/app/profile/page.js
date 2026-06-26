@@ -1577,6 +1577,12 @@ function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [lookingForRoommate, setLookingForRoommate] = useState(false);
+  const [notifPerm, setNotifPerm] = useState("default");
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setNotifPerm(Notification.permission);
+    }
+  }, []);
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -1733,6 +1739,31 @@ function Settings() {
           <p className="text-xs text-gray-500 mt-2">
             {t("settings.notifHint")}
           </p>
+          <div className="mt-3 border-t border-gray-100 pt-3">
+            <p className="mb-2 text-xs text-gray-500">{t("notif.hint")}</p>
+            <Button
+              size="small"
+              variant="outlined"
+              disabled={notifPerm === "granted" || notifPerm === "denied"}
+              onClick={async () => {
+                try {
+                  if (typeof window === "undefined" || !("Notification" in window))
+                    return;
+                  const res = await Notification.requestPermission();
+                  setNotifPerm(res);
+                  if (res === "granted") openSnack(t("notif.enabled"));
+                  else if (res === "denied") openSnack(t("notif.blocked"), "warning");
+                } catch {}
+              }}
+              style={{ borderColor: "black", color: "black", textTransform: "none" }}
+            >
+              {notifPerm === "granted"
+                ? t("notif.enabled")
+                : notifPerm === "denied"
+                ? t("notif.blocked")
+                : t("notif.enable")}
+            </Button>
+          </div>
         </div>
 
         {/* Calendar defaults */}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styles from "../styles/Header.module.css";
 import Image from "next/image";
 import kl from "../assets/kamerlark.png";
@@ -33,11 +33,13 @@ const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevUnreadRef = useRef(null);
 
   // Compute lightweight unread count from chatRoomMapping: lastMessageTs > lastRead[uid]
   useEffect(() => {
     if (!user) {
       setUnreadCount(0);
+      prevUnreadRef.current = null;
       return;
     }
     const qRef = query(
@@ -63,9 +65,32 @@ const Header = () => {
         if (lastMsgMs && lastMsgMs > lastReadMs) count += 1;
       });
       setUnreadCount(count);
+      // Fire a desktop notification when a new unread arrives (not on first
+      // load, not while you're already in the chat, and only if permitted).
+      if (
+        prevUnreadRef.current !== null &&
+        count > prevUnreadRef.current &&
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        !(pathname || "").startsWith("/chat")
+      ) {
+        try {
+          const n = new Notification(t("notif.newMessage"), {
+            body: t("notif.newMessageBody"),
+            icon: "/icon.png",
+          });
+          n.onclick = () => {
+            window.focus();
+            router.push("/chat/messagecenter");
+            n.close();
+          };
+        } catch {}
+      }
+      prevUnreadRef.current = count;
     });
     return () => unsub();
-  }, [user?.uid]);
+  }, [user?.uid, pathname]);
 
   // Lock body scroll while the mobile menu is open
   useEffect(() => {
