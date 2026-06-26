@@ -36,6 +36,8 @@ import {
   StaticTimePicker,
 } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { frFR, enUS } from "@mui/x-date-pickers/locales";
+import "dayjs/locale/fr";
 import CustomButton from "../components/CustomButton";
 import dayjs from "dayjs";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -64,7 +66,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 // Removed demo reviews; we persist reviews on the roomdetails document
 
 const RoomDetails = ({ room }) => {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const router = useRouter();
   const [user] = useAuthState(auth);
   const MapComponent = dynamic(() => import("../components/MapComponent"), {
@@ -78,8 +80,6 @@ const RoomDetails = ({ room }) => {
   );
   const [isBookNowOpen, setIsBookNowOpen] = useState(false);
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [isVideoConfOpen, setIsVideoConfOpen] = useState(false);
   const [isContractTermsOpen, setIsContractTermsOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
   const [addBookingSuccess, setAddBookingSuccess] = useState(false);
@@ -89,6 +89,69 @@ const RoomDetails = ({ room }) => {
     setToast({ open: true, message, severity });
   const [isBooking, setIsBooking] = useState(false);
   const [isRequestingAppt, setIsRequestingAppt] = useState(false);
+  const [openingChat, setOpeningChat] = useState(false);
+
+  // Open (or create) a real conversation with the owner and jump to it.
+  // Replaces the old broken in-page chat form that never actually sent.
+  const startChatWithOwner = async () => {
+    if (!auth.currentUser) {
+      router.push(`/login?next=${encodeURIComponent(`/room/${room.id}`)}`);
+      return;
+    }
+    const ownerId = room?.ownerId;
+    if (!ownerId || ownerId === auth.currentUser.uid) return;
+    setOpeningChat(true);
+    try {
+      const roomId = await ChatRoomHandler({
+        userId1: auth.currentUser.uid,
+        userId2: ownerId,
+      });
+      if (roomId) router.push(`/chat/messagecenter?roomId=${roomId}`);
+    } catch (e) {
+      console.error("Could not open chat:", e);
+      notify(t("room.permDenied"), "error");
+    } finally {
+      setOpeningChat(false);
+    }
+  };
+
+  // Localize the stored room spec values (kept in English in Firestore) into
+  // a natural phrase for the active language — avoids "Single Lit" Franglais.
+  const titleCase = (v) =>
+    v ? String(v).charAt(0).toUpperCase() + String(v).slice(1) : "";
+  const bedTypeLabel = (v) => {
+    const adj =
+      { single: t("search.single"), double: t("search.double"), triple: t("search.triple"), quadruple: t("search.quadruple"), other: t("common.other") }[
+        String(v || "").toLowerCase()
+      ] || titleCase(v);
+    if (!adj) return "";
+    return lang === "fr"
+      ? `${t("room.bed")} ${adj.toLowerCase()}`
+      : `${adj} ${t("room.bed")}`;
+  };
+  const washroomLabel = (v) => {
+    const adj =
+      { attached: t("search.attached"), common: t("search.commonWashroom"), other: t("common.other") }[
+        String(v || "").toLowerCase()
+      ] || titleCase(v);
+    if (!adj) return "";
+    return lang === "fr"
+      ? `${t("room.washroom")} ${adj.toLowerCase()}`
+      : `${adj} ${t("room.washroom")}`;
+  };
+  const furnishedLabel = (v) =>
+    ({
+      furnished: t("search.furnished"),
+      unfurnished: t("search.unfurnished"),
+      semifurnished: t("search.semiFurnished"),
+      partiallyfurnished: t("listing.partiallyFurnished"),
+    }[String(v || "").toLowerCase().replace(/[\s-]/g, "")] || titleCase(v));
+
+  // Localize the MUI date/time pickers (date format + toolbar labels like
+  // "SELECT TIME") to match the active language.
+  const pickerAdapterLocale = lang === "fr" ? "fr" : "en";
+  const pickerLocaleText = (lang === "fr" ? frFR : enUS).components
+    .MuiLocalizationProvider.defaultProps.localeText;
 
   const [dropDownMenu, setDropDownMenu] = useState({
     safetyFeatures: false,
@@ -102,7 +165,7 @@ const RoomDetails = ({ room }) => {
     email: "",
     phone: "",
     address: "",
-    moveInDate: dayjs("2022-04-17"),
+    moveInDate: dayjs(),
     notes: "",
     agreeTerms: false,
   });
@@ -110,8 +173,8 @@ const RoomDetails = ({ room }) => {
     name: "",
     email: "",
     phone: "",
-    date: dayjs("2022-04-17"),
-    time: dayjs("2022-04-17T15:30"),
+    date: dayjs(),
+    time: dayjs().hour(10).minute(0).second(0),
     appointmenttype: "",
     message: "",
   });
@@ -653,12 +716,13 @@ const RoomDetails = ({ room }) => {
                       {t("room.notTakingBookings")}
                     </p>
                     <Button
-                      onClick={() => setIsChatOpen(true)}
+                      onClick={startChatWithOwner}
+                      disabled={openingChat}
                       variant="outlined"
                       fullWidth
                       style={{ borderColor: "black", color: "black" }}
                     >
-                      {t("room.chatWithOwner")}
+                      {openingChat ? t("chat.loading") : t("room.chatWithOwner")}
                     </Button>
                   </div>
                 ) : (
@@ -681,7 +745,8 @@ const RoomDetails = ({ room }) => {
                         {t("room.visitFirst")}
                       </Button>
                       <Button
-                        onClick={() => setIsChatOpen(true)}
+                        onClick={startChatWithOwner}
+                        disabled={openingChat}
                         variant="outlined"
                         fullWidth
                         style={{ borderColor: "black", color: "black" }}
@@ -768,10 +833,7 @@ const RoomDetails = ({ room }) => {
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-rose-800">
             <WeekendOutlinedIcon fontSize="small" />
-            <p className="text-black">
-              {(room.furnishedStatus || "").slice(0, 1).toUpperCase() +
-                (room.furnishedStatus || "").slice(1)}
-            </p>
+            <p className="text-black">{furnishedLabel(room.furnishedStatus)}</p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-cyan-800">
             <AspectRatioOutlinedIcon fontSize="small" />
@@ -789,11 +851,7 @@ const RoomDetails = ({ room }) => {
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-amber-500">
             <BedOutlinedIcon fontSize="small" />
-            <p className="text-black">
-              {(room.bedType || "").slice(0, 1).toUpperCase() +
-                (room.bedType || "").slice(1)}{" "}
-              {t("room.bed")}
-            </p>
+            <p className="text-black">{bedTypeLabel(room.bedType)}</p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-orange-700">
             <PeopleOutlineOutlinedIcon fontSize="small" />
@@ -801,11 +859,7 @@ const RoomDetails = ({ room }) => {
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-green-800">
             <BathtubOutlinedIcon fontSize="small" />
-            <p className="text-black">
-              {(room.washrooms || "").slice(0, 1).toUpperCase() +
-                (room.washrooms || "").slice(1)}{" "}
-              {t("room.washroom")}
-            </p>
+            <p className="text-black">{washroomLabel(room.washrooms)}</p>
           </div>
           <div className="flex flex-row items-center gap-2 p-2 border rounded-3xl px-4 text-sm text-pink-800">
             <BikeScooterOutlinedIcon fontSize="small" />
@@ -1187,7 +1241,7 @@ const RoomDetails = ({ room }) => {
             colEnd={8}
           />
           <div className="col-start-8 col-end-13">
-            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={pickerAdapterLocale} localeText={pickerLocaleText} fullWidth>
               <DatePicker
                 label={t("room.moveInDate")}
                 value={bookingDetails.moveInDate}
@@ -1273,7 +1327,7 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
           <div className="col-start-1 col-end-13">
-            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={pickerAdapterLocale} localeText={pickerLocaleText} fullWidth>
               <DatePicker
                 label={t("room.preferredDate")}
                 fullWidth
@@ -1288,9 +1342,9 @@ const RoomDetails = ({ room }) => {
             </LocalizationProvider>
           </div>
           <div className="col-start-1 col-end-13">
-            <LocalizationProvider dateAdapter={AdapterDayjs} fullWidth>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={pickerAdapterLocale} localeText={pickerLocaleText} fullWidth>
               <StaticTimePicker
-                defaultValue={dayjs("2022-04-17T15:30")}
+                defaultValue={dayjs().hour(10).minute(0).second(0)}
                 value={appointmentDetails.time}
                 onChange={(newValue) => {
                   setAppointmentDetails((prevDetails) => ({
@@ -1336,110 +1390,6 @@ const RoomDetails = ({ room }) => {
             colEnd={13}
           />
         </div>
-      </CustomModal>
-
-      <CustomModal
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
-        title={t("room.chatOwnerTitle")}
-      >
-        <p>{t("room.chatOwnerBody")}</p>
-        <form>
-          <label>
-            {t("room.fullName")}
-            <input
-              type="text"
-              name="name"
-              value={bookingDetails.name}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            {t("room.emailColon")}{" "}
-            <span className={styles.email_note}>
-              {t("room.mustChangeProfile")}
-            </span>
-            <input
-              type="email"
-              name="email"
-              value={bookingDetails.email}
-              readOnly
-              required
-            />
-          </label>
-          <label>
-            {t("room.phoneColon")}
-            <input
-              type="tel"
-              name="phone"
-              value={bookingDetails.phone}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            {t("room.yourMessage")}
-            <textarea name="message" required></textarea>
-          </label>
-          <button type="submit">{t("common.submit")}</button>
-        </form>
-      </CustomModal>
-
-      <CustomModal
-        isOpen={isVideoConfOpen}
-        onClose={() => setIsVideoConfOpen(false)}
-        title={t("room.videoConfTitle")}
-      >
-        <p>{t("room.videoConfBody")}</p>
-        <form>
-          <label>
-            {t("room.fullName")}
-            <input
-              type="text"
-              name="name"
-              value={bookingDetails.name}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            {t("room.emailColon")}{" "}
-            <span className={styles.email_note}>
-              {t("room.mustChangeProfile")}
-            </span>
-            <input
-              type="email"
-              name="email"
-              value={bookingDetails.email}
-              readOnly
-              required
-            />
-          </label>
-          <label>
-            {t("room.phoneColon")}
-            <input
-              type="tel"
-              name="phone"
-              value={bookingDetails.phone}
-              onChange={handleInputChange}
-              required
-            />
-          </label>
-          <label>
-            {t("room.preferredDate")}
-            <input type="date" name="date" required />
-          </label>
-          <label>
-            {t("room.preferredTime")}
-            <input type="time" name="time" required />
-          </label>
-          <label>
-            {t("room.yourMessage")}
-            <textarea name="message" required></textarea>
-          </label>
-          <button type="submit">{t("common.submit")}</button>
-        </form>
       </CustomModal>
 
       <CustomModal
