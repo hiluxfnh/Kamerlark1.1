@@ -35,6 +35,24 @@ const RoomCardNew = ({ room }) => {
   const moreAmenities = amenities.length - shownAmenities.length;
   const name = room?.name || "Room";
   const size = cleanSize(room?.roomSize);
+  // Localize stored English values for display (data stays in English).
+  const titleCase = (v) =>
+    v ? String(v).charAt(0).toUpperCase() + String(v).slice(1) : "";
+  const furnishedLabel = (v) =>
+    ({
+      furnished: t("search.furnished"),
+      unfurnished: t("search.unfurnished"),
+      semifurnished: t("search.semiFurnished"),
+      partiallyfurnished: t("listing.partiallyFurnished"),
+    }[String(v || "").toLowerCase().replace(/[\s-]/g, "")] || titleCase(v));
+  const bedLabel = (v) =>
+    ({
+      single: t("search.single"),
+      double: t("search.double"),
+      triple: t("search.triple"),
+      quadruple: t("search.quadruple"),
+      other: t("common.other"),
+    }[String(v || "").toLowerCase()] || titleCase(v));
 
   return (
     <Link
@@ -59,7 +77,7 @@ const RoomCardNew = ({ room }) => {
         ) : null}
         {room?.furnishedStatus ? (
           <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-gray-800 shadow-sm backdrop-blur">
-            {room.furnishedStatus}
+            {furnishedLabel(room.furnishedStatus)}
           </span>
         ) : null}
         {room?.available === false ? (
@@ -85,7 +103,7 @@ const RoomCardNew = ({ room }) => {
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-600">
           {room?.bedType ? (
             <span className="inline-flex items-center gap-1">
-              <HotelIcon sx={{ fontSize: 15 }} /> {room.bedType}
+              <HotelIcon sx={{ fontSize: 15 }} /> {bedLabel(room.bedType)}
             </span>
           ) : null}
           {room?.capacity ? (
