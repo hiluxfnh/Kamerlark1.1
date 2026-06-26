@@ -21,6 +21,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LanguageIcon from "@mui/icons-material/Language";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import Avatar from "./Avatar";
 import { useI18n } from "../lib/i18n";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
@@ -49,6 +50,11 @@ const Header = () => {
     const unsub = onSnapshot(qRef, (snap) => {
       let count = 0;
       snap.forEach((doc) => {
+        // Skip your own in-flight write: when YOU send, lastMessageTs and your
+        // lastRead are written together, but the optimistic snapshot can show
+        // the new lastMessageTs before lastRead resolves — which briefly counts
+        // your own message as unread. Ignoring pending-write docs avoids that blink.
+        if (doc.metadata?.hasPendingWrites) return;
         const d = doc.data();
         const lastMsg = d?.lastMessageTs;
         const lastRead = d?.lastRead && d.lastRead[user.uid];
@@ -169,6 +175,16 @@ const Header = () => {
           >
             <PeopleIcon fontSize="18" className="mr-1" />
             {t("nav.community")}
+          </Link>
+          <Link
+            href="/market"
+            aria-current={pathname === "/market" ? "page" : undefined}
+            className={`text-white flex items-center text-sm font-sans hover:opacity-90 ${
+              pathname === "/market" ? "underline underline-offset-4" : ""
+            }`}
+          >
+            <StorefrontIcon fontSize="18" className="mr-1" />
+            {t("nav.market")}
           </Link>
           <Link
             href="/help"
@@ -313,6 +329,12 @@ const Header = () => {
                 label: t("nav.community"),
                 Icon: PeopleIcon,
                 match: "/community",
+              },
+              {
+                href: "/market",
+                label: t("nav.market"),
+                Icon: StorefrontIcon,
+                match: "/market",
               },
               { href: "/help", label: t("nav.help"), Icon: HelpIcon, match: "/help" },
               ...(user

@@ -248,6 +248,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
   const roomRef = doc(db, "chatRoom", chatRoomId);
   const [chatRoomMappingId, setChatRoomMappingId] = useState("");
   const [oppUserId, setOppUserId] = useState("");
+  const [oppUser, setOppUser] = useState<any>(null);
   const [user] = useAuthState(auth);
   const [newMessage, setNewMessage] = useState("");
   const router = useRouter();
@@ -266,6 +267,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
             (id: string) => id !== user.uid
           )[0];
           setOppUserId(oppositeUserId);
+          // Load the other person's profile so the header shows their name and
+          // avatar even when the chat was opened by URL (no currentUser passed).
+          if (oppositeUserId) {
+            try {
+              const u = await getDoc(doc(db, "Users", oppositeUserId));
+              if (u.exists()) setOppUser(u.data());
+            } catch {}
+          }
         } catch (e) {
           // Non-fatal: typing indicator / read receipts just won't update.
           console.warn("Could not resolve chat mapping:", e);
@@ -377,10 +386,14 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
           </button>
         )}
         <div className="mx-1 shrink-0">
-          <Avatar src={currentUser?.photoURL} name={currentUser?.userName} size={40} />
+          <Avatar
+            src={currentUser?.photoURL || oppUser?.photoURL}
+            name={currentUser?.userName || oppUser?.userName}
+            size={40}
+          />
         </div>
         <p className="truncate text-sm font-semibold text-white">
-          {currentUser?.userName || t("chat.conversation")}
+          {currentUser?.userName || oppUser?.userName || t("chat.conversation")}
         </p>
       </div>
       {imageUploader === false ? (
@@ -393,7 +406,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
             }}
           />
           <div className="relative h-full w-full">
-            <Messages roomId={chatRoomId} currentUser={currentUser} />
+            <Messages roomId={chatRoomId} currentUser={currentUser || oppUser} />
           </div>
         </div>
       ) : (
@@ -401,7 +414,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chatRoomId, currentUser, onBack }) =>
       )}
       {imageUploader === false ? (
          <div className="row-start-12 row-end-13 flex flex-row items-center w-full justify-between px-2 gap-2">
-          <div className="ml-2 text-xs text-gray-600 min-h-4" aria-live="polite">{oppTyping ? `${currentUser?.userName?.split(' ')?.[0] || t("chat.someone")} ${t("chat.isTyping")}` : ' '}</div>
+          <div className="ml-2 text-xs text-gray-600 min-h-4" aria-live="polite">{oppTyping ? `${(currentUser || oppUser)?.userName?.split(' ')?.[0] || t("chat.someone")} ${t("chat.isTyping")}` : ' '}</div>
            <input
             type="text"
             value={newMessage}

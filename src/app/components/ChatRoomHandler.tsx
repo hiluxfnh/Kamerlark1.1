@@ -9,14 +9,35 @@ const ChatRoomHandler = async ({ userId1, userId2 }) => {
     const pairId = `${a}_${b}`;
     const pairDocRef = doc(db, 'chatRoomMapping', pairId);
 
+    // Make sure the chatRoom doc for a reused roomId actually exists and lists
+    // both participants. Legacy/orphaned mappings can point at a chatRoom doc
+    // that's missing or has no userIds, which makes the messages subcollection
+    // unreadable (rules require `uid in chatRoom.userIds`) and the thread shows
+    // "this conversation is no longer available". merge-create heals it.
+    const ensureChatRoom = async (roomId: string) => {
+        if (!roomId) return;
+        try {
+            await setDoc(
+                doc(db, 'chatRoom', roomId),
+                { userIds: [userId1, userId2] },
+                { merge: true }
+            );
+        } catch (_) {
+            // If the doc exists but we're somehow not in userIds, nothing we can
+            // do client-side; leave it. (Shouldn't happen for our own pair.)
+        }
+    };
+
     // Fast path: the deterministic pair doc already exists.
     // getDoc on a non-existent doc can be denied by rules when resource==null,
     // so we catch that and fall through to the query.
     try {
         const pairDoc = await getDoc(pairDocRef);
         if (pairDoc.exists() && pairDoc.data().roomId) {
+            const roomId = pairDoc.data().roomId;
+            await ensureChatRoom(roomId);
             await setDoc(pairDocRef, { timestamp: serverTimestamp() }, { merge: true });
-            return pairDoc.data().roomId;
+            return roomId;
         }
     } catch (_) {
         // permission denied on non-existent doc — fall through to query
@@ -30,6 +51,7 @@ const ChatRoomHandler = async ({ userId1, userId2 }) => {
     const filtered = data.docs.find(d => (d.data().userIds || []).includes(userId2));
     if (filtered && filtered.data().roomId) {
         const existingRoomId = filtered.data().roomId;
+        await ensureChatRoom(existingRoomId);
         // Heal forward: ensure the deterministic pair doc points at the same
         // room so future lookups are O(1) and no further duplicates appear.
         try {

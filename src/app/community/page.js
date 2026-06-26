@@ -38,13 +38,6 @@ const CATEGORIES = [
     badge: "bg-emerald-100 text-emerald-700",
   },
   {
-    key: "market",
-    labelKey: "community.catMarket",
-    shortKey: "community.shortMarket",
-    emoji: "🛋️",
-    badge: "bg-amber-100 text-amber-700",
-  },
-  {
     key: "question",
     labelKey: "community.catQuestion",
     shortKey: "community.shortQuestion",
@@ -59,7 +52,10 @@ const CATEGORIES = [
     badge: "bg-rose-100 text-rose-700",
   },
 ];
-const catOf = (key) => CATEGORIES.find((c) => c.key === key) || CATEGORIES[3];
+const catOf = (key) =>
+  CATEGORIES.find((c) => c.key === key) ||
+  CATEGORIES.find((c) => c.key === "question") ||
+  CATEGORIES[0];
 
 const timeAgo = (ts) => {
   try {
@@ -315,13 +311,14 @@ export default function CommunityPage() {
     return s;
   }, [following]);
 
-  const shownPosts = useMemo(
-    () =>
-      feedFilter === "all"
-        ? posts
-        : posts.filter((p) => p.category === feedFilter),
-    [posts, feedFilter]
-  );
+  const shownPosts = useMemo(() => {
+    // Marketplace items live on the dedicated /market page, so keep them out
+    // of the community feed to avoid two homes for the same content.
+    const feed = posts.filter((p) => p.category !== "market");
+    return feedFilter === "all"
+      ? feed
+      : feed.filter((p) => p.category === feedFilter);
+  }, [posts, feedFilter]);
 
   const filteredMembers = useMemo(() => {
     const q = memberSearch.trim().toLowerCase();
