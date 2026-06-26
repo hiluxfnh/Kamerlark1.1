@@ -12,6 +12,7 @@ import {
   where,
   addDoc,
   deleteDoc,
+  updateDoc,
   serverTimestamp,
   orderBy,
   limit,
@@ -101,6 +102,8 @@ export default function CommunityPage() {
   const [memberSearch, setMemberSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(24);
   const [busyChat, setBusyChat] = useState(null);
+  const [sentRoommate, setSentRoommate] = useState([]); // requests I've sent
+  const [busyRoommate, setBusyRoommate] = useState(null);
 
   // Gate to signed-in users
   useEffect(() => {
@@ -154,8 +157,48 @@ export default function CommunityPage() {
       } catch (e) {
         console.error("Failed to load following", e);
       }
+      try {
+        const rs = await getDocs(
+          query(
+            collection(db, "roommateRequests"),
+            where("fromUserId", "==", user.uid)
+          )
+        );
+        setSentRoommate(rs.docs.map((d) => ({ id: d.id, ...d.data() })));
+      } catch (e) {
+        console.error("Failed to load roommate requests", e);
+      }
     })();
   }, [user]);
+
+  const sentRoommateSet = useMemo(() => {
+    const s = new Set();
+    sentRoommate.forEach((r) => r.toUserId && s.add(r.toUserId));
+    return s;
+  }, [sentRoommate]);
+
+  const sendRoommateRequest = async (targetId) => {
+    if (!user || user.uid === targetId || sentRoommateSet.has(targetId)) return;
+    setBusyRoommate(targetId);
+    // Optimistic so the button flips to "Requested" immediately.
+    setSentRoommate((prev) => [...prev, { id: "temp", toUserId: targetId, status: "pending" }]);
+    try {
+      await addDoc(collection(db, "roommateRequests"), {
+        fromUserId: user.uid,
+        fromName: user.displayName || me?.userName || "A student",
+        fromPhoto: user.photoURL || me?.photoURL || "",
+        toUserId: targetId,
+        status: "pending",
+        createdAt: serverTimestamp(),
+      });
+    } catch (e) {
+      console.error("Failed to send roommate request", e);
+      setSentRoommate((prev) => prev.filter((r) => r.toUserId !== targetId || r.id !== "temp"));
+      alert(t("roommate.requestError"));
+    } finally {
+      setBusyRoommate(null);
+    }
+  };
 
   const me = useMemo(
     () => users.find((u) => u.id === user?.uid),
@@ -197,6 +240,23 @@ export default function CommunityPage() {
       setPosts((p) => p.filter((x) => x.id !== id));
     } catch (e) {
       console.error("Failed to delete", e);
+    }
+  };
+
+  // Let an author mark their own post (e.g. a marketplace item) as taken/sold
+  // or available again. Optimistic update; only the `available` field changes.
+  const togglePostAvailable = async (post) => {
+    const next = post.available === false; // currently taken -> make available
+    setPosts((p) =>
+      p.map((x) => (x.id === post.id ? { ...x, available: next } : x))
+    );
+    try {
+      await updateDoc(doc(db, "communityPosts", post.id), { available: next });
+    } catch (e) {
+      console.error("Failed to update availability", e);
+      setPosts((p) =>
+        p.map((x) => (x.id === post.id ? { ...x, available: !next } : x))
+      );
     }
   };
 
@@ -479,19 +539,36 @@ export default function CommunityPage() {
                                 · {timeAgo(p.createdAt)}
                               </span>
                             </div>
-                            <span
-                              className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${c.badge}`}
-                            >
-                              {c.emoji} {t(c.labelKey)}
+                            <span className="mt-1 inline-flex flex-wrap items-center gap-1.5">
+                              <span
+                                className={`inline-block rounded-full px-2 py-0.5 text-[11px] font-medium ${c.badge}`}
+                              >
+                                {c.emoji} {t(c.labelKey)}
+                              </span>
+                              {p.available === false && (
+                                <span className="inline-block rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                                  {t("community.takenBadge")}
+                                </span>
+                              )}
                             </span>
                           </div>
                           {own && (
-                            <button
-                              onClick={() => deletePost(p.id)}
-                              className="shrink-0 text-xs text-gray-400 hover:text-red-600"
-                            >
-                              {t("community.delete")}
-                            </button>
+                            <div className="flex shrink-0 flex-col items-end gap-1">
+                              <button
+                                onClick={() => togglePostAvailable(p)}
+                                className="text-xs font-medium text-[#082e4d] hover:underline"
+                              >
+                                {p.available === false
+                                  ? t("community.markAvailable")
+                                  : t("community.markTaken")}
+                              </button>
+                              <button
+                                onClick={() => deletePost(p.id)}
+                                className="text-xs text-gray-400 hover:text-red-600"
+                              >
+                                {t("community.delete")}
+                              </button>
+                            </div>
                           )}
                         </div>
 
@@ -588,6 +665,11 @@ export default function CommunityPage() {
                           {m.location || m.city || ""}
                         </p>
                         <div className="mt-2 flex flex-wrap justify-center gap-1">
+                          {m.lookingForRoommate && (
+                            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-medium text-violet-700">
+                              🤝 {t("roommate.lookingBadge")}
+                            </span>
+                          )}
                           {sameUni && (
                             <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] text-blue-700">
                               {t("community.sameUni")}
@@ -623,6 +705,13 @@ export default function CommunityPage() {
                             </button>
                           )}
                         </div>
+                        <button
+                          onClick={() => sendRoommateRequest(m.id)}
+                          disabled={sentRoommateSet.has(m.id) || busyRoommate === m.id}
+                          className="mt-2 w-full rounded-full border border-violet-300 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:opacity-60"
+                        >
+                          🤝 {sentRoommateSet.has(m.id) ? t("roommate.requested") : t("roommate.sendRequest")}
+                        </button>
                       </div>
                     );
                   })

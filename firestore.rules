@@ -97,9 +97,32 @@ service cloud.firestore {
         && request.resource.data.text is string
         && request.resource.data.text.size() > 0
         && request.resource.data.text.size() <= 2000;
-      allow update: if false;
+      // The author may flip ONLY the `available` flag (mark item taken/sold or
+      // available again). No other field can be edited.
+      allow update: if isSignedIn()
+        && resource.data.authorId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['available']);
       allow delete: if isSignedIn()
         && (resource.data.authorId == request.auth.uid || isAdmin());
+    }
+
+    // Roommate requests: a one-way invite from one student to another.
+    // Visible to either party; sender creates (as themselves, status pending);
+    // only the recipient may change the status to accepted/declined.
+    match /roommateRequests/{requestId} {
+      allow read: if isSignedIn()
+        && (resource.data.fromUserId == request.auth.uid
+            || resource.data.toUserId == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.fromUserId == request.auth.uid
+        && request.resource.data.toUserId is string
+        && request.resource.data.fromUserId != request.resource.data.toUserId
+        && request.resource.data.status == 'pending';
+      allow update: if isSignedIn()
+        && resource.data.toUserId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['accepted', 'declined'];
+      allow delete: if isSignedIn() && resource.data.fromUserId == request.auth.uid;
     }
 
     // Follows: social graph — readable by signed-in users; a user may only

@@ -43,6 +43,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import EventIcon from "@mui/icons-material/Event";
 import Spinner from "../components/Spinner"; // Import Spinner
+import ChatRoomHandler from "../components/ChatRoomHandler";
 import { useI18n } from "../lib/i18n";
 import TextField from "@mui/material/TextField";
 import PropTypes from "prop-types";
@@ -765,9 +766,56 @@ function StatusIcon({ status, className }) {
 
 function Notifications() {
   const { t } = useI18n();
+  const router = useRouter();
   const [user] = useAuthState(auth);
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [roommateReqs, setRoommateReqs] = useState([]); // incoming pending
+
+  // Incoming roommate requests (someone asked to be your roommate).
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const snap = await getDocs(
+          query(
+            collection(db, "roommateRequests"),
+            where("toUserId", "==", user.uid)
+          )
+        );
+        const pending = snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((r) => (r.status || "pending") === "pending");
+        setRoommateReqs(pending);
+      } catch (e) {
+        console.warn("Could not load roommate requests", e);
+      }
+    })();
+  }, [user?.uid]);
+
+  const respondRoommate = async (reqId, status) => {
+    setRoommateReqs((prev) => prev.filter((r) => r.id !== reqId));
+    try {
+      await setDoc(
+        doc(db, "roommateRequests", reqId),
+        { status },
+        { merge: true }
+      );
+      // On accept, open a chat so the two can start talking.
+      if (status === "accepted") {
+        const req = roommateReqs.find((r) => r.id === reqId);
+        if (req?.fromUserId) {
+          const roomId = await ChatRoomHandler({
+            userId1: user.uid,
+            userId2: req.fromUserId,
+          });
+          if (roomId) router.push(`/chat/messagecenter?roomId=${roomId}`);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to respond to roommate request", e);
+    }
+  };
   useEffect(() => {
     const load = async () => {
       if (!user) {
@@ -969,12 +1017,49 @@ function Notifications() {
     );
   return (
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-lg font-semibold text-gray-900">Notifications</h2>
-      {!items.length ? (
+      <h2 className="mb-4 text-lg font-semibold text-gray-900">
+        {t("nav.notifications")}
+      </h2>
+
+      {roommateReqs.length > 0 && (
+        <div className="mb-5">
+          <h3 className="mb-2 text-sm font-semibold text-gray-700">
+            {t("roommate.incomingTitle")}
+          </h3>
+          <div className="space-y-2.5">
+            {roommateReqs.map((r) => (
+              <div
+                key={r.id}
+                className="flex items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3"
+              >
+                <Avatar src={r.fromPhoto} name={r.fromName} size={40} />
+                <p className="min-w-0 flex-1 text-sm text-gray-800">
+                  <span className="font-semibold">{r.fromName || "A student"}</span>{" "}
+                  {t("roommate.wantsToRoom")}
+                </p>
+                <button
+                  onClick={() => respondRoommate(r.id, "accepted")}
+                  className="shrink-0 rounded-full bg-[#082e4d] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61]"
+                >
+                  {t("roommate.accept")}
+                </button>
+                <button
+                  onClick={() => respondRoommate(r.id, "declined")}
+                  className="shrink-0 rounded-full border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  {t("roommate.decline")}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!items.length && roommateReqs.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-300 py-10 text-center text-sm text-gray-400">
           {t("profile.allCaughtUp")}
         </div>
-      ) : (
+      ) : !items.length ? null : (
         <div className="space-y-2.5">
           {items.map((n) => (
             <a
@@ -1491,6 +1576,7 @@ function Settings() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [lookingForRoommate, setLookingForRoommate] = useState(false);
   const [snack, setSnack] = useState({
     open: false,
     message: "",
@@ -1510,6 +1596,7 @@ function Settings() {
         const docRef = doc(db, "Users", user.uid);
         const snap = await getDoc(docRef);
         const incoming = snap.exists() ? snap.data().settings || {} : {};
+        setLookingForRoommate(snap.data()?.lookingForRoommate === true);
         setSettings((prev) => ({
           ...prev,
           ...incoming,
@@ -1538,7 +1625,11 @@ function Settings() {
     if (!user) return;
     setSaving(true);
     try {
-      await setDoc(doc(db, "Users", user.uid), { settings }, { merge: true });
+      await setDoc(
+        doc(db, "Users", user.uid),
+        { settings, lookingForRoommate },
+        { merge: true }
+      );
       // Apply theme to document
       if (typeof document !== "undefined") {
         document.body.setAttribute("data-theme", settings.theme || "system");
@@ -1715,6 +1806,23 @@ function Settings() {
               </Select>
             </div>
           </div>
+        </div>
+
+        {/* Roommate availability */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+          <h3 className="mb-1 text-base font-semibold text-gray-900">
+            {t("roommate.lookingTitle")}
+          </h3>
+          <p className="mb-2 text-xs text-gray-500">{t("roommate.lookingHint")}</p>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={lookingForRoommate}
+                onChange={(e) => setLookingForRoommate(e.target.checked)}
+              />
+            }
+            label={t("roommate.lookingBadge")}
+          />
         </div>
 
         <div className="flex justify-end">
