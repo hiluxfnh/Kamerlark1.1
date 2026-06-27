@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import Avatar from "../components/Avatar";
 import ChatRoomHandler from "../components/ChatRoomHandler";
+import ButtonSpinner from "../components/ButtonSpinner";
 import { useI18n } from "../lib/i18n";
 
 const timeAgo = (ts) => {
@@ -238,8 +239,9 @@ export default function MarketPage() {
                 <button
                   onClick={submit}
                   disabled={!draft.text.trim() || posting}
-                  className="rounded-full bg-[#082e4d] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-40"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#082e4d] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-40"
                 >
+                  {posting && <ButtonSpinner />}
                   {posting ? t("market.posting") : t("market.post")}
                 </button>
               </div>
@@ -339,6 +341,7 @@ export default function MarketPage() {
                             disabled={busyChat === p.authorId || taken}
                             className="inline-flex items-center gap-1.5 rounded-full bg-[#082e4d] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
                           >
+                            {busyChat === p.authorId && <ButtonSpinner size={14} />}
                             {busyChat === p.authorId
                               ? t("community.opening")
                               : t("community.message")}

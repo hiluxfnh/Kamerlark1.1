@@ -67,22 +67,65 @@ body{
     background-color: var(--card-hover) !important;
 }
 
-/* Top progress bar */
+/* Top progress bar — vivid gradient + glow so a click registers instantly
+   instead of feeling like a dead tap while the next route loads. */
 #nprogress {
     pointer-events: none;
 }
 #nprogress .bar {
-    background: var(--text);
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8, #0ea5e9);
     position: fixed;
-    z-index: 1031;
+    z-index: 10060;
     top: 0;
     left: 0;
     width: 100%;
-    height: 2px;
+    height: 3px;
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.7), 0 0 5px rgba(14, 165, 233, 0.5);
+}
+/* The little glowing comet at the leading edge of the bar */
+#nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 14px #38bdf8, 0 0 8px #38bdf8;
+    opacity: 1;
+    transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* Reusable smooth spinner animation (inline button spinners, etc.) */
+.kl-spin {
+    animation: kl-spin 0.7s linear infinite;
+    transform-origin: center;
+}
+@keyframes kl-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Sticky footer: keep the footer pinned to the bottom of the viewport when a
+   page's content is short (e.g. while it's still loading), instead of letting
+   it "climb up" under the spinner/skeletons. */
+.kl-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+.kl-content {
+    flex: 1 0 auto;
 }
 
 /* Reduce tap delay and improve click responsiveness */
 * { touch-action: manipulation; }
+
+/* Snappy pressed state on buttons so a tap feels instant even before
+   navigation or data resolves. Scoped to <button> to avoid fighting the
+   card/link hover transforms. */
+button:not(:disabled):active {
+    transform: scale(0.97);
+    transition: transform 0.05s ease;
+}
 
 /* Forms that lay fields out on a 12-col grid (e.g. Add Listing) get cramped
    on phones because each field keeps its desktop col-start/col-end. Below the

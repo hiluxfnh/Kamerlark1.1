@@ -54,8 +54,13 @@ export default function RootLayout({ children }) {
           <AuthGate>
             <>
               <RouteProgress />
-              {children}
-              <FooterGuard />
+              {/* Sticky-footer shell: the content area grows to fill the
+                  viewport so the footer stays pinned to the bottom even when a
+                  page is mid-load and its content is still short. */}
+              <div className="kl-shell">
+                <div className="kl-content">{children}</div>
+                <FooterGuard />
+              </div>
             </>
           </AuthGate>
         </I18nProvider>

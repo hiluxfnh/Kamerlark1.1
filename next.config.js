@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Tree-shake big barrel packages. Named imports like
+  // `import { Button } from "@mui/material"` otherwise pull a large slice of
+  // the whole library into every route; this rewrites them to direct deep
+  // imports, cutting both bundle size and dev compile time substantially.
+  experimental: {
+    optimizePackageImports: [
+      "@mui/material",
+      "@mui/icons-material",
+      "@mui/x-date-pickers",
+      "@mui/x-date-pickers-pro",
+      "dayjs",
+    ],
+  },
   images: {
     domains: [
       "firebasestorage.googleapis.com",

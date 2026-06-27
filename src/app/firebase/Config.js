@@ -1,7 +1,12 @@
 // firebase.js
 import { initializeApp, getApp, getApps } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 // All values come from env (.env.local locally, dashboard vars in prod).
@@ -42,7 +47,28 @@ if (typeof window !== "undefined" && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY)
     .catch((e) => console.warn("App Check init failed:", e));
 }
 
-const db = getFirestore(app);
+// Firestore with an on-device (IndexedDB) cache in the browser. The cache
+// serves data instantly on repeat visits and works offline, while live
+// listeners still sync fresh data in the background — so pages like Chat,
+// Community and Market feel pre-loaded instead of blank-then-populate.
+// On the server (SSR) there's no IndexedDB, so use the plain in-memory store.
+let db;
+if (typeof window !== "undefined") {
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+  } catch {
+    // Already initialized (e.g. hot reload) or persistence unavailable
+    // (private mode / unsupported browser) — fall back to the default store.
+    db = getFirestore(app);
+  }
+} else {
+  db = getFirestore(app);
+}
+
 const auth = getAuth(app);
 const storage = getStorage(app);
 export { app, auth, db, storage };

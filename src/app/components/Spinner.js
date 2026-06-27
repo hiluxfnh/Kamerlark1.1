@@ -11,6 +11,7 @@ export default function Spinner() {
       aria-label="Loading"
     >
       <div className={styles.spinnerBox}>
+        <div className={styles.track} />
         <div className={styles.ring} />
         <div className={styles.logoWrap}>
           <Image

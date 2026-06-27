@@ -19,6 +19,7 @@ import {
 } from "firebase/firestore";
 import Avatar from "../components/Avatar";
 import ChatRoomHandler from "../components/ChatRoomHandler";
+import ButtonSpinner from "../components/ButtonSpinner";
 import { useI18n } from "../lib/i18n";
 
 // Post categories — the things this audience actually comes here to do.
@@ -459,8 +460,9 @@ export default function CommunityPage() {
                       <button
                         onClick={submitPost}
                         disabled={!draft.text.trim() || posting}
-                        className="rounded-full bg-[#082e4d] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-40"
+                        className="inline-flex items-center justify-center gap-2 rounded-full bg-[#082e4d] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-40"
                       >
+                        {posting && <ButtonSpinner />}
                         {posting ? t("community.posting") : t("community.post")}
                       </button>
                     </div>
@@ -600,6 +602,7 @@ export default function CommunityPage() {
                               disabled={busyChat === p.authorId}
                               className="inline-flex items-center gap-1.5 rounded-full bg-[#082e4d] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
                             >
+                              {busyChat === p.authorId && <ButtonSpinner size={14} />}
                               {busyChat === p.authorId
                                 ? t("community.opening")
                                 : t("community.message")}
@@ -682,9 +685,10 @@ export default function CommunityPage() {
                           <button
                             onClick={() => startChat(m.id)}
                             disabled={busyChat === m.id}
-                            className="flex-1 rounded-full bg-[#082e4d] py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61] disabled:opacity-50"
+                            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[#082e4d] py-1.5 text-xs font-semibold text-white hover:bg-[#0a3a61] disabled:opacity-50"
                           >
-                            {t("community.chat")}
+                            {busyChat === m.id && <ButtonSpinner size={14} />}
+                            {busyChat === m.id ? t("community.opening") : t("community.chat")}
                           </button>
                           {followingSet.has(m.id) ? (
                             <button
@@ -705,9 +709,14 @@ export default function CommunityPage() {
                         <button
                           onClick={() => sendRoommateRequest(m.id)}
                           disabled={sentRoommateSet.has(m.id) || busyRoommate === m.id}
-                          className="mt-2 w-full rounded-full border border-violet-300 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:opacity-60"
+                          className="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-full border border-violet-300 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50 disabled:opacity-60"
                         >
-                          🤝 {sentRoommateSet.has(m.id) ? t("roommate.requested") : t("roommate.sendRequest")}
+                          {busyRoommate === m.id ? (
+                            <ButtonSpinner size={14} />
+                          ) : (
+                            "🤝"
+                          )}
+                          {sentRoommateSet.has(m.id) ? t("roommate.requested") : t("roommate.sendRequest")}
                         </button>
                       </div>
                     );

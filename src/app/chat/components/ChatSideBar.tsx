@@ -21,6 +21,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
   const { t } = useI18n();
   const [user] = useAuthState(auth);
   const [chatRooms, setChatRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
   const humanizeTime = (date: any) => {
     try {
       const d = date instanceof Date ? date : new Date(date);
@@ -114,6 +115,7 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
         (a: any, b: any) => (b._sortTs || 0) - (a._sortTs || 0)
       );
       setChatRooms(deduped);
+      setLoading(false);
     };
 
     // Preferred: indexed query (newest first). If the composite index is missing,
@@ -127,7 +129,10 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
         const fallbackUnsub = onSnapshot(
           query(docRef, where("userIds", "array-contains", user.uid)),
           handleSnap,
-          (e2) => console.error("Chat list failed to load:", e2)
+          (e2) => {
+            console.error("Chat list failed to load:", e2);
+            setLoading(false);
+          }
         );
         (unsubRef as any).current = fallbackUnsub;
       }
@@ -141,7 +146,25 @@ const ChatSideBar = ({ chatRoomId, setChatRoomId, setCurrentUser }) => {
         {t("chat.messagesTitle")}
       </h1>
       <div className="flex-1 overflow-y-auto">
-        {chatRooms.length === 0 ? (
+        {loading ? (
+          <ul className="animate-pulse">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <li
+                key={i}
+                className="flex items-center gap-3 border-b border-gray-100 px-3 py-3"
+              >
+                <div className="h-12 w-12 shrink-0 rounded-full bg-gray-200" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="h-3.5 w-28 rounded bg-gray-200" />
+                    <div className="h-2.5 w-8 rounded bg-gray-100" />
+                  </div>
+                  <div className="mt-2 h-3 w-40 rounded bg-gray-100" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : chatRooms.length === 0 ? (
           <div className="px-6 py-12 text-center text-sm text-gray-400">
             {t("chat.noConversations")}
             <br />

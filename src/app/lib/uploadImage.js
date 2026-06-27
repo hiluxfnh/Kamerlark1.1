@@ -12,11 +12,17 @@
 // exactly as before.
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase/Config";
+import { compressImage } from "./imageCompress";
 
 const CLOUDINARY_CLOUD = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
 export async function uploadImage(file, path) {
+  // Downscale + recompress in the browser before uploading. Keeps stored
+  // images (and the pages that display them) small. Falls back to the original
+  // file on any failure, so uploads never break.
+  file = await compressImage(file);
+
   if (CLOUDINARY_CLOUD && CLOUDINARY_PRESET) {
     const form = new FormData();
     form.append("file", file);

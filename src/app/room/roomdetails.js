@@ -44,6 +44,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { useI18n } from "../lib/i18n";
 import ChatRoomHandler from "../components/ChatRoomHandler";
 import Avatar from "../components/Avatar";
+import ButtonSpinner from "../components/ButtonSpinner";
 import { useRouter } from "next/navigation";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
@@ -720,6 +721,7 @@ const RoomDetails = ({ room }) => {
                       disabled={openingChat}
                       variant="outlined"
                       fullWidth
+                      startIcon={openingChat ? <ButtonSpinner size={16} /> : null}
                       style={{ borderColor: "black", color: "black" }}
                     >
                       {openingChat ? t("chat.loading") : t("room.chatWithOwner")}
@@ -749,9 +751,10 @@ const RoomDetails = ({ room }) => {
                         disabled={openingChat}
                         variant="outlined"
                         fullWidth
+                        startIcon={openingChat ? <ButtonSpinner size={16} /> : null}
                         style={{ borderColor: "black", color: "black" }}
                       >
-                        {t("room.chat")}
+                        {openingChat ? t("chat.loading") : t("room.chat")}
                       </Button>
                     </div>
                     <button
@@ -1287,6 +1290,7 @@ const RoomDetails = ({ room }) => {
             label={isBooking ? t("common.sending") : t("common.submit")}
             onClick={handleBookingSubmit}
             disabled={isBooking}
+            loading={isBooking}
             colStart={1}
             colEnd={13}
           />
@@ -1386,6 +1390,7 @@ const RoomDetails = ({ room }) => {
             label={isRequestingAppt ? t("common.sending") : t("common.submit")}
             onClick={handleAppointmentSubmit}
             disabled={isRequestingAppt}
+            loading={isRequestingAppt}
             colStart={1}
             colEnd={13}
           />

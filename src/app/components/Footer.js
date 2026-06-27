@@ -9,6 +9,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { useI18n } from "../lib/i18n";
 
 const LINKS = [
@@ -77,27 +78,42 @@ const Footer = () => {
               ))}
             </nav>
             <div className="flex items-center gap-3">
-              <Link
-                href="#"
+              <a
+                href="https://www.facebook.com/kamerlark/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
                 className="rounded-md bg-white/5 p-2 hover:bg-white/10 transition-colors"
               >
                 <FacebookIcon fontSize="small" />
-              </Link>
-              <Link
-                href="#"
-                aria-label="Twitter"
+              </a>
+              <a
+                href="https://x.com/kamerlark"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="X (Twitter)"
                 className="rounded-md bg-white/5 p-2 hover:bg-white/10 transition-colors"
               >
                 <TwitterIcon fontSize="small" />
-              </Link>
-              <Link
-                href="#"
+              </a>
+              <a
+                href="https://www.instagram.com/kamerlark/"
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="rounded-md bg-white/5 p-2 hover:bg-white/10 transition-colors"
               >
                 <InstagramIcon fontSize="small" />
-              </Link>
+              </a>
+              <a
+                href="https://linkedin.com/company/kamerlark"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="rounded-md bg-white/5 p-2 hover:bg-white/10 transition-colors"
+              >
+                <LinkedInIcon fontSize="small" />
+              </a>
             </div>
           </div>
         </div>

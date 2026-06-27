@@ -2,10 +2,13 @@
 .backdrop {
     position: fixed;
     inset: 0;
-    background: color-mix(in oklab, var(--bg, #ffffff) 70%, #000 30%);
+    background: color-mix(in oklab, var(--bg, #ffffff) 78%, #000 22%);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
     display: grid;
     place-items: center;
     z-index: 10050;
+    animation: klFade 0.25s ease-out;
 }
 
 .spinnerBox {
@@ -14,15 +17,38 @@
     height: 120px;
 }
 
+/* Faint static track sitting under the moving arc */
+.track {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 6px solid color-mix(in oklab, #0ea5e9 18%, transparent);
+}
+
+/* Modern gradient arc that fades from transparent to bright sky-blue */
 .ring {
     position: absolute;
     inset: 0;
     border-radius: 9999px;
-    border: 6px solid transparent;
-    border-top-color: #0ea5e9; /* sky-500 */
-    border-right-color: #0ea5e9;
-    animation: spin 1s linear infinite;
-    filter: drop-shadow(0 2px 6px rgba(14,165,233,0.5));
+    background: conic-gradient(
+        from 0deg,
+        transparent 0%,
+        transparent 25%,
+        #0ea5e9 90%,
+        #38bdf8 100%
+    );
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 7px),
+        #000 calc(100% - 6px)
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(100% - 7px),
+        #000 calc(100% - 6px)
+    );
+    animation: spin 0.9s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+    filter: drop-shadow(0 0 8px rgba(14, 165, 233, 0.45));
 }
 
 .logoWrap {
@@ -33,11 +59,22 @@
 }
 
 .logo {
-    width: 58px;
-    height: 58px;
+    width: 56px;
+    height: 56px;
     object-fit: contain;
+    animation: klPulse 1.6s ease-in-out infinite;
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+@keyframes klPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.09); opacity: 0.82; }
+}
+
+@keyframes klFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

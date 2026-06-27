@@ -44,6 +44,7 @@ import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import EventIcon from "@mui/icons-material/Event";
 import Spinner from "../components/Spinner"; // Import Spinner
 import ChatRoomHandler from "../components/ChatRoomHandler";
+import ButtonSpinner from "../components/ButtonSpinner";
 import { useI18n } from "../lib/i18n";
 import TextField from "@mui/material/TextField";
 import PropTypes from "prop-types";
@@ -1861,6 +1862,7 @@ function Settings() {
             onClick={save}
             disabled={saving}
             variant="contained"
+            startIcon={saving ? <ButtonSpinner size={16} /> : null}
             style={{ backgroundColor: "black" }}
           >
             {saving ? t("settings.saving") : t("settings.save")}

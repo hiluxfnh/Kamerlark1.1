@@ -281,6 +281,10 @@ const SearchPage = () => {
   else if (sortBy === "highToLow") broadList.sort((a, b) => Number(b.price) - Number(a.price));
   else if (sortBy === "newest") broadList.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
       setRooms(broadList);
+    } finally {
+      // Always clear the initial loading flag so the skeleton grid is
+      // replaced by results (or the empty state) once the fetch settles.
+      setLoading(false);
     }
   };
 
@@ -926,7 +930,23 @@ const SearchPage = () => {
         </div>
       ) : null}
       <div className={`mx-auto w-full max-w-6xl px-4 sm:px-6${mapView ? " hidden" : ""}`}>
-  {rooms.length ? (
+  {loading ? (
+          <div className="mt-3 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div
+                key={i}
+                className="animate-pulse overflow-hidden rounded-2xl border border-gray-200 bg-white"
+              >
+                <div className="aspect-[4/3] w-full bg-gray-200" />
+                <div className="flex flex-col gap-2 p-4">
+                  <div className="h-4 w-3/4 rounded bg-gray-200" />
+                  <div className="h-3 w-1/2 rounded bg-gray-100" />
+                  <div className="mt-2 h-5 w-1/3 rounded bg-gray-200" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : rooms.length ? (
           <div className="mt-3 grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {rooms.slice(0, visibleCount).map((room) => {
               const badgeClass =

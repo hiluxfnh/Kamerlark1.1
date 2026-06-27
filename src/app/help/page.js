@@ -12,6 +12,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/Config";
 import { useAuthState } from "react-firebase-hooks/auth";
+import ButtonSpinner from "../components/ButtonSpinner";
 import { useI18n } from "../lib/i18n";
 
 const SUPPORT_EMAIL = "info.kamerlark@gmail.com";
@@ -294,8 +295,9 @@ export default function HelpPage() {
                   <button
                     type="submit"
                     disabled={sending}
-                    className="rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#082e4d] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#0a3a61] disabled:opacity-50"
                   >
+                    {sending && <ButtonSpinner />}
                     {sending ? t("help.submitting") : t("help.submitTicket")}
                   </button>
                   <span className="text-xs text-gray-400">{t("help.or")}</span>
