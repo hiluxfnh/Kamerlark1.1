@@ -4,6 +4,7 @@ import FooterGuard from "./components/FooterGuard";
 import RouteProgress from "./components/RouteProgress";
 import AuthGate from "./components/AuthGate";
 import { I18nProvider } from "./lib/i18n";
+import { Analytics } from "@vercel/analytics/react";
 const inter = Inter({ subsets: ["latin"] });
 
 // Force dynamic rendering for all routes to avoid serialization issues with Firebase
@@ -64,6 +65,7 @@ export default function RootLayout({ children }) {
             </>
           </AuthGate>
         </I18nProvider>
+        <Analytics />
       </body>
     </html>
   );

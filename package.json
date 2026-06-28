@@ -24,6 +24,7 @@
     "@mui/material": "^5.15.20",
     "@mui/x-date-pickers": "^7.7.1",
     "@react-google-maps/api": "^2.19.2",
+    "@vercel/analytics": "^2.0.1",
     "dayjs": "^1.11.11",
     "firebase": "^10.12.1",
     "heroicons": "^2.1.3",
