@@ -1,5 +1,33 @@
 # KamerLark
 
+A student housing marketplace for Cameroonian students. Students can post rooms, search listings on a map, message each other and manage their own listings. It is a Next.js app (App Router) backed by Firebase.
+
+## What is in it
+
+- Listings and search: browse and filter rooms, with a map view (Leaflet and Google Maps)
+- Accounts and profiles: Firebase authentication, a profile page per user, "my listings" management
+- Chat: direct messages between students and room owners
+- Community and market pages, plus an admin area
+- Terms, privacy and help pages
+
+## Stack
+
+Next.js, React, Firebase (auth and database), MUI, Leaflet, deployed on Vercel with a few Netlify functions.
+
+## Run it locally
+
+```
+npm install
+cp .env.local.example .env.local   # fill in your own Firebase keys
+npm run dev
+```
+
+The example file only lists variable names. Real keys stay in .env.local, which is gitignored.
+
+## More
+
+docs/OPERATOR-GUIDE.md covers running the app day to day, and docs/AUDIT-2026-06.md is an audit of the app from June 2026.
+
 ## Deploy to Vercel (fast + free subdomain)
 
 1. Push to GitHub (public or private)
