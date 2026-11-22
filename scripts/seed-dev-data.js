@@ -42,8 +42,14 @@ const app = initializeApp({
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const SEED_EMAIL = "demo.owner@kamerlark.dev";
-const SEED_PASSWORD = "kamerlark-demo-2026";
+// Demo account credentials come from .env.local (SEED_EMAIL / SEED_PASSWORD),
+// so they never end up in the repo.
+const SEED_EMAIL = process.env.SEED_EMAIL;
+const SEED_PASSWORD = process.env.SEED_PASSWORD;
+if (!SEED_EMAIL || !SEED_PASSWORD) {
+  console.error("SEED_EMAIL and SEED_PASSWORD must be set in .env.local");
+  process.exit(1);
+}
 
 const img = (seed, n) =>
   Array.from({ length: n }, (_, i) => `https://picsum.photos/seed/${seed}${i}/900/620`);
