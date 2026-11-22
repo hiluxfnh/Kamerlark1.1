@@ -9,7 +9,9 @@
     "dev": "next dev",
     "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "prepare": "git config core.hooksPath .githooks || true",
+    "check-secrets": "node scripts/check-secrets.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
